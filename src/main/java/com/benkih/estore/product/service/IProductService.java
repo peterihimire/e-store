@@ -16,6 +16,6 @@ public interface IProductService {
   List<Product> getProductsByBrandAndName(String brand, String name);
   Product getProductById(String slug);
   Product updateProduct(UpdateProductRequest product, String slug);
-  void deleteproductById(String slug);
+  void deleteProductById(String slug);
   Long countProductByBrandAndName(String brand, String name);
 }

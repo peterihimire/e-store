@@ -99,7 +99,7 @@ public class ProductService implements IProductService{
   }
 
   @Override
-  public void deleteproductById(String slug) {
+  public void deleteProductById(String slug) {
     productRepository.findById(slug).ifPresentOrElse(productRepository::delete,
         () -> {throw new ProductNotFoundException("Product not found!");});
   }
