@@ -1,17 +1,19 @@
 package com.benkih.estore.image.entity;
 
 import com.benkih.estore.product.entity.Product;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.sql.Blob;
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
-@Builder
+//@AllArgsConstructor
+//@Builder
 public class Image {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,11 +25,36 @@ public class Image {
     private String fileName;
     private String fileType;
 
-    @Lob
-    private Blob image;
+    @Column(name = "file_path", nullable = false)
+    private String filePath;
     private String downloadUrl;
+
+    private String createdBy;
+    private String updatedBy;
+
+    @Column(nullable = false,updatable = false)
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     @ManyToOne
     @JoinColumn(name = "product_id")
+    @JsonIgnore
     private Product product;
+
+    @PrePersist
+    public void onCreate() {
+        // this.slug = UUID.randomUUID().toString();
+
+        if (this.slug == null) {
+            this.slug = UUID.randomUUID().toString();
+        }
+        if (this.createdAt == null) {
+            this.createdAt = LocalDateTime.now();
+        }
+    }
+
+    @PreUpdate
+    public void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 }

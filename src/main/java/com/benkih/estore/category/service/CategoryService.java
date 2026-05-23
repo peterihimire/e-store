@@ -25,7 +25,7 @@ public class CategoryService implements ICategoryService{
 
   @Override
   public Category getCategoryById(String slug) {
-    return categoryRepository.findById(slug)
+    return categoryRepository.findBySlug(slug)
         .orElseThrow(() -> new NotFoundException("Category not found!"));
   }
 
@@ -49,7 +49,7 @@ public class CategoryService implements ICategoryService{
 
   @Override
   public void deleteCategoryById(String slug) {
-    categoryRepository.findById(slug)
+    categoryRepository.findBySlug(slug)
         .ifPresentOrElse(categoryRepository::delete, () -> {
       throw new NotFoundException("Category not found!");
     });

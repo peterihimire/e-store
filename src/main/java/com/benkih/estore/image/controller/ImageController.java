@@ -8,6 +8,7 @@ import com.benkih.estore.image.service.IImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -15,6 +16,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -29,9 +33,9 @@ public class ImageController {
 
   @PostMapping("/upload")
   public ResponseEntity<ApiResponse> addImages(
-      @RequestParam List<MultipartFile> files, @RequestParam String productId){
+      @RequestParam List<MultipartFile> files, @RequestParam String slug){
     try {
-      List<ImageDto> imageDtos = imageService.addImages(files, productId);
+      List<ImageDto> imageDtos = imageService.addImages(files, slug);
       return ResponseEntity.ok(new ApiResponse("File upload success", imageDtos));
     }catch(Exception e){
      return ResponseEntity.status(INTERNAL_SERVER_ERROR)
@@ -39,20 +43,42 @@ public class ImageController {
     }
   }
 
+//  @GetMapping("/image/download/{imageId}")
+//  public ResponseEntity<Resource> downloadImage(@PathVariable String imageId) throws SQLException {
+//    Image image = imageService.getImageBySlug(imageId);
+//    ByteArrayResource resource = new ByteArrayResource(image.getImage());
+//    return ResponseEntity.ok()
+//        .contentType(MediaType.parseMediaType(image.getFileType()))
+//        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + image.getFileName() + "\"")
+//        .body(resource);
+//  }
+
   @GetMapping("/image/download/{imageId}")
-  public ResponseEntity<Resource> downloadImage(@PathVariable String imageId) throws SQLException {
-    Image image = imageService.getImageById(imageId);
-    ByteArrayResource resource = new ByteArrayResource(image.getImage().getBytes(1,(int)image.getImage().length()));
+  public ResponseEntity<Resource> downloadImage(@PathVariable String imageId) throws IOException {
+    Image image = imageService.getImageBySlug(imageId);
+    String safeFileName = image.getFileName()
+        .replaceAll("[^a-zA-Z0-9\\.\\-_]", "_");
+
+    Path filePath = Paths.get(image.getFilePath());
+    Resource resource = new UrlResource(filePath.toUri());
+
+    if (!resource.exists() || !resource.isReadable()) {
+      throw new RuntimeException("Image file not found or not readable");
+    }
+
     return ResponseEntity.ok()
         .contentType(MediaType.parseMediaType(image.getFileType()))
-        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + image.getFileName() + "\"")
+        .header(
+            HttpHeaders.CONTENT_DISPOSITION,
+            "attachment; filename=\"" + safeFileName + "\""
+        )
         .body(resource);
   }
 
   @PutMapping("/image/{imageId}/update")
   public ResponseEntity<ApiResponse> updateImage(@PathVariable String imageId, @RequestBody MultipartFile file){
     try {
-      Image image = imageService.getImageById(imageId);
+      Image image = imageService.getImageBySlug(imageId);
       if(image != null){
         imageService.updateImage(file, imageId);
         return ResponseEntity.ok(new ApiResponse("Image update success", null));
@@ -66,7 +92,7 @@ public class ImageController {
   @DeleteMapping("/image/{imageId}/delete")
   public ResponseEntity<ApiResponse> deleteImage(@PathVariable String imageId){
     try {
-      Image image = imageService.getImageById(imageId);
+      Image image = imageService.getImageBySlug(imageId);
       if(image != null){
         imageService.deleteImageById(imageId);
         return ResponseEntity.ok(new ApiResponse("Image delete success", null));

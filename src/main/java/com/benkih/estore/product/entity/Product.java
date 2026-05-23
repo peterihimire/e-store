@@ -6,7 +6,9 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Getter
@@ -28,19 +30,49 @@ public class Product {
     private BigDecimal price;
     private int inventory;
 
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "catergory_id")
+    private String createdBy;
+    private String updatedBy;
+
+    @Column(nullable = false,updatable = false)
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+
+    @ManyToOne
+    @JoinColumn(name = "category_id")
     private Category category;
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(
+        mappedBy = "product",
+        cascade = CascadeType.ALL,
+        orphanRemoval = true
+        // fetch = FetchType.EAGER
+    )
     private List<Image> images;
 
-    public Product(String brand, String name, String description, BigDecimal price, int inventory, Category category) {
-        this.brand = brand;
+    // Below is Product constructor
+    public Product(String name, String brand, String description, BigDecimal price, int inventory, Category category) {
         this.name = name;
+        this.brand = brand;
         this.description = description;
         this.price = price;
         this.inventory = inventory;
         this.category = category;
+    }
+
+    @PrePersist
+    public void onCreate() {
+        // this.slug = UUID.randomUUID().toString();
+
+        if (this.slug == null) {
+            this.slug = UUID.randomUUID().toString();
+        }
+        if (this.createdAt == null) {
+            this.createdAt = LocalDateTime.now();
+        }
+    }
+
+    @PreUpdate
+    public void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
     }
 }
