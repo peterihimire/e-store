@@ -6,12 +6,12 @@ import com.benkih.estore.common.exceptions.NotFoundException;
 import com.benkih.estore.image.dto.ImageDto;
 import com.benkih.estore.product.dto.request.AddProductRequest;
 import com.benkih.estore.product.dto.request.UpdateProductRequest;
-import com.benkih.estore.product.dto.response.ProductsResponseDto;
+import com.benkih.estore.product.dto.response.ProductResponseDto;
 import com.benkih.estore.product.entity.Product;
 import com.benkih.estore.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+//import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -45,18 +45,25 @@ public class ProductService implements IProductService{
     );
   }
 
-  @Transactional(readOnly = true)
+
+//  @Transactional(readOnly = true)
   @Override
-  public List<ProductsResponseDto> getAllProducts() {
-    return productRepository.findAll()
-        .stream()
-        .map(this::convertToDto)
-        .toList();
+  public List<Product> getAllProducts() {
+    return productRepository.findAll();
   }
 
-  private ProductsResponseDto convertToDto(Product product) {
+//  @Transactional(readOnly = true)
+  @Override
+  public List<ProductResponseDto> getConvertedProducts(List<Product> products) {
+    return products.stream().map(this::convertToDto).toList();
+  }
 
-    List<ImageDto> imageDtos = product.getImages()
+//  @Transactional(readOnly = true)
+  @Override
+  public ProductResponseDto convertToDto(Product product) {
+
+    List<ImageDto> imageDtos = Optional.ofNullable(product.getImages())
+        .orElse(List.of())
         .stream()
         .map(image -> new ImageDto(
             image.getSlug(),
@@ -65,14 +72,15 @@ public class ProductService implements IProductService{
         ))
         .toList();
 
-    return new ProductsResponseDto(
+    return new ProductResponseDto(
         product.getSlug(),
         product.getName(),
         product.getBrand(),
         product.getDescription(),
         product.getPrice(),
         product.getInventory(),
-        product.getCategory().getName(),
+        product.getCategory() != null ? product.getCategory().getName() : null,
+        // product.getCategory().getName(),
         imageDtos
     );
   }
@@ -102,23 +110,22 @@ public class ProductService implements IProductService{
     return productRepository.findByBrandAndName(brand, name);
   }
 
-//  @Override
-//  public Product getProductById(Long id) {
-//    return productRepository.findById(id)
-//        .orElseThrow(()-> new NotFoundException("Product not found!"));
-//  }
+  //  @Override
+  //  public Product getProductById(Long id) {
+  //    return productRepository.findById(id)
+  //        .orElseThrow(()-> new NotFoundException("Product not found!"));
+  //  }
 
-  @Transactional(readOnly = true)
+  //  @Transactional(readOnly = true)
   @Override
-  public ProductsResponseDto getProductBySlug(String slug) {
+  public Product getProductBySlug(String slug) {
     Product product = productRepository.findBySlug(slug)
         .orElseThrow(()-> new NotFoundException("Product not found!"));
 
-    return convertToDto(product);
+    return product;
   }
 
   @Override
-
   public Product updateProduct(UpdateProductRequest request, String slug) {
     Product updatedProduct = productRepository.findBySlug(slug)
         .map(existingProduct -> updateExistingProduct(existingProduct, request))
@@ -130,40 +137,33 @@ public class ProductService implements IProductService{
   }
 
   private Product updateExistingProduct(Product existingProduct, UpdateProductRequest request) {
+    if (request.getName() != null) {
+      existingProduct.setName(request.getName());
+    }
+    if (request.getBrand() != null) {
+      existingProduct.setBrand(request.getBrand());
+    }
+    if (request.getDescription() != null) {
+      existingProduct.setDescription(request.getDescription());
+    }
+    if (request.getPrice() != null) {
+      existingProduct.setPrice(request.getPrice());
+    }
+    if (request.getInventory() != null) {
+      existingProduct.setInventory(request.getInventory());
+    }
 
-    existingProduct.setName(request.getName());
-    existingProduct.setBrand(request.getBrand());
-    existingProduct.setDescription(request.getDescription());
-    existingProduct.setPrice(request.getPrice());
-    existingProduct.setInventory(request.getInventory());
+    if (request.getCategoryName() != null) {
+      Category category = categoryRepository.findByName(request.getCategoryName());
+      if (category == null) {
+        throw new NotFoundException("Category not found");
+      }
+      existingProduct.setCategory(category);
+    }
 
-    Category category = categoryRepository.findByName(request.getCategory().getName());
-    existingProduct.setCategory(category);
     return existingProduct;
-
   }
 
-//  @Override
-//  public ProductsResponseDto updateProduct(UpdateProductRequest request, String slug) {
-//    Product updatedProduct =  productRepository.findBySlug(slug)
-//        .map(existingProduct -> updateExistingProduct(existingProduct, request))
-//        .map(productRepository :: save)
-//        .orElseThrow(() -> new NotFoundException("Product not found!"));
-//
-//    return convertToDto(updatedProduct);
-//  }
-//
-//  private Product updateExistingProduct(Product existingProduct, UpdateProductRequest request){
-//    existingProduct.setName(request.getName());
-//    existingProduct.setBrand(request.getBrand());
-//    existingProduct.setDescription(request.getDescription());
-//    existingProduct.setPrice(request.getPrice());
-//    existingProduct.setInventory(request.getInventory());
-//
-//    Category category = categoryRepository.findByName(request.getCategory().getName());
-//    existingProduct.setCategory(category);
-//    return existingProduct;
-//  }
 
   @Override
   public void deleteProductById(String slug) {

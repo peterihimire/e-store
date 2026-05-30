@@ -13,6 +13,8 @@ public class UpdateProductRequest {
   private String brand;
   private String description;
   private BigDecimal price;
-  private int inventory;
-  private Category category;
+  private Integer inventory; // use Integer rather than int, int will default to 0
+
+  private String categoryName;
+//  private Category category;
 }

@@ -1,6 +1,5 @@
 package com.benkih.estore.product.dto.response;
 
-import com.benkih.estore.category.entity.Category;
 import com.benkih.estore.image.dto.ImageDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,7 +20,7 @@ public class ProductResponseDto {
   private BigDecimal price;
   private int inventory;
 
-  private Category category;
+  private String category;
 
   private List<ImageDto> images;
 }

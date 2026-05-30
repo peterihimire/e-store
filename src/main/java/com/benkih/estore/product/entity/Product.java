@@ -7,6 +7,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -47,7 +48,8 @@ public class Product {
         orphanRemoval = true
         // fetch = FetchType.EAGER
     )
-    private List<Image> images;
+    private List<Image> images = new ArrayList<>();
+    //    private List<Image> images;
 
     // Below is Product constructor
     public Product(String name, String brand, String description, BigDecimal price, int inventory, Category category) {

@@ -1,12 +1,13 @@
 package com.benkih.estore.category.entity;
 
+import com.benkih.estore.cart.entity.CartItem;
 import com.benkih.estore.product.entity.Product;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -34,7 +35,7 @@ public class Category {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    @JsonIgnore
+    @JsonIgnore // using it to brake the product category loop from continuing calling itself
     @OneToMany(mappedBy = "category")
     private List<Product> products;
 
