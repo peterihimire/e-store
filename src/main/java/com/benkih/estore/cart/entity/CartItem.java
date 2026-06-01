@@ -31,11 +31,11 @@ public class CartItem {
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
 
-  @ManyToOne(cascade = CascadeType.ALL)
+  @ManyToOne
   @JoinColumn(name = "cart_id")
   private Cart cart;
 
-  @ManyToOne(cascade = CascadeType.ALL)
+  @ManyToOne
   @JoinColumn(name = "product_id")
   private Product product;
 
@@ -44,7 +44,7 @@ public class CartItem {
   }
 
   public long getQuantity() {
-    return 10;
+    return 1;
   }
 
   @PrePersist
