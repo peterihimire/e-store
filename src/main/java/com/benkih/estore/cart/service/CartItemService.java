@@ -8,6 +8,7 @@ import com.benkih.estore.cart.repository.CartItemRepository;
 import com.benkih.estore.common.exceptions.NotFoundException;
 import com.benkih.estore.product.entity.Product;
 import com.benkih.estore.product.service.IProductService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -44,6 +45,7 @@ public class CartItemService implements ICartItemService {
     cartRepository.save(cart);
   }
 
+  @Transactional
   @Override
   public void removeItemFromCart(String cartSlug, String productSlug) {
     Cart cart = cartService.getCart(cartSlug);
@@ -63,8 +65,9 @@ public class CartItemService implements ICartItemService {
           item.setUnitPrice(item.getProduct().getPrice());
           item.setTotalPrice();
         });
-    BigDecimal totalAmount = cart.getTotalAmount();
-    cart.setTotalAmount(totalAmount);
+    cart.updateTotalAmount();
+    //  BigDecimal totalAmount = cart.getTotalAmount();
+    //  cart.setTotalAmount(totalAmount);
     cartRepository.save(cart);
   }
 

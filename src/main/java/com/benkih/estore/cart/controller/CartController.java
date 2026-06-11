@@ -1,5 +1,6 @@
 package com.benkih.estore.cart.controller;
 
+import com.benkih.estore.cart.dto.response.CartResponseDto;
 import com.benkih.estore.cart.entity.Cart;
 import com.benkih.estore.cart.service.ICartService;
 import com.benkih.estore.common.exceptions.NotFoundException;
@@ -22,7 +23,8 @@ public class CartController {
   public ResponseEntity<ApiResponse> getCart(@PathVariable String cartSlug){
     try {
       Cart cart = cartService.getCart(cartSlug);
-      return ResponseEntity.ok(new ApiResponse("Cart returned", cart));
+      CartResponseDto cartData = cartService.getConvertedCart(cart);
+      return ResponseEntity.ok(new ApiResponse("Cart returned", cartData));
     } catch (NotFoundException e) {
       return  ResponseEntity.status(NOT_FOUND).body(new ApiResponse(e.getMessage(), null));
     }

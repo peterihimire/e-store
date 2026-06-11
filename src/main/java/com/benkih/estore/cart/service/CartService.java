@@ -1,15 +1,21 @@
 package com.benkih.estore.cart.service;
 
+import com.benkih.estore.cart.dto.response.CartItemResponseDto;
+import com.benkih.estore.cart.dto.response.CartResponseDto;
 import com.benkih.estore.cart.entity.Cart;
 import com.benkih.estore.cart.repository.CartRepository;
 import com.benkih.estore.cart.repository.CartItemRepository;
 import com.benkih.estore.common.exceptions.NotFoundException;
+import com.benkih.estore.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 
 import static java.util.Arrays.stream;
+
+import java.util.List;
 import java.util.UUID;
 
 //String cartSlug = UUID.randomUUID().toString();
@@ -19,6 +25,7 @@ import java.util.UUID;
 public class CartService  implements ICartService{
   private final CartRepository cartRepository;
   private final CartItemRepository cartItemRepository;
+  private final ProductService productService;
 
   @Override
   public Cart getCart(String slug) {
@@ -31,13 +38,29 @@ public class CartService  implements ICartService{
   }
 
   @Override
+  public CartResponseDto getConvertedCart(Cart cart){
+    List<CartItemResponseDto> items = cart.getItems()
+        .stream()
+        .map(item -> new CartItemResponseDto(
+            item.getQuatity(),
+            item.getUnitPrice(),
+            item.getTotalPrice(),
+            productService.convertToDto(item.getProduct())
+        )).toList();
+    return new CartResponseDto(
+        cart.getSlug(),
+        cart.getTotalAmount(),
+       items
+    );
+  }
+
+  @Transactional
+  @Override
   public void clearCart(String slug) {
     Cart cart = getCart(slug);
     cartItemRepository.deleteAllByCartSlug(slug);
     cart.getItems().clear();
     cartRepository.deleteBySlug(slug);
-
-
   }
 
   @Override

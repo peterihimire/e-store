@@ -12,6 +12,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @NoArgsConstructor
+@EqualsAndHashCode(of = "id")
 public class CartItem {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,6 +32,7 @@ public class CartItem {
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
 
+  // @JsonIgnore     - using CartItemResponseDto fixed the circular injection
   @ManyToOne
   @JoinColumn(name = "cart_id")
   private Cart cart;
@@ -44,7 +46,7 @@ public class CartItem {
   }
 
   public long getQuantity() {
-    return 1;
+    return quatity;
   }
 
   @PrePersist
