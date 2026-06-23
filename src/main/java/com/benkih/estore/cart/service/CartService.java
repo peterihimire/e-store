@@ -5,7 +5,7 @@ import com.benkih.estore.cart.dto.response.CartResponseDto;
 import com.benkih.estore.cart.entity.Cart;
 import com.benkih.estore.cart.repository.CartRepository;
 import com.benkih.estore.cart.repository.CartItemRepository;
-import com.benkih.estore.common.exceptions.NotFoundException;
+import com.benkih.estore.common.exceptions.ResourceNotFoundException;
 import com.benkih.estore.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -30,7 +30,7 @@ public class CartService  implements ICartService{
   @Override
   public Cart getCart(String slug) {
     Cart cart = cartRepository.findBySlug(slug)
-        .orElseThrow(()-> new NotFoundException("Cart not found"));
+        .orElseThrow(()-> new ResourceNotFoundException("Cart not found"));
     BigDecimal totalAmount = cart.getTotalAmount();
     cart.setTotalAmount(totalAmount);
 
@@ -42,7 +42,7 @@ public class CartService  implements ICartService{
     List<CartItemResponseDto> items = cart.getItems()
         .stream()
         .map(item -> new CartItemResponseDto(
-            item.getQuatity(),
+            item.getQuantity(),
             item.getUnitPrice(),
             item.getTotalPrice(),
             productService.convertToDto(item.getProduct())
@@ -79,5 +79,11 @@ public class CartService  implements ICartService{
     String newCartSlug = UUID.randomUUID().toString();
     newCart.setSlug(newCartSlug);
     return cartRepository.save(newCart).getSlug();
+  }
+
+  @Override
+  public Cart getCartByUserSlug(String slug){
+    return cartRepository.findByUserSlug(slug)
+        .orElseThrow(() -> new ResourceNotFoundException("Cart not found"));
   }
 }

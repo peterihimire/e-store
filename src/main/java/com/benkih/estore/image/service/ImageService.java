@@ -1,6 +1,6 @@
 package com.benkih.estore.image.service;
 
-import com.benkih.estore.common.exceptions.NotFoundException;
+import com.benkih.estore.common.exceptions.ResourceNotFoundException;
 import com.benkih.estore.image.dto.ImageDto;
 import com.benkih.estore.image.entity.Image;
 import com.benkih.estore.image.repository.ImageRepository;
@@ -40,19 +40,19 @@ public class ImageService implements IImageService{
   @Override
   public Image getImageBySlug(String slug) {
     return imageRepository.findBySlug(slug)
-        .orElseThrow(() -> new NotFoundException("No image found with id: " + slug));
+        .orElseThrow(() -> new ResourceNotFoundException("No image found with id: " + slug));
   }
 
   @Override
   public void deleteImageById(String slug) {
     imageRepository.findBySlug(slug).ifPresentOrElse(imageRepository :: delete, () -> {
-      throw new NotFoundException("No image found with this id:" + slug);
+      throw new ResourceNotFoundException("No image found with this id:" + slug);
     });
   }
 
   public Product getProductEntityBySlug(String slug) {
     return productRepository.findBySlug(slug)
-        .orElseThrow(() -> new NotFoundException("Product not found"));
+        .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
   }
 
   @Override

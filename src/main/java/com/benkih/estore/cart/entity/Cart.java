@@ -1,5 +1,6 @@
 package com.benkih.estore.cart.entity;
 
+import com.benkih.estore.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -15,6 +16,7 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @Entity
+@Table(name = "carts")
 public class Cart {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,6 +33,10 @@ public class Cart {
       orphanRemoval = true
   )
   private Set<CartItem> items = new HashSet<>();
+
+  @OneToOne
+  @JoinColumn(name = "user_id")
+  private User user;
 
   public void addItem(CartItem item){
     this.items.add(item);
@@ -81,6 +87,5 @@ public class Cart {
   public void onUpdate() {
     this.updatedAt = LocalDateTime.now();
   }
-
 
 }

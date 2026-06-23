@@ -1,7 +1,7 @@
 package com.benkih.estore.product.controller;
 
 
-import com.benkih.estore.common.exceptions.NotFoundException;
+import com.benkih.estore.common.exceptions.ResourceNotFoundException;
 import com.benkih.estore.common.response.ApiResponse;
 import com.benkih.estore.product.dto.request.AddProductRequest;
 import com.benkih.estore.product.dto.request.UpdateProductRequest;
@@ -46,7 +46,7 @@ public class ProductController {
       Product product = productService.getProductBySlug(slug);
       ProductResponseDto productDto = productService.convertToDto(product);
       return ResponseEntity.ok(new ApiResponse("success", productDto));
-    } catch (NotFoundException e) {
+    } catch (ResourceNotFoundException e) {
       return ResponseEntity.status(NOT_FOUND).body(new ApiResponse(e.getMessage(), null));
     }
   }
@@ -142,7 +142,7 @@ public class ProductController {
       Product productData = productService.updateProduct(product, productId);
       ProductResponseDto productDto = productService.convertToDto(productData);
       return ResponseEntity.ok(new ApiResponse("Product updated", productDto));
-    } catch (NotFoundException e) {
+    } catch (ResourceNotFoundException e) {
       return ResponseEntity.status(NOT_FOUND).body(new ApiResponse(e.getMessage(), null));
     }
   }
@@ -152,7 +152,7 @@ public class ProductController {
     try {
      productService.deleteProductById(productId);
       return ResponseEntity.ok(new ApiResponse("Product deleted", null));
-    } catch (NotFoundException e) {
+    } catch (ResourceNotFoundException e) {
       return ResponseEntity.status(NOT_FOUND).body(new ApiResponse(e.getMessage(), null));
     }
   }

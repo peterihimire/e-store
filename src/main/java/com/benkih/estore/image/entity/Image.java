@@ -8,10 +8,11 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Entity
 @Getter
 @Setter
 @NoArgsConstructor
+@Entity
+@Table(name = "images")
 //@AllArgsConstructor
 //@Builder
 public class Image {

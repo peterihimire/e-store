@@ -1,16 +1,14 @@
 package com.benkih.estore.image.controller;
 
-import com.benkih.estore.common.exceptions.NotFoundException;
+import com.benkih.estore.common.exceptions.ResourceNotFoundException;
 import com.benkih.estore.common.response.ApiResponse;
 import com.benkih.estore.image.dto.ImageDto;
 import com.benkih.estore.image.entity.Image;
 import com.benkih.estore.image.service.IImageService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +17,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.SQLException;
 import java.util.List;
 
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
@@ -83,7 +80,7 @@ public class ImageController {
         imageService.updateImage(file, imageId);
         return ResponseEntity.ok(new ApiResponse("Image update success", null));
       }
-    } catch (NotFoundException e) {
+    } catch (ResourceNotFoundException e) {
      return ResponseEntity.status(NOT_FOUND).body(new ApiResponse(e.getMessage(), null));
     }
     return ResponseEntity.status(INTERNAL_SERVER_ERROR).body(new ApiResponse("Update failed", INTERNAL_SERVER_ERROR));
@@ -97,7 +94,7 @@ public class ImageController {
         imageService.deleteImageById(imageId);
         return ResponseEntity.ok(new ApiResponse("Image delete success", null));
       }
-    } catch (NotFoundException e) {
+    } catch (ResourceNotFoundException e) {
       return ResponseEntity.status(NOT_FOUND).body(new ApiResponse(e.getMessage(), null));
     }
     return ResponseEntity.status(INTERNAL_SERVER_ERROR).body(new ApiResponse("Delete failed", INTERNAL_SERVER_ERROR));

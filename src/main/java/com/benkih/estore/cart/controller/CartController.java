@@ -3,7 +3,7 @@ package com.benkih.estore.cart.controller;
 import com.benkih.estore.cart.dto.response.CartResponseDto;
 import com.benkih.estore.cart.entity.Cart;
 import com.benkih.estore.cart.service.ICartService;
-import com.benkih.estore.common.exceptions.NotFoundException;
+import com.benkih.estore.common.exceptions.ResourceNotFoundException;
 import com.benkih.estore.common.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +25,7 @@ public class CartController {
       Cart cart = cartService.getCart(cartSlug);
       CartResponseDto cartData = cartService.getConvertedCart(cart);
       return ResponseEntity.ok(new ApiResponse("Cart returned", cartData));
-    } catch (NotFoundException e) {
+    } catch (ResourceNotFoundException e) {
       return  ResponseEntity.status(NOT_FOUND).body(new ApiResponse(e.getMessage(), null));
     }
   }
@@ -35,7 +35,7 @@ public class CartController {
     try {
       cartService.clearCart(cartSlug);
       return ResponseEntity.ok(new ApiResponse("Cart cleared successfully", null));
-    } catch (NotFoundException e) {
+    } catch (ResourceNotFoundException e) {
       return  ResponseEntity.status(NOT_FOUND).body(new ApiResponse(e.getMessage(), null));
     }
   }
@@ -45,7 +45,7 @@ public class CartController {
     try {
       BigDecimal totalPrice = cartService.getTotalPrice(cartSlug);
       return ResponseEntity.ok(new ApiResponse("Total Price Returned", totalPrice));
-    } catch (NotFoundException e) {
+    } catch (ResourceNotFoundException e) {
       return  ResponseEntity.status(NOT_FOUND).body(new ApiResponse(e.getMessage(), null));
     }
   }

@@ -1,20 +1,23 @@
-package com.benkih.estore.cart.entity;
+package com.benkih.estore.order.entity;
 
-import com.benkih.estore.product.entity.Product;
+import com.benkih.estore.common.enums.OrderStatus;
+import com.benkih.estore.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Getter
 @Setter
 @NoArgsConstructor
-@EqualsAndHashCode(of = "id")
 @Entity
-@Table(name = "cart_items")
-public class CartItem {
+@Table(name = "orders")
+public class Order {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
@@ -22,9 +25,12 @@ public class CartItem {
   @Column(nullable = false, unique = true, updatable = false)
   private String slug;
 
-  private int quantity;
-  private BigDecimal unitPrice;
-  private BigDecimal totalPrice;
+  private LocalDate orderDate;
+
+  private BigDecimal totalAmount = BigDecimal.ZERO;
+
+  @Enumerated(EnumType.STRING)
+  private OrderStatus orderStatus;
 
   private String createdBy;
   private String updatedBy;
@@ -33,22 +39,16 @@ public class CartItem {
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
 
-  // @JsonIgnore     - using CartItemResponseDto fixed the circular injection
-  @ManyToOne
-  @JoinColumn(name = "cart_id")
-  private Cart cart;
+  @OneToMany(
+      mappedBy = "order",
+      cascade = CascadeType.ALL,
+      orphanRemoval = true
+  )
+  private Set<OrderItem> items = new HashSet<>();
 
   @ManyToOne
-  @JoinColumn(name = "product_id")
-  private Product product;
-
-  public void setTotalPrice(){
-    this.totalPrice = this.unitPrice.multiply(new BigDecimal(quantity));
-  }
-
-  public int getQuantity() {
-    return quantity;
-  } // made mistake initially by having quatity, so the getQuantity() method was never defined
+  @JoinColumn(name = "user_id")
+  private User user;
 
   @PrePersist
   public void onCreate() {
@@ -63,6 +63,9 @@ public class CartItem {
   @PreUpdate
   public void onUpdate() {
     this.updatedAt = LocalDateTime.now();
+  }
+
+  public void setOrderItems(HashSet<OrderItem> orderItems) {
   }
 
 }

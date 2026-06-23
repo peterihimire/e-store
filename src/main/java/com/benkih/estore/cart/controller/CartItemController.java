@@ -2,7 +2,7 @@ package com.benkih.estore.cart.controller;
 
 import com.benkih.estore.cart.service.ICartItemService;
 import com.benkih.estore.cart.service.ICartService;
-import com.benkih.estore.common.exceptions.NotFoundException;
+import com.benkih.estore.common.exceptions.ResourceNotFoundException;
 import com.benkih.estore.common.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +37,7 @@ public class CartItemController {
       }
       cartItemService.addItemToCart(cartSlug, productSlug,quantity);
       return ResponseEntity.ok(new ApiResponse("Product added to cart",null));
-    } catch (NotFoundException e) {
+    } catch (ResourceNotFoundException e) {
       return ResponseEntity.status(NOT_FOUND).body(new ApiResponse(e.getMessage(), null));
     }
   }
@@ -47,7 +47,7 @@ public class CartItemController {
     try {
       cartItemService.removeItemFromCart(cartSlug, productSlug);
       return ResponseEntity.ok(new ApiResponse("Item removed successfully", null));
-    } catch (NotFoundException e) {
+    } catch (ResourceNotFoundException e) {
       return ResponseEntity.status(NOT_FOUND).body(new ApiResponse(e.getMessage(), null));
     }
   }
@@ -57,7 +57,7 @@ public class CartItemController {
     try {
       cartItemService.updateItemQuantity(cartSlug, productSlug, quantity);
       return ResponseEntity.ok(new ApiResponse("Update item successfull", null));
-    } catch (NotFoundException e) {
+    } catch (ResourceNotFoundException e) {
       return ResponseEntity.status(NOT_FOUND).body(new ApiResponse(e.getMessage(), null));
     }
   }

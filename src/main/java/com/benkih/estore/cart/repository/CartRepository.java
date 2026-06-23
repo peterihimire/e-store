@@ -10,4 +10,6 @@ public interface CartRepository extends JpaRepository<Cart, Long>{
   Optional<Cart> findBySlug(String slug);
 
   void deleteBySlug(String slug);
+
+  Optional<Cart> findByUserSlug(String slug); // Optional here means I can handle the exception and avoids returning null and makes API safer
 }

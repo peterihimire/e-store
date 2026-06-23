@@ -1,4 +1,4 @@
-package com.benkih.estore.cart.entity;
+package com.benkih.estore.order.entity;
 
 import com.benkih.estore.product.entity.Product;
 import jakarta.persistence.*;
@@ -8,13 +8,13 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+
 @Getter
 @Setter
 @NoArgsConstructor
-@EqualsAndHashCode(of = "id")
 @Entity
-@Table(name = "cart_items")
-public class CartItem {
+@Table(name = "order_items")
+public class OrderItem {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
@@ -23,8 +23,7 @@ public class CartItem {
   private String slug;
 
   private int quantity;
-  private BigDecimal unitPrice;
-  private BigDecimal totalPrice;
+  private BigDecimal price;
 
   private String createdBy;
   private String updatedBy;
@@ -33,22 +32,20 @@ public class CartItem {
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
 
-  // @JsonIgnore     - using CartItemResponseDto fixed the circular injection
   @ManyToOne
-  @JoinColumn(name = "cart_id")
-  private Cart cart;
+  @JoinColumn(name = "order_id")
+  private Order order;
 
   @ManyToOne
   @JoinColumn(name = "product_id")
   private Product product;
 
-  public void setTotalPrice(){
-    this.totalPrice = this.unitPrice.multiply(new BigDecimal(quantity));
+  public OrderItem(int quantity, BigDecimal price, Order order, Product product) {
+    this.quantity = quantity;
+    this.price = price;
+    this.order = order;
+    this.product = product;
   }
-
-  public int getQuantity() {
-    return quantity;
-  } // made mistake initially by having quatity, so the getQuantity() method was never defined
 
   @PrePersist
   public void onCreate() {
@@ -64,5 +61,4 @@ public class CartItem {
   public void onUpdate() {
     this.updatedAt = LocalDateTime.now();
   }
-
 }

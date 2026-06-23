@@ -4,7 +4,7 @@ package com.benkih.estore.category.controller;
 import com.benkih.estore.category.entity.Category;
 import com.benkih.estore.category.service.ICategoryService;
 import com.benkih.estore.common.exceptions.AlreadyExistsException;
-import com.benkih.estore.common.exceptions.NotFoundException;
+import com.benkih.estore.common.exceptions.ResourceNotFoundException;
 import com.benkih.estore.common.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -45,7 +45,7 @@ public class CategoryController {
     try {
       Category category = categoryService.getCategoryById(id);
       return ResponseEntity.ok(new ApiResponse("Category returned", category));
-    } catch (NotFoundException e) {
+    } catch (ResourceNotFoundException e) {
      return ResponseEntity.status(NOT_FOUND).body(new ApiResponse(e.getMessage(), null));
     }
   }
@@ -55,7 +55,7 @@ public class CategoryController {
     try {
       Category category = categoryService.getCategoryByName(name);
       return ResponseEntity.ok(new ApiResponse("Category returned", category));
-    } catch (NotFoundException e) {
+    } catch (ResourceNotFoundException e) {
       return ResponseEntity.status(NOT_FOUND).body(new ApiResponse(e.getMessage(), null));
     }
   }
@@ -65,7 +65,7 @@ public class CategoryController {
     try {
       categoryService.deleteCategoryById(slug);
       return ResponseEntity.ok(new ApiResponse("Image deleted", null));
-    } catch (NotFoundException e) {
+    } catch (ResourceNotFoundException e) {
       return ResponseEntity.status(NOT_FOUND).body(new ApiResponse(e.getMessage(), null));
     }
   }
@@ -75,7 +75,7 @@ public class CategoryController {
     try {
      Category data = categoryService.updateCategory(category, slug);
       return ResponseEntity.ok(new ApiResponse("Update success", data));
-    } catch (NotFoundException e) {
+    } catch (ResourceNotFoundException e) {
       return ResponseEntity.status(NOT_FOUND).body(new ApiResponse(e.getMessage(), null));
     }
   }

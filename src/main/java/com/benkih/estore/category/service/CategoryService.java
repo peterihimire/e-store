@@ -3,7 +3,7 @@ package com.benkih.estore.category.service;
 import com.benkih.estore.category.entity.Category;
 import com.benkih.estore.category.repository.CategoryRepository;
 import com.benkih.estore.common.exceptions.AlreadyExistsException;
-import com.benkih.estore.common.exceptions.NotFoundException;
+import com.benkih.estore.common.exceptions.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -26,7 +26,7 @@ public class CategoryService implements ICategoryService{
   @Override
   public Category getCategoryById(String slug) {
     return categoryRepository.findBySlug(slug)
-        .orElseThrow(() -> new NotFoundException("Category not found!"));
+        .orElseThrow(() -> new ResourceNotFoundException("Category not found!"));
   }
 
   @Override
@@ -44,14 +44,14 @@ public class CategoryService implements ICategoryService{
     return Optional.ofNullable(getCategoryById(slug)).map(existingCategory -> {
       existingCategory.setName(category.getName());
       return categoryRepository.save(existingCategory);
-    }).orElseThrow(() -> new NotFoundException("Category not found!"));
+    }).orElseThrow(() -> new ResourceNotFoundException("Category not found!"));
   }
 
   @Override
   public void deleteCategoryById(String slug) {
     categoryRepository.findBySlug(slug)
         .ifPresentOrElse(categoryRepository::delete, () -> {
-      throw new NotFoundException("Category not found!");
+      throw new ResourceNotFoundException("Category not found!");
     });
   }
 }

@@ -2,7 +2,7 @@ package com.benkih.estore.product.service;
 
 import com.benkih.estore.category.entity.Category;
 import com.benkih.estore.category.repository.CategoryRepository;
-import com.benkih.estore.common.exceptions.NotFoundException;
+import com.benkih.estore.common.exceptions.ResourceNotFoundException;
 import com.benkih.estore.image.dto.ImageDto;
 import com.benkih.estore.product.dto.request.AddProductRequest;
 import com.benkih.estore.product.dto.request.UpdateProductRequest;
@@ -120,7 +120,7 @@ public class ProductService implements IProductService{
   @Override
   public Product getProductBySlug(String slug) {
     Product product = productRepository.findBySlug(slug)
-        .orElseThrow(()-> new NotFoundException("Product not found!"));
+        .orElseThrow(()-> new ResourceNotFoundException("Product not found!"));
 
     return product;
   }
@@ -130,7 +130,7 @@ public class ProductService implements IProductService{
     Product updatedProduct = productRepository.findBySlug(slug)
         .map(existingProduct -> updateExistingProduct(existingProduct, request))
         .map(productRepository::save)
-        .orElseThrow(() -> new NotFoundException("Product not found!"));
+        .orElseThrow(() -> new ResourceNotFoundException("Product not found!"));
 
     return updatedProduct;
 
@@ -156,7 +156,7 @@ public class ProductService implements IProductService{
     if (request.getCategoryName() != null) {
       Category category = categoryRepository.findByName(request.getCategoryName());
       if (category == null) {
-        throw new NotFoundException("Category not found");
+        throw new ResourceNotFoundException("Category not found");
       }
       existingProduct.setCategory(category);
     }
@@ -168,7 +168,7 @@ public class ProductService implements IProductService{
   @Override
   public void deleteProductById(String slug) {
     productRepository.findBySlug(slug).ifPresentOrElse(productRepository::delete,
-        () -> {throw new NotFoundException("Product not found!");});
+        () -> {throw new ResourceNotFoundException("Product not found!");});
   }
 
   @Override

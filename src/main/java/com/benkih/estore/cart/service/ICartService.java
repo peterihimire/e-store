@@ -14,4 +14,6 @@ public interface ICartService {
   BigDecimal getTotalPrice(String slug);
 
   String initializeNewCart();
+
+  Cart getCartByUserSlug(String userSlug);
 }
