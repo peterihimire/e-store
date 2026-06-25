@@ -50,7 +50,7 @@ public class User {
       cascade = CascadeType.ALL,
       orphanRemoval = true
   )
-  private List<Order> order;
+  private List<Order> orders;
 
   @Column(nullable = false,updatable = false)
   private LocalDateTime createdAt;

@@ -25,7 +25,7 @@ public class Order {
   @Column(nullable = false, unique = true, updatable = false)
   private String slug;
 
-  private LocalDate orderDate;
+  private LocalDateTime orderDate;
 
   private BigDecimal totalAmount = BigDecimal.ZERO;
 

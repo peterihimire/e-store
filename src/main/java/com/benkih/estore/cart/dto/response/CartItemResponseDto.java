@@ -11,8 +11,8 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CartItemResponseDto { // This helps in the formation of the cart response. When the circular injection happens, instead of using @JsonIgnore on the
-  int quantity;
-  BigDecimal unitPrice;
-  BigDecimal totalPrice;
-  ProductResponseDto product;
+  private int quantity;
+  private BigDecimal unitPrice;
+  private BigDecimal totalPrice;
+  private ProductResponseDto product;
 }

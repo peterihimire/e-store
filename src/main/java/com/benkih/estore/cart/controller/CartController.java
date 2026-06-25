@@ -24,9 +24,9 @@ public class CartController {
     try {
       Cart cart = cartService.getCart(cartSlug);
       CartResponseDto cartData = cartService.getConvertedCart(cart);
-      return ResponseEntity.ok(new ApiResponse("Cart returned", cartData));
+      return ResponseEntity.ok(new ApiResponse("success","Cart returned", cartData));
     } catch (ResourceNotFoundException e) {
-      return  ResponseEntity.status(NOT_FOUND).body(new ApiResponse(e.getMessage(), null));
+      return  ResponseEntity.status(NOT_FOUND).body(new ApiResponse("fail",e.getMessage(), null));
     }
   }
 
@@ -34,9 +34,9 @@ public class CartController {
   public ResponseEntity<ApiResponse> clearCart(@PathVariable String cartSlug){
     try {
       cartService.clearCart(cartSlug);
-      return ResponseEntity.ok(new ApiResponse("Cart cleared successfully", null));
+      return ResponseEntity.ok(new ApiResponse("success","Cart cleared successfully", null));
     } catch (ResourceNotFoundException e) {
-      return  ResponseEntity.status(NOT_FOUND).body(new ApiResponse(e.getMessage(), null));
+      return  ResponseEntity.status(NOT_FOUND).body(new ApiResponse("fail",e.getMessage(), null));
     }
   }
 
@@ -44,9 +44,9 @@ public class CartController {
   public ResponseEntity<ApiResponse> getTotalAmount(@PathVariable String cartSlug){
     try {
       BigDecimal totalPrice = cartService.getTotalPrice(cartSlug);
-      return ResponseEntity.ok(new ApiResponse("Total Price Returned", totalPrice));
+      return ResponseEntity.ok(new ApiResponse("success","Total Price Returned", totalPrice));
     } catch (ResourceNotFoundException e) {
-      return  ResponseEntity.status(NOT_FOUND).body(new ApiResponse(e.getMessage(), null));
+      return  ResponseEntity.status(NOT_FOUND).body(new ApiResponse("fail",e.getMessage(), null));
     }
   }
 

@@ -36,7 +36,7 @@ public class Category {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    @JsonIgnore // using it to brake the product category loop from continuing calling itself
+    @JsonIgnore // using it to brake the product category loop from continuing calling itself, however using DTO is better
     @OneToMany(mappedBy = "category")
     private List<Product> products;
 

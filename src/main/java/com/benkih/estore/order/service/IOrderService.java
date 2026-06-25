@@ -1,6 +1,8 @@
 package com.benkih.estore.order.service;
 
+import com.benkih.estore.order.dto.response.OrderResponseDto;
 import com.benkih.estore.order.entity.Order;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -9,4 +11,8 @@ public interface IOrderService {
   Order getOrder(String orderSlug);
 
   List<Order> getUserOrders(String slug);
+  @Transactional(readOnly = true)
+  List<OrderResponseDto> getConvertedOrders(List<Order> orders);
+
+  OrderResponseDto convertToDto(Order order);
 }

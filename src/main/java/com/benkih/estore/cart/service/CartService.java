@@ -7,6 +7,8 @@ import com.benkih.estore.cart.repository.CartRepository;
 import com.benkih.estore.cart.repository.CartItemRepository;
 import com.benkih.estore.common.exceptions.ResourceNotFoundException;
 import com.benkih.estore.product.service.ProductService;
+import com.benkih.estore.user.entity.User;
+import com.benkih.estore.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +28,7 @@ public class CartService  implements ICartService{
   private final CartRepository cartRepository;
   private final CartItemRepository cartItemRepository;
   private final ProductService productService;
+  private final UserRepository userRepository;
 
   @Override
   public Cart getCart(String slug) {
@@ -83,7 +86,9 @@ public class CartService  implements ICartService{
 
   @Override
   public Cart getCartByUserSlug(String slug){
-    return cartRepository.findByUserSlug(slug)
+   User user = userRepository.findBySlug(slug)
+       .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+    return cartRepository.findByUser(user)
         .orElseThrow(() -> new ResourceNotFoundException("Cart not found"));
   }
 }

@@ -36,9 +36,9 @@ public class CartItemController {
        // System.out.println("I'm using java function here:", + cartSlug);
       }
       cartItemService.addItemToCart(cartSlug, productSlug,quantity);
-      return ResponseEntity.ok(new ApiResponse("Product added to cart",null));
+      return ResponseEntity.ok(new ApiResponse("success","Product added to cart",null));
     } catch (ResourceNotFoundException e) {
-      return ResponseEntity.status(NOT_FOUND).body(new ApiResponse(e.getMessage(), null));
+      return ResponseEntity.status(NOT_FOUND).body(new ApiResponse("fail",e.getMessage(), null));
     }
   }
 
@@ -46,9 +46,9 @@ public class CartItemController {
   public ResponseEntity<ApiResponse> removeItemFromCart(@PathVariable String cartSlug, @PathVariable String productSlug) {
     try {
       cartItemService.removeItemFromCart(cartSlug, productSlug);
-      return ResponseEntity.ok(new ApiResponse("Item removed successfully", null));
+      return ResponseEntity.ok(new ApiResponse("success","Item removed successfully", null));
     } catch (ResourceNotFoundException e) {
-      return ResponseEntity.status(NOT_FOUND).body(new ApiResponse(e.getMessage(), null));
+      return ResponseEntity.status(NOT_FOUND).body(new ApiResponse("fail",e.getMessage(), null));
     }
   }
 
@@ -56,9 +56,9 @@ public class CartItemController {
   public ResponseEntity<ApiResponse> updateItemQuantity(@PathVariable String cartSlug, @PathVariable String productSlug, @RequestParam Integer quantity){
     try {
       cartItemService.updateItemQuantity(cartSlug, productSlug, quantity);
-      return ResponseEntity.ok(new ApiResponse("Update item successfull", null));
+      return ResponseEntity.ok(new ApiResponse("success","Update item successfull", null));
     } catch (ResourceNotFoundException e) {
-      return ResponseEntity.status(NOT_FOUND).body(new ApiResponse(e.getMessage(), null));
+      return ResponseEntity.status(NOT_FOUND).body(new ApiResponse("fail",e.getMessage(), null));
     }
   }
 }
