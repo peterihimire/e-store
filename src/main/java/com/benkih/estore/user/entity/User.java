@@ -50,7 +50,8 @@ public class User {
       cascade = CascadeType.ALL,
       orphanRemoval = true
   )
-  private List<Order> orders;
+  private Set<Order> orders = new HashSet<>();
+  //  private List<Order> orders;
 
   @Column(nullable = false,updatable = false)
   private LocalDateTime createdAt;

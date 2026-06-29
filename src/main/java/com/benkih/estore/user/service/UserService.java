@@ -4,7 +4,6 @@ import com.benkih.estore.cart.dto.response.CartResponseDto;
 import com.benkih.estore.cart.service.ICartService;
 import com.benkih.estore.common.exceptions.AlreadyExistsException;
 import com.benkih.estore.common.exceptions.ResourceNotFoundException;
-import com.benkih.estore.order.dto.response.OrderItemResponseDto;
 import com.benkih.estore.order.dto.response.OrderResponseDto;
 import com.benkih.estore.order.service.IOrderService;
 import com.benkih.estore.product.service.IProductService;
@@ -15,9 +14,11 @@ import com.benkih.estore.user.entity.User;
 import com.benkih.estore.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -28,9 +29,19 @@ public class UserService implements IUserService {
   private final IOrderService orderService;
 
   @Override
+  @Transactional(readOnly = true)
   public User getUserBySlug(String slug) {
     return userRepository.findBySlug(slug)
         .orElseThrow(()-> new ResourceNotFoundException("User not found"));
+  }
+
+  @Transactional(readOnly = true)
+  @Override
+  public UserResponseDto getUserDtoBySlug(String slug) {
+    User user = userRepository.findBySlug(slug)
+        .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+    return convertToDto(user);
   }
 
   @Override
@@ -66,14 +77,19 @@ public class UserService implements IUserService {
   @Override
   public UserResponseDto convertToDto(User user){
     List<OrderResponseDto> orderDtos = Optional.ofNullable(user.getOrders())
-        .orElse(List.of())
+        .orElse(Set.of())
         .stream()
-        .map(orderService::convertToDto)
+        .map(order -> orderService.convertToDto(order))// Lambda form
+    //        .map(orderService::convertToDto)
         .toList();
-    
-    CartResponseDto cartDto = Optional.ofNullable(user.getCart())
-        .map(cartService::getConvertedCart)
-        .orElse(null);
+
+    //    CartResponseDto cartDto = Optional.ofNullable(user.getCart())
+    //        .map(cartService::getConvertedCart)
+    //        .orElse(null);
+    CartResponseDto cartDto = null;
+    if (user.getCart() != null) {
+      cartDto = cartService.getConvertedCart(user.getCart());
+    }
 
     return new UserResponseDto(
         user.getSlug(),

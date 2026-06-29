@@ -6,10 +6,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
-
+import java.util.*;
 
 
 @Getter
@@ -32,7 +29,8 @@ public class Cart {
       cascade = CascadeType.ALL,
       orphanRemoval = true
   )
-  private Set<CartItem> items = new HashSet<>();
+  private List<CartItem> items = new ArrayList<>();
+  //  private Set<CartItem> items = new HashSet<>();
 
   @OneToOne
   @JoinColumn(name = "user_id")

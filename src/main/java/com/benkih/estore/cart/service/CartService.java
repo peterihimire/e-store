@@ -6,10 +6,13 @@ import com.benkih.estore.cart.entity.Cart;
 import com.benkih.estore.cart.repository.CartRepository;
 import com.benkih.estore.cart.repository.CartItemRepository;
 import com.benkih.estore.common.exceptions.ResourceNotFoundException;
+import com.benkih.estore.product.entity.Product;
+import com.benkih.estore.product.service.IProductService;
 import com.benkih.estore.product.service.ProductService;
 import com.benkih.estore.user.entity.User;
 import com.benkih.estore.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,16 +21,17 @@ import java.math.BigDecimal;
 import static java.util.Arrays.stream;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 //String cartSlug = UUID.randomUUID().toString();
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CartService  implements ICartService{
   private final CartRepository cartRepository;
   private final CartItemRepository cartItemRepository;
-  private final ProductService productService;
+  private final IProductService productService;
   private final UserRepository userRepository;
 
   @Override
@@ -40,16 +44,34 @@ public class CartService  implements ICartService{
     return cartRepository.save(cart);
   }
 
+  @Transactional(readOnly = true)
   @Override
   public CartResponseDto getConvertedCart(Cart cart){
+    cart.getItems().forEach(item -> {
+      System.out.println(item.getProduct().getClass());
+    });
     List<CartItemResponseDto> items = cart.getItems()
         .stream()
-        .map(item -> new CartItemResponseDto(
-            item.getQuantity(),
-            item.getUnitPrice(),
-            item.getTotalPrice(),
-            productService.convertToDto(item.getProduct())
-        )).toList();
+        .map(item -> {
+          Product product = productService.getProductBySlug(
+              item.getProduct().getSlug()
+          );
+          return new CartItemResponseDto(
+              item.getQuantity(),
+              item.getUnitPrice(),
+              item.getTotalPrice(),
+              productService.convertToDto(product)
+          );
+        })
+        .toList();
+    //    List<CartItemResponseDto> items = cart.getItems()
+    //        .stream()
+    //        .map(item -> new CartItemResponseDto(
+    //            item.getQuantity(),
+    //            item.getUnitPrice(),
+    //            item.getTotalPrice(),
+    //            productService.convertToDto(item.getProduct())
+    //        )).toList();
     return new CartResponseDto(
         cart.getSlug(),
         cart.getTotalAmount(),
@@ -60,10 +82,19 @@ public class CartService  implements ICartService{
   @Transactional
   @Override
   public void clearCart(String slug) {
+    //    Cart cart = getCart(slug);
+    //    cartRepository.delete(cart);
     Cart cart = getCart(slug);
-    cartItemRepository.deleteAllByCartSlug(slug);
-    cart.getItems().clear();
-    cartRepository.deleteBySlug(slug);
+    User user = cart.getUser();
+    if (user != null) {
+      user.setCart(null);   // break inverse side
+    }
+    cart.setUser(null);       // break owning side
+    cartRepository.delete(cart);
+    //    Cart cart = getCart(slug);
+    //    cartItemRepository.deleteAllByCartSlug(slug);
+    //    cart.getItems().clear();
+    //        cartRepository.deleteBySlug(slug);
   }
 
   @Override
@@ -77,18 +108,28 @@ public class CartService  implements ICartService{
   }
 
   @Override
-  public String initializeNewCart(){
-    Cart newCart = new Cart();
-    String newCartSlug = UUID.randomUUID().toString();
-    newCart.setSlug(newCartSlug);
-    return cartRepository.save(newCart).getSlug();
+  public Cart initializeNewCart(User user){
+    log.info("User data here in the user={}", user);
+    return Optional.ofNullable(getCartByUserSlug(user.getSlug()))
+      .orElseGet(() -> {
+        Cart cart = new Cart();
+        cart.setUser(user);
+        return cartRepository.save(cart);
+      });
   }
+
+  //  @Override
+  //  public String initializeNewCart(){
+  //    Cart newCart = new Cart();
+  //    String newCartSlug = UUID.randomUUID().toString();
+  //    newCart.setSlug(newCartSlug);
+  //    return cartRepository.save(newCart).getSlug();
+  //  }
 
   @Override
   public Cart getCartByUserSlug(String slug){
    User user = userRepository.findBySlug(slug)
        .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-    return cartRepository.findByUser(user)
-        .orElseThrow(() -> new ResourceNotFoundException("Cart not found"));
+    return cartRepository.findByUser(user);
   }
 }

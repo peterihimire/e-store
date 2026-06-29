@@ -1,9 +1,12 @@
 package com.benkih.estore.cart.controller;
 
+import com.benkih.estore.cart.entity.Cart;
 import com.benkih.estore.cart.service.ICartItemService;
 import com.benkih.estore.cart.service.ICartService;
 import com.benkih.estore.common.exceptions.ResourceNotFoundException;
 import com.benkih.estore.common.response.ApiResponse;
+import com.benkih.estore.user.entity.User;
+import com.benkih.estore.user.service.IUserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -18,24 +21,17 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 public class CartItemController {
   private final ICartItemService cartItemService;
   private final ICartService cartService;
+  private final IUserService userService;
 
   @PostMapping("/item/add")
-  public ResponseEntity<ApiResponse> addItemToCart(
-      @RequestParam(required = false) String cartSlug,
-      @RequestParam String productSlug,
-      @RequestParam Integer quantity){
-    log.info("Entered addItemToCart endpoint");
-    log.info("cartSlug={}, productSlug={}, quantity={}",
-        cartSlug,
-        productSlug,
-        quantity);
+    public ResponseEntity<ApiResponse> addItemToCart(@RequestParam String productSlug, @RequestParam Integer quantity){
+  //    log.info("Entered addItemToCart endpoint");
+  //    log.info("cartSlug={}, productSlug={}, quantity={}", productSlug, quantity);
     try {
-      if(cartSlug == null || cartSlug.isBlank()){
-       cartSlug = cartService.initializeNewCart();
-       log.info("Generated cart slug: {}", cartSlug);
-       // System.out.println("I'm using java function here:", + cartSlug);
-      }
-      cartItemService.addItemToCart(cartSlug, productSlug,quantity);
+      User user = userService.getUserBySlug("b531e781-fe79-42ac-815c-d2b2c652b158");
+      log.info("Lets see info user email={}", user.getEmail());
+      Cart cart = cartService.initializeNewCart(user);
+      cartItemService.addItemToCart(cart.getSlug(), productSlug, quantity);
       return ResponseEntity.ok(new ApiResponse("success","Product added to cart",null));
     } catch (ResourceNotFoundException e) {
       return ResponseEntity.status(NOT_FOUND).body(new ApiResponse("fail",e.getMessage(), null));

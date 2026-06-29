@@ -11,6 +11,7 @@ import com.benkih.estore.product.entity.Product;
 import com.benkih.estore.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 //import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -58,7 +59,7 @@ public class ProductService implements IProductService{
     return products.stream().map(this::convertToDto).toList();
   }
 
-//  @Transactional(readOnly = true)
+  @Transactional(readOnly = true)
   @Override
   public ProductResponseDto convertToDto(Product product) {
 

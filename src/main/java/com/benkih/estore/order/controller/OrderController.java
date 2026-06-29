@@ -18,23 +18,31 @@ import java.util.List;
 public class OrderController {
   private final IOrderService orderService;
 
-  @PostMapping("/order")
-  public ResponseEntity<ApiResponse> createOrder(@RequestParam String slug){
-      Order order = orderService.placeOrder(slug); // if error, this will throw error, now global error handler will process it
+  @PostMapping("/order/user/{userSlug}")
+  public ResponseEntity<ApiResponse> createOrder(@PathVariable String userSlug){
+      OrderResponseDto order = orderService.placeOrder(userSlug); // if error, this will throw error, now global error handler will process it
       log.info("Here is the order data:{}", order);
+  //      OrderResponseDto dto = orderService.convertToDto(order);
       return ResponseEntity.ok(new ApiResponse("success","Order created success", order));
   }
 
-  @GetMapping("/order/{slug}")
-  public ResponseEntity<ApiResponse> getOrderBySlug(@PathVariable String slug){
-    Order order = orderService.getOrder(slug);
-    OrderResponseDto orderData = orderService.convertToDto(order);
-    return ResponseEntity.ok(new ApiResponse("success","Order returned success", orderData));
+  @GetMapping("/order/{orderSlug}")
+  public ResponseEntity<ApiResponse> getOrderBySlug(@PathVariable String orderSlug){
+    OrderResponseDto order = orderService.getOrderDtoBySlug(orderSlug);
+  //    OrderResponseDto orderData = orderService.convertToDto(order);
+    return ResponseEntity.ok(new ApiResponse("success","Order returned success", order));
   }
 
-  @GetMapping("/order/user/{slug}")
-  public ResponseEntity<ApiResponse> getUserOrders(@PathVariable String slug){
-    List<Order> orders = orderService.getUserOrders(slug);
+  //  @GetMapping("/order/{orderSlug}")
+  //  public ResponseEntity<ApiResponse> getOrderBySlug(@PathVariable String orderSlug){
+  //    Order order = orderService.getOrder(orderSlug);
+  //    OrderResponseDto orderData = orderService.convertToDto(order);
+  //    return ResponseEntity.ok(new ApiResponse("success","Order returned success", orderData));
+  //  }
+
+  @GetMapping("/order/user/{userSlug}")
+  public ResponseEntity<ApiResponse> getUserOrders(@PathVariable String userSlug){
+    List<Order> orders = orderService.getUserOrders(userSlug);
     List<OrderResponseDto> orderData = orderService.getConvertedOrders(orders);
     return ResponseEntity.ok(new ApiResponse("success","User orders returned success", orderData));
   }

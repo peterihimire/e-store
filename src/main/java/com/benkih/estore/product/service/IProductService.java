@@ -3,6 +3,7 @@ import com.benkih.estore.product.dto.request.AddProductRequest;
 import com.benkih.estore.product.dto.request.UpdateProductRequest;
 import com.benkih.estore.product.dto.response.ProductResponseDto;
 import com.benkih.estore.product.entity.Product;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -23,6 +24,7 @@ public interface IProductService {
   List<Product> getProductsByName(String name);
   List<Product> getProductsByBrandAndName(String brand, String name);
   //  Product getProductById(Long id);
+  @EntityGraph(attributePaths = "images")
   Product getProductBySlug(String slug);
   Product updateProduct(UpdateProductRequest product, String slug);
   void deleteProductById(String slug);

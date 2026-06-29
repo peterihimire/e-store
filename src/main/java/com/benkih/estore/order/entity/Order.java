@@ -8,9 +8,7 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Getter
 @Setter
@@ -44,7 +42,8 @@ public class Order {
       cascade = CascadeType.ALL,
       orphanRemoval = true
   )
-  private Set<OrderItem> items = new HashSet<>();
+  private List<OrderItem> items = new ArrayList<>();
+  //  private Set<OrderItem> items = new HashSet<>();
 
   @ManyToOne
   @JoinColumn(name = "user_id")
@@ -65,7 +64,7 @@ public class Order {
     this.updatedAt = LocalDateTime.now();
   }
 
-  public void setOrderItems(HashSet<OrderItem> orderItems) {
-  }
+//  public void setOrderItems(HashSet<OrderItem> orderItems) {
+//  }
 
 }

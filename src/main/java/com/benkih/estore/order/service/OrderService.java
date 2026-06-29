@@ -14,6 +14,7 @@ import com.benkih.estore.product.repository.ProductRepository;
 import com.benkih.estore.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -29,17 +30,32 @@ public class OrderService implements IOrderService{
   private final ProductService productService;
 
   @Override
-  public Order placeOrder(String userSlug) {
+  @Transactional
+  public OrderResponseDto placeOrder(String userSlug) {
     Cart cart = cartService.getCartByUserSlug(userSlug);
     Order order = createOrder(cart);
-    List<OrderItem> orderItemList = createOrderItems(order, cart);
-    order.setOrderItems(new HashSet<>(orderItemList));
-    order.setTotalAmount(calculateTotalAmount(orderItemList));
-    Order savedOrder = orderRepository.save(order);
+    List<OrderItem> items = createOrderItems(order, cart);
+    order.setItems(items);
+    order.setTotalAmount(calculateTotalAmount(items));
+    Order saved = orderRepository.save(order);
     cartService.clearCart(cart.getSlug());
+    Order fetched = orderRepository.findBySlug(saved.getSlug())
+        .orElseThrow();
 
-    return savedOrder;
+    return convertToDto(fetched);
   }
+  //  public Order placeOrder(String userSlug) {
+  //    Cart cart = cartService.getCartByUserSlug(userSlug);
+  //    Order order = createOrder(cart);
+  //    List<OrderItem> orderItemList = createOrderItems(order, cart);
+  ////    order.setOrderItems(new HashSet<>(orderItemList));
+  //    order.setItems(orderItemList);
+  //    order.setTotalAmount(calculateTotalAmount(orderItemList));
+  //    Order savedOrder = orderRepository.save(order);
+  //    cartService.clearCart(cart.getSlug());
+  //
+  //    return savedOrder;
+  //  }
 
   private Order createOrder(Cart cart){
     Order order = new Order();
@@ -70,11 +86,20 @@ public class OrderService implements IOrderService{
         .reduce(BigDecimal.ZERO, BigDecimal::add);
   }
 
+  @Transactional
   @Override
   public Order getOrder(String slug) {
    Order order = orderRepository.findBySlug(slug)
        .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
    return order;
+  }
+
+  @Transactional
+  @Override
+  public OrderResponseDto getOrderDtoBySlug(String slug) {
+    Order order = orderRepository.findBySlug(slug)
+        .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+    return convertToDto(order);
   }
 
   @Override
@@ -83,11 +108,13 @@ public class OrderService implements IOrderService{
   }
 
 
+  @Transactional(readOnly = true)
   @Override
   public List<OrderResponseDto> getConvertedOrders(List<Order> orders) {
     return orders.stream().map(this::convertToDto).toList();
   }
 
+  @Transactional(readOnly = true)
   @Override
   public OrderResponseDto convertToDto(Order order){
     List<OrderItemResponseDto> items = order.getItems()
