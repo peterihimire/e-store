@@ -1,44 +1,175 @@
 package com.benkih.estore.common.config;
 
+import com.benkih.estore.role.entity.Role;
+import com.benkih.estore.role.repository.RoleRepository;
 import com.benkih.estore.user.entity.User;
 import com.benkih.estore.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 //import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
+
 
 @Component
 @RequiredArgsConstructor
+@Transactional
 public class DataSeeder implements CommandLineRunner {
 
   private final UserRepository userRepository;
-//  private final PasswordEncoder passwordEncoder;
+  private final RoleRepository roleRepository;
+  private final PasswordEncoder passwordEncoder;
+  private static final Logger log = LoggerFactory.getLogger(DataSeeder.class);
 
   @Override
   public void run(String... args) {
+    try {
+      log.info("Starting data seeding...");
 
-    if (userRepository.count() > 0) {
-      return;
+//      // ✅ Always create roles if they don't exist
+//      createDefaultRoles();
+
+      // ✅ Only create users if none exist
+      if (userRepository.count() == 0) {
+        createUsers();
+        log.info("✅ Data seeding completed successfully!");
+      } else {
+        log.info("Users already exist. Skipping user creation.");
+      }
+
+    } catch (Exception e) {
+      log.error("❌ Error during data seeding: {}", e.getMessage(), e);
     }
-
-    createUser("Peter", "Ihimire", "peter@example.com");
-    createUser("John", "Doe", "john@example.com");
-    createUser("Jane", "Doe", "jane@example.com");
-    createUser("Michael", "Smith", "michael@example.com");
-    createUser("Sarah", "Jones", "sarah@example.com");
   }
 
-  private void createUser(String firstName,
-                          String lastName,
-                          String email) {
+  private void createDefaultRoles() {
+    Set<String> defaultRoles = Set.of("ROLE_ADMIN", "ROLE_CUSTOMER", "ROLE_MANAGER");
 
-    User user = new User();
-    user.setFirstName(firstName);
-    user.setLastName(lastName);
-    user.setEmail(email);
-    user.setPassword("password123");
-//    user.setPassword(passwordEncoder.encode("password123"));
+    defaultRoles.forEach(roleName -> {
+      if (roleRepository.findByName(roleName).isEmpty()) {
+        Role role = new Role();
+        role.setName(roleName);
+        role.setCreatedAt(LocalDateTime.now());
+        role.setUpdatedAt(LocalDateTime.now());
+        roleRepository.save(role);
+        log.info("✅ Created role: {}", roleName);
+      }
+    });
+  }
 
-    userRepository.save(user);
+  private void createUsers() {
+    // Admin user
+    createUser(
+        "Peter",
+        "Ihimire",
+        "peter@example.com",
+        Set.of("ROLE_ADMIN", "ROLE_CUSTOMER", "ROLE_MANAGER")
+    );
+
+    // Customer users
+    createUser("John", "Doe", "john@example.com", Set.of("ROLE_CUSTOMER"));
+    createUser("Jane", "Doe", "jane@example.com", Set.of("ROLE_CUSTOMER"));
+    createUser("Michael", "Smith", "michael@example.com", Set.of("ROLE_MANAGER"));
+    createUser("Sarah", "Jones", "sarah@example.com", Set.of("ROLE_CUSTOMER"));
+    createUser("Robert", "Wilson", "robert@example.com", Set.of("ROLE_CUSTOMER"));
+    createUser("Emily", "Brown", "emily@example.com", Set.of("ROLE_CUSTOMER"));
+  }
+
+  private void createUser(String firstName, String lastName, String email, Set<String> roleNames) {
+    try {
+      // Check if user already exists
+      if (userRepository.findByEmail(email).isPresent()) {
+        log.warn("User with email {} already exists. Skipping.", email);
+        return;
+      }
+
+      // Create user
+      User user = new User();
+      user.setFirstName(firstName);
+      user.setLastName(lastName);
+      user.setEmail(email);
+      user.setPassword(passwordEncoder.encode("password123"));
+      user.setCreatedAt(LocalDateTime.now());
+      user.setUpdatedAt(LocalDateTime.now());
+
+      // Assign roles
+      Set<Role> roles = new HashSet<>();
+      roleNames.forEach(roleName -> {
+        Role role = roleRepository.findByName(roleName)
+            .orElseThrow(() -> new RuntimeException("Role not found: " + roleName));
+        roles.add(role);
+      });
+      user.setRoles(roles);
+
+      userRepository.save(user);
+      log.info("✅ Created user: {} {} (email: {}) with roles: {}",
+          firstName, lastName, email, roleNames);
+
+    } catch (Exception e) {
+      log.error("❌ Failed to create user {}: {}", email, e.getMessage());
+    }
   }
 }
+//@Component
+//@RequiredArgsConstructor
+//public class DataSeeder implements CommandLineRunner {
+//
+//  private final UserRepository userRepository;
+//  private final RoleRepository roleRepository;
+//  private final PasswordEncoder passwordEncoder;
+//
+//  @Override
+//  public void run(String... args) {
+//
+//    if (userRepository.count() > 0) {
+//      return;
+//    }
+//
+//    // Create default roles
+//    createDefaultRoles();
+//
+//    // Create users with roles
+//    createUser("Peter", "Ihimire", "peter@example.com", Set.of("ROLE_ADMIN", "ROLE_CUSTOMER"));
+//    createUser("John", "Doe", "john@example.com", Set.of("ROLE_CUSTOMER"));
+//    createUser("Jane", "Doe", "jane@example.com", Set.of("ROLE_CUSTOMER"));
+//    createUser("Michael", "Smith", "michael@example.com", Set.of("ROLE_CUSTOMER"));
+//    createUser("Sarah", "Jones", "sarah@example.com", Set.of("ROLE_CUSTOMER"));
+//  }
+//
+//  private void createDefaultRoles(){
+//    Set<String> defaultRoles = Set.of("ROLE_ADMIN", "ROLE_CUSTOMER");
+//
+//    defaultRoles.forEach(roleName -> {
+//      if (roleRepository.findByName(roleName).isEmpty()) {
+//        Role role = new Role();
+//        role.setName(roleName);
+//        roleRepository.save(role);
+//        System.out.println("✅ Created role: " + roleName);
+//      }
+//    });
+//  }
+//
+//  private void createUser(String firstName,
+//                          String lastName,
+//                          String email,
+//                          Set<String> roleNames) {
+//
+//    User user = new User();
+//    user.setFirstName(firstName);
+//    user.setLastName(lastName);
+//    user.setEmail(email);
+//    user.setPassword(passwordEncoder.encode("password123"));
+//    // user.setPassword("password123");
+//
+//    userRepository.save(user);
+//    System.out.println("✅ Created user: " + email + " with roles: " + roleNames);
+//  }
+//}

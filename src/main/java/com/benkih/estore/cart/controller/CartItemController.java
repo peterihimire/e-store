@@ -7,12 +7,16 @@ import com.benkih.estore.common.exceptions.ResourceNotFoundException;
 import com.benkih.estore.common.response.ApiResponse;
 import com.benkih.estore.user.entity.User;
 import com.benkih.estore.user.service.IUserService;
+import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.jar.JarException;
+
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -28,13 +32,16 @@ public class CartItemController {
   //    log.info("Entered addItemToCart endpoint");
   //    log.info("cartSlug={}, productSlug={}, quantity={}", productSlug, quantity);
     try {
-      User user = userService.getUserBySlug("b531e781-fe79-42ac-815c-d2b2c652b158");
+      User user = userService.getAuthenticatedUser();
       log.info("Lets see info user email={}", user.getEmail());
       Cart cart = cartService.initializeNewCart(user);
+
       cartItemService.addItemToCart(cart.getSlug(), productSlug, quantity);
       return ResponseEntity.ok(new ApiResponse("success","Product added to cart",null));
     } catch (ResourceNotFoundException e) {
       return ResponseEntity.status(NOT_FOUND).body(new ApiResponse("fail",e.getMessage(), null));
+    } catch(JwtException e){
+      return ResponseEntity.status(UNAUTHORIZED).body(new ApiResponse("fail",e.getMessage(), null));
     }
   }
 

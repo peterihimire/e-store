@@ -2,6 +2,7 @@ package com.benkih.estore.product.service;
 
 import com.benkih.estore.category.entity.Category;
 import com.benkih.estore.category.repository.CategoryRepository;
+import com.benkih.estore.common.exceptions.AlreadyExistsException;
 import com.benkih.estore.common.exceptions.ResourceNotFoundException;
 import com.benkih.estore.image.dto.ImageDto;
 import com.benkih.estore.product.dto.request.AddProductRequest;
@@ -26,6 +27,10 @@ public class ProductService implements IProductService{
   @Override
   public Product addProduct(AddProductRequest request) {
 
+    if(productExists(request.getName(), request.getBrand())){
+      throw new AlreadyExistsException(request.getBrand() + " " + request.getName() + " already exists, you may update this product instead." );
+    }
+
     Category category = Optional.ofNullable(categoryRepository.findByName(request.getCategory()))
         .orElseGet(() -> {
             Category newCategory = new Category(request.getCategory());// Remember this place had issues
@@ -33,6 +38,10 @@ public class ProductService implements IProductService{
     });
 //    request.setCategory(category);
     return productRepository.save(createProduct(request, category));
+  }
+
+  private boolean productExists(String name, String brand ){
+    return productRepository.existsByNameAndBrand(name, brand);
   }
 
   private Product createProduct(AddProductRequest request, Category category){

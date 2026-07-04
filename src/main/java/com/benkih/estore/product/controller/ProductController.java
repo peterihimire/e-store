@@ -1,6 +1,7 @@
 package com.benkih.estore.product.controller;
 
 
+import com.benkih.estore.common.exceptions.AlreadyExistsException;
 import com.benkih.estore.common.exceptions.ResourceNotFoundException;
 import com.benkih.estore.common.response.ApiResponse;
 import com.benkih.estore.product.dto.request.AddProductRequest;
@@ -14,8 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.*;
 
 @RestController
 @RequestMapping("${api.prefix}/products")
@@ -126,14 +126,10 @@ public class ProductController {
   }
 
   @PostMapping("/addProduct")
-  public ResponseEntity<ApiResponse> addProduct(@RequestBody AddProductRequest product){
-    try {
+  public ResponseEntity<ApiResponse> addProduct(@RequestBody AddProductRequest product){ // uses general exception to throw error
       Product productData = productService.addProduct(product);
       ProductResponseDto productDto = productService.convertToDto(productData);
       return ResponseEntity.ok(new ApiResponse("success","Product added", productDto));
-    } catch (Exception e) {
-      return ResponseEntity.status(INTERNAL_SERVER_ERROR).body(new ApiResponse("fail",e.getMessage(), null));
-    }
   }
 
   @PutMapping("/{productId}/update")

@@ -1,21 +1,22 @@
-package com.benkih.estore.order.entity;
+package com.benkih.estore.role.entity;
 
-import com.benkih.estore.common.enums.OrderStatus;
+import com.benkih.estore.category.entity.Category;
 import com.benkih.estore.user.entity.User;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
 @Getter
 @Setter
-@NoArgsConstructor
+@NoArgsConstructor // use this when you create your own arg constructor manually
 @Entity
-@Table(name = "orders")
-public class Order {
+@Table(name = "roles")
+public class Role {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
@@ -23,12 +24,8 @@ public class Order {
   @Column(nullable = false, unique = true, updatable = false)
   private String slug;
 
-  private LocalDateTime orderDate;
-
-  private BigDecimal totalAmount = BigDecimal.ZERO;
-
-  @Enumerated(EnumType.STRING)
-  private OrderStatus orderStatus;
+  @Column(nullable = false, unique = true)
+  private String name;
 
   private String createdBy;
   private String updatedBy;
@@ -37,20 +34,16 @@ public class Order {
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
 
-  @OneToMany(
-      mappedBy = "order",
-      cascade = CascadeType.ALL,
-      orphanRemoval = true
-  )
-  private List<OrderItem> orderItems = new ArrayList<>();
-  //  private Set<OrderItem> items = new HashSet<>();
+  @ManyToMany(mappedBy = "roles")
+  private Collection<User> users = new HashSet<>(); //using collection here allows the user to switch between Set and ArrayList
 
-  @ManyToOne
-  @JoinColumn(name = "user_id")
-  private User user;
+  public Role(String name) { //manual arg constructor
+    this.name = name;
+  }
 
   @PrePersist
   public void onCreate() {
+
     if (this.slug == null) {
       this.slug = UUID.randomUUID().toString();
     }
@@ -63,8 +56,4 @@ public class Order {
   public void onUpdate() {
     this.updatedAt = LocalDateTime.now();
   }
-
-//  public void setOrderItems(HashSet<OrderItem> orderItems) {
-//  }
-
 }

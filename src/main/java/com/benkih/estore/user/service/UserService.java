@@ -13,6 +13,10 @@ import com.benkih.estore.user.dto.response.UserResponseDto;
 import com.benkih.estore.user.entity.User;
 import com.benkih.estore.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +24,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService implements IUserService {
@@ -27,6 +32,7 @@ public class UserService implements IUserService {
   private final IProductService productService;
   private final ICartService cartService;
   private final IOrderService orderService;
+  private final PasswordEncoder passwordEncoder;
 
   @Override
   @Transactional(readOnly = true)
@@ -40,7 +46,7 @@ public class UserService implements IUserService {
   public UserResponseDto getUserDtoBySlug(String slug) {
     User user = userRepository.findBySlug(slug)
         .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-
+//    log.info("User first reaching data={}", user.getCart().getItems());
     return convertToDto(user);
   }
 
@@ -51,7 +57,7 @@ public class UserService implements IUserService {
         .map(req -> {
           User user = new User();
           user.setEmail(request.getEmail());
-          user.setPassword(request.getPassword());
+          user.setPassword(passwordEncoder.encode(request.getPassword()));
           user.setFirstName(request.getFirstName());
           user.setLastName(request.getLastName());
           return userRepository.save(user);
@@ -76,6 +82,7 @@ public class UserService implements IUserService {
 
   @Override
   public UserResponseDto convertToDto(User user){
+    //    log.info("User cart data here={}", user.getCart().getItems());
     List<OrderResponseDto> orderDtos = Optional.ofNullable(user.getOrders())
         .orElse(Set.of())
         .stream()
@@ -87,10 +94,11 @@ public class UserService implements IUserService {
     //        .map(cartService::getConvertedCart)
     //        .orElse(null);
     CartResponseDto cartDto = null;
+
     if (user.getCart() != null) {
       cartDto = cartService.getConvertedCart(user.getCart());
     }
-
+    log.info("User cart dto data={}", cartDto);
     return new UserResponseDto(
         user.getSlug(),
         user.getFirstName(),
@@ -99,5 +107,12 @@ public class UserService implements IUserService {
         orderDtos,
         cartDto
     );
+  }
+
+  @Override
+  public User getAuthenticatedUser() {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    String email = authentication.getName();
+    return userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found."));
   }
 }

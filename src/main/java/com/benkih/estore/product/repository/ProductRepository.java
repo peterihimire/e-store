@@ -29,6 +29,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
   Long countByBrandAndName(String brand, String name);
 
-  @EntityGraph(attributePaths = {"images", "category"})
-  List<Product> findAll();
+//  @EntityGraph(attributePaths = {"images", "category"})
+//  List<Product> findAll();
+
+  boolean existsByNameAndBrand(String name, String brand);
 }

@@ -34,50 +34,83 @@ public class CartService  implements ICartService{
   private final IProductService productService;
   private final UserRepository userRepository;
 
+
   @Override
   public Cart getCart(String slug) {
-    Cart cart = cartRepository.findBySlug(slug)
+    return cartRepository.findBySlug(slug)
         .orElseThrow(()-> new ResourceNotFoundException("Cart not found"));
-    BigDecimal totalAmount = cart.getTotalAmount();
-    cart.setTotalAmount(totalAmount);
 
-    return cartRepository.save(cart);
   }
+  //    @Override
+  //    public Cart getCart(String slug) {
+  //      Cart cart = cartRepository.findBySlug(slug)
+  //          .orElseThrow(()-> new ResourceNotFoundException("Cart not found"));
+  //      BigDecimal totalAmount = cart.getTotalAmount();
+  //      cart.setTotalAmount(totalAmount);
+  //
+  //      return cartRepository.save(cart);
+  //    }
 
   @Transactional(readOnly = true)
   @Override
   public CartResponseDto getConvertedCart(Cart cart){
-    cart.getItems().forEach(item -> {
-      System.out.println(item.getProduct().getClass());
-    });
     List<CartItemResponseDto> items = cart.getItems()
         .stream()
         .map(item -> {
-          Product product = productService.getProductBySlug(
-              item.getProduct().getSlug()
-          );
+          Product product = item.getProduct();
+          // Fetch product with images in a new query
+          Product productWithImages = productService.getProductBySlug(product.getSlug());
+
           return new CartItemResponseDto(
               item.getQuantity(),
               item.getUnitPrice(),
               item.getTotalPrice(),
-              productService.convertToDto(product)
+              productService.convertToDto(productWithImages) // This will have images
           );
         })
         .toList();
-    //    List<CartItemResponseDto> items = cart.getItems()
-    //        .stream()
-    //        .map(item -> new CartItemResponseDto(
-    //            item.getQuantity(),
-    //            item.getUnitPrice(),
-    //            item.getTotalPrice(),
-    //            productService.convertToDto(item.getProduct())
-    //        )).toList();
+
     return new CartResponseDto(
         cart.getSlug(),
         cart.getTotalAmount(),
-       items
+        items
     );
   }
+
+//  @Transactional(readOnly = true)
+//  @Override
+//  public CartResponseDto getConvertedCart(Cart cart){
+//    cart.getItems().forEach(item -> {
+//      System.out.println(item.getProduct().getClass());
+//    });
+//    List<CartItemResponseDto> items = cart.getItems()
+//        .stream()
+//        .map(item -> {
+//          Product product = productService.getProductBySlug(
+//              item.getProduct().getSlug()
+//          );
+//          return new CartItemResponseDto(
+//              item.getQuantity(),
+//              item.getUnitPrice(),
+//              item.getTotalPrice(),
+//              productService.convertToDto(product)
+//          );
+//        })
+//        .toList();
+//    //    List<CartItemResponseDto> items = cart.getItems()
+//    //        .stream()
+//    //        .map(item -> new CartItemResponseDto(
+//    //            item.getQuantity(),
+//    //            item.getUnitPrice(),
+//    //            item.getTotalPrice(),
+//    //            productService.convertToDto(item.getProduct())
+//    //        )).toList();
+//    return new CartResponseDto(
+//        cart.getSlug(),
+//        cart.getTotalAmount(),
+//       items
+//    );
+//  }
 
   @Transactional
   @Override

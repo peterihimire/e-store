@@ -11,19 +11,19 @@ import java.util.Optional;
 public interface OrderRepository extends JpaRepository<Order, Long> {
   @EntityGraph(attributePaths = {
       "user",
-      "items",
-      "items.product",
+      "orderItems",
+      "orderItems.product",
 //      "items.product.images",
-      "items.product.category"
+      "orderItems.product.category"
   })
   Optional<Order> findBySlug(String slug);
 
   @EntityGraph(attributePaths = {
       "user",
-      "items",
-      "items.product",
+      "orderItems",
+      "orderItems.product",
 //      "items.product.images",
-      "items.product.category"
+      "orderItems.product.category"
   })
   List<Order> findByUserSlug(String slug);
 }

@@ -42,6 +42,14 @@ public class Cart {
     updateTotalAmount();
   }
 
+  //  public void addItem(CartItem item) {
+  //    if (!items.contains(item)) {
+  //      items.add(item);
+  //    }
+  //    item.setCart(this);
+  //    updateTotalAmount();
+  //  }
+
   public void removeItem(CartItem item){
     this.items.remove(item);
     item.setCart(null);

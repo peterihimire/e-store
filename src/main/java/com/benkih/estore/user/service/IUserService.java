@@ -18,4 +18,6 @@ public interface IUserService {
   void deleteUser(String slug);
 
   UserResponseDto convertToDto(User user);
+
+  User getAuthenticatedUser();
 }

@@ -34,10 +34,13 @@ public class CartItemService implements ICartItemService {
       cartItem.setProduct(product);
       cartItem.setQuantity(quantity);
       cartItem.setUnitPrice(product.getPrice());
+
+//      cart.addItem(cartItem);
     } else {
       cartItem.setQuantity(cartItem.getQuantity() + quantity);
     }
     cartItem.setTotalPrice();
+//    cart.updateTotalAmount(); // added after removing the add-item
     cart.addItem(cartItem);
     cartItemRepository.save(cartItem);
     cartRepository.save(cart);

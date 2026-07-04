@@ -33,15 +33,28 @@ public class OrderService implements IOrderService{
   @Transactional
   public OrderResponseDto placeOrder(String userSlug) {
     Cart cart = cartService.getCartByUserSlug(userSlug);
+    System.out.println("Cart object = " + System.identityHashCode(cart));
+
+    cart.getItems().forEach(item ->
+        System.out.println(
+            "CartItem id=" + item.getId()
+                + " hash=" + System.identityHashCode(item)
+                + " product=" + item.getProduct().getName()
+        )
+    );
     Order order = createOrder(cart);
+    System.out.println("Cart size = " + cart.getItems().size());
     List<OrderItem> items = createOrderItems(order, cart);
-    order.setItems(items);
+    System.out.println("Created = " + items.size());
+    order.setOrderItems(items);
+    System.out.println("Order before save = " + order.getOrderItems().size());
     order.setTotalAmount(calculateTotalAmount(items));
     Order saved = orderRepository.save(order);
+    System.out.println("Saved order = " + saved.getOrderItems().size());
     cartService.clearCart(cart.getSlug());
     Order fetched = orderRepository.findBySlug(saved.getSlug())
         .orElseThrow();
-
+    System.out.println("Fetched order = " + fetched.getOrderItems().size());
     return convertToDto(fetched);
   }
   //  public Order placeOrder(String userSlug) {
@@ -117,7 +130,7 @@ public class OrderService implements IOrderService{
   @Transactional(readOnly = true)
   @Override
   public OrderResponseDto convertToDto(Order order){
-    List<OrderItemResponseDto> items = order.getItems()
+    List<OrderItemResponseDto> items = order.getOrderItems()
         .stream()
         .map(item -> new OrderItemResponseDto( // make sure to follow the arrangement from the DTO
             productService.convertToDto(item.getProduct()),
