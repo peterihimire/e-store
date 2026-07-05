@@ -29,8 +29,22 @@ public class StoreUserDetails implements UserDetails {
   public static StoreUserDetails buildUserDetails(User user){
     List<GrantedAuthority> authorities = user.getRoles()
         .stream()
-        .map(role -> new SimpleGrantedAuthority(role.getName()))
+        .map(role -> {
+          String roleName = role.getName();
+          // Add ROLE_ prefix if not already present
+          if (!roleName.startsWith("ROLE_")) {
+            roleName = "ROLE_" + roleName;
+          }
+          log.debug("Adding authority: {}", roleName);
+          return new SimpleGrantedAuthority(roleName);
+        })
         .collect(Collectors.toList());
+
+    log.info("User {} has authorities: {}", user.getEmail(), authorities);
+    //    List<GrantedAuthority> authorities = user.getRoles()
+    //        .stream()
+    //        .map(role -> new SimpleGrantedAuthority(role.getName()))
+    //        .collect(Collectors.toList());
 
     return new StoreUserDetails(
         user.getSlug(),

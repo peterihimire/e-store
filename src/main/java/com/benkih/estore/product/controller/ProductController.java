@@ -11,6 +11,7 @@ import com.benkih.estore.product.entity.Product;
 import com.benkih.estore.product.service.IProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -125,6 +126,7 @@ public class ProductController {
     }
   }
 
+  @PreAuthorize("hasRole('ADMIN')")
   @PostMapping("/addProduct")
   public ResponseEntity<ApiResponse> addProduct(@RequestBody AddProductRequest product){ // uses general exception to throw error
       Product productData = productService.addProduct(product);
@@ -132,6 +134,7 @@ public class ProductController {
       return ResponseEntity.ok(new ApiResponse("success","Product added", productDto));
   }
 
+  @PreAuthorize("hasRole('ADMIN')")
   @PutMapping("/{productId}/update")
   public ResponseEntity<ApiResponse> updateProduct(@RequestBody UpdateProductRequest product, @PathVariable String productId){
     try {
@@ -143,6 +146,7 @@ public class ProductController {
     }
   }
 
+  @PreAuthorize("hasRole('ADMIN')")
   @DeleteMapping("/product/{productId}/delete")
   public ResponseEntity<ApiResponse> deleteProduct(@PathVariable String productId){
     try {

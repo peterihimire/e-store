@@ -9,7 +9,6 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
-import java.awt.*;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -29,7 +28,8 @@ public class JwtAuthEntryPoint implements AuthenticationEntryPoint {
     errorResponse.put("timestamp", LocalDateTime.now().toString());
     errorResponse.put("status", HttpServletResponse.SC_UNAUTHORIZED);
     errorResponse.put("error", "Unauthorized");
-    errorResponse.put("message", authException.getMessage());
+    errorResponse.put("message", "You may login and try again!");
+    // errorResponse.put("message", authException.getMessage());
     errorResponse.put("path", request.getServletPath());
 
     // Write response
