@@ -12,6 +12,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import static org.springframework.http.HttpStatus.CONFLICT;
@@ -31,6 +32,7 @@ public class UserController {
   //  }
 
   @GetMapping("/user/{slug}")
+  @PreAuthorize("isAuthenticated()")
   public ResponseEntity<ApiResponse> getUserBySlug(@PathVariable String slug) {
     UserResponseDto dto = userService.getUserDtoBySlug(slug);
     return ResponseEntity.ok(new ApiResponse("success", "User data returned", dto));
@@ -48,6 +50,7 @@ public class UserController {
   }
 
   @PutMapping("/user/{slug}/update")
+  @PreAuthorize("isAuthenticated()")
   public ResponseEntity<ApiResponse> updateUser(@RequestBody UserUpdateRequest request, @PathVariable String slug){
     User user = userService.updateUser(request, slug);
     UserResponseDto userDto = userService.convertToDto(user);
@@ -55,6 +58,7 @@ public class UserController {
   }
 
   @DeleteMapping("/user/{slug}/delete")
+  @PreAuthorize("isAuthenticated()")
   public ResponseEntity<ApiResponse> deleteUser(@PathVariable String slug){
     userService.deleteUser(slug);
     return ResponseEntity.ok(new ApiResponse("success", "User delete sucess", null));

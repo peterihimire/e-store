@@ -102,7 +102,8 @@ public class StoreConfig {
             // Public endpoints - no authentication required
             .requestMatchers("/api/v1/auth/**").permitAll()
             .requestMatchers("/api/v1/products/**").permitAll()
-            .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()  // If using Swagger
+            .requestMatchers("/api/v1/users/**").permitAll()
+            .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll() // If using Swagger
             .requestMatchers("/h2-console/**").permitAll()  // If using H2 (development only)
 
             // Protected endpoints - authentication required
@@ -110,7 +111,7 @@ public class StoreConfig {
             .requestMatchers("/api/v1/manager/**").hasAnyRole("ADMIN", "MANAGER")
 
             // 3. Protected endpoints (authenticated)
-            .requestMatchers("/api/v1/users/**", "/api/v1/profile/**").authenticated()
+            // .requestMatchers("/api/v1/users/**", "/api/v1/profile/**").authenticated()
             .requestMatchers("/api/v1/carts/**").authenticated()
             .requestMatchers("/api/v1/cartItems/**").authenticated()
 

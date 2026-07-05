@@ -2,6 +2,7 @@ package com.benkih.estore.auth.controller;
 
 
 import com.benkih.estore.auth.dto.request.LoginRequest;
+import com.benkih.estore.auth.dto.request.SignupRequest;
 import com.benkih.estore.auth.dto.response.LoginResponse;
 import com.benkih.estore.common.response.ApiResponse;
 import com.benkih.estore.security.jwt.JwtUtils;
@@ -31,7 +32,7 @@ public class AuthController {
 
   @PostMapping("/login")
   public ResponseEntity<ApiResponse> login(@Valid @RequestBody LoginRequest request){
-//    try {
+      //    try {
       Authentication authentication = authenticationManager
           .authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
       SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -39,8 +40,19 @@ public class AuthController {
       StoreUserDetails userDetails = (StoreUserDetails) authentication.getPrincipal();
       LoginResponse jwtResponse = new LoginResponse(userDetails.getSlug(), jwt);
       return ResponseEntity.ok(new ApiResponse("success", "User login success", jwtResponse));
-//    } catch (AuthenticationException e) {
-//      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse("fail", "Invalid email or password", e.getMessage()));
-//    }
+      //    } catch (AuthenticationException e) {
+      //      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse("fail", "Invalid email or password", e.getMessage()));
+      //    }
   }
+
+//  @PostMapping("/sign-up")
+//  public ResponseEntity<ApiResponse> signup(@Valid @RequestBody SignupRequest request){
+//    Authentication authentication = authenticationManager
+//        .authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+//    SecurityContextHolder.getContext().setAuthentication(authentication);
+//    String jwt = jwtUtils.generateTokenForUser(authentication);
+//    StoreUserDetails userDetails = (StoreUserDetails) authentication.getPrincipal();
+//    LoginResponse jwtResponse = new LoginResponse(userDetails.getSlug(), jwt);
+//    return ResponseEntity.ok(new ApiResponse("success", "User login success", jwtResponse));
+//  }
 }
