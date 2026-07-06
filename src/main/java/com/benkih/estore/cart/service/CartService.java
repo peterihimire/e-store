@@ -8,7 +8,6 @@ import com.benkih.estore.cart.repository.CartItemRepository;
 import com.benkih.estore.common.exceptions.ResourceNotFoundException;
 import com.benkih.estore.product.entity.Product;
 import com.benkih.estore.product.service.IProductService;
-import com.benkih.estore.product.service.ProductService;
 import com.benkih.estore.user.entity.User;
 import com.benkih.estore.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +21,6 @@ import static java.util.Arrays.stream;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 //String cartSlug = UUID.randomUUID().toString();
 @Slf4j
@@ -164,5 +162,20 @@ public class CartService  implements ICartService{
    User user = userRepository.findBySlug(slug)
        .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     return cartRepository.findByUser(user);
+  }
+
+  @Transactional // Don't use insert[save] in a read only method
+  @Override
+  public CartResponseDto getCartForCurrentUser(String slug) {
+    User user = userRepository.findBySlug(slug)
+        .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+    Cart cart = cartRepository.findByUser(user);
+    if (cart == null) {
+      cart = new Cart();
+      cart.setUser(user);
+      cart = cartRepository.save(cart);
+    }
+    return getConvertedCart(cart);
   }
 }
