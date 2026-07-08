@@ -19,6 +19,7 @@ public class StoreUserDetailsService implements UserDetailsService {
   public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
     User user = Optional.ofNullable(userRepository.findByEmail(email))
         .orElseThrow().orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
     return StoreUserDetails.buildUserDetails(user);
   }
 }

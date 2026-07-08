@@ -3,6 +3,7 @@ package com.benkih.estore.user.controller;
 
 import com.benkih.estore.common.exceptions.AlreadyExistsException;
 import com.benkih.estore.common.response.ApiResponse;
+import com.benkih.estore.security.user.StoreUserDetails;
 import com.benkih.estore.user.dto.request.CreateUserRequest;
 import com.benkih.estore.user.dto.request.UserUpdateRequest;
 import com.benkih.estore.user.dto.response.UserResponseDto;
@@ -13,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import static org.springframework.http.HttpStatus.CONFLICT;
@@ -31,10 +33,10 @@ public class UserController {
   //    return ResponseEntity.ok(new ApiResponse("success", "User data returned", userDto));
   //  }
 
-  @GetMapping("/user/{slug}")
+  @GetMapping("/user/details")
   @PreAuthorize("isAuthenticated()")
-  public ResponseEntity<ApiResponse> getUserBySlug(@PathVariable String slug) {
-    UserResponseDto dto = userService.getUserDtoBySlug(slug);
+  public ResponseEntity<ApiResponse> getUserBySlug(@AuthenticationPrincipal StoreUserDetails userDetails) {
+    UserResponseDto dto = userService.getUserDtoBySlug(userDetails.getSlug());
     return ResponseEntity.ok(new ApiResponse("success", "User data returned", dto));
   }
 

@@ -5,6 +5,9 @@ import com.benkih.estore.cart.service.ICartService;
 import com.benkih.estore.common.enums.ERole;
 import com.benkih.estore.common.exceptions.AlreadyExistsException;
 import com.benkih.estore.common.exceptions.ResourceNotFoundException;
+import com.benkih.estore.email.builder.WelcomeEmailBuilder;
+import com.benkih.estore.email.dto.EmailRequest;
+import com.benkih.estore.email.service.EmailService;
 import com.benkih.estore.order.dto.response.OrderResponseDto;
 import com.benkih.estore.order.service.IOrderService;
 import com.benkih.estore.product.service.IProductService;
@@ -38,6 +41,8 @@ public class UserService implements IUserService {
   private final IOrderService orderService;
   private final PasswordEncoder passwordEncoder;
   private final RoleRepository roleRepository;
+  private final EmailService emailService;
+  private final WelcomeEmailBuilder welcomeEmailBuilder;
 
   @Override
   @Transactional(readOnly = true)
@@ -72,23 +77,47 @@ public class UserService implements IUserService {
     // Add ROLE_CUSTOMER
     Role customerRole = roleRepository.findByName(ERole.CUSTOMER.name())
         .orElseThrow(() -> new RuntimeException("Default role not found: " + ERole.CUSTOMER));
+
     defaultRoles.add(customerRole);
 
-    // Optionally add more roles
-    // Role userRole = roleRepository.findByName(ERole.ROLE_USER.name())
-    //     .orElseThrow(() -> new RuntimeException("Role not found"));
-    // defaultRoles.add(userRole);
-    return Optional.of(request)
-        .filter(user -> !userRepository.existsByEmail(request.getEmail()))
-        .map(req -> {
-          User user = new User();
-          user.setEmail(request.getEmail());
-          user.setPassword(passwordEncoder.encode(request.getPassword()));
-          user.setFirstName(request.getFirstName());
-          user.setLastName(request.getLastName());
-          user.setRoles(defaultRoles);
-          return userRepository.save(user);
-        }).orElseThrow(() -> new AlreadyExistsException(request.getEmail() + " already exist!"));
+    if (userRepository.existsByEmail(request.getEmail())) {
+      throw new AlreadyExistsException(request.getEmail() + " already exists!");
+    }
+
+    User user = new User();
+
+    user.setEmail(request.getEmail());
+    user.setPassword(passwordEncoder.encode(request.getPassword()));
+    user.setFirstName(request.getFirstName());
+    user.setLastName(request.getLastName());
+    user.setRoles(defaultRoles);
+    user = userRepository.save(user);
+    log.info("User info detail={}", user);
+
+    try {
+      EmailRequest email = welcomeEmailBuilder.build(user);
+      emailService.send(email);
+    } catch (Exception ex) {
+      log.error("Unable to send welcome email", ex);
+    }
+
+    return user;
+
+//    // Optionally add more roles
+//    // Role userRole = roleRepository.findByName(ERole.ROLE_USER.name())
+//    //     .orElseThrow(() -> new RuntimeException("Role not found"));
+//    // defaultRoles.add(userRole);
+//    return Optional.of(request)
+//        .filter(user -> !userRepository.existsByEmail(request.getEmail()))
+//        .map(req -> {
+//          User user = new User();
+//          user.setEmail(request.getEmail());
+//          user.setPassword(passwordEncoder.encode(request.getPassword()));
+//          user.setFirstName(request.getFirstName());
+//          user.setLastName(request.getLastName());
+//          user.setRoles(defaultRoles);
+//          return userRepository.save(user);
+//        }).orElseThrow(() -> new AlreadyExistsException(request.getEmail() + " already exist!"));
   }
 
   @Override

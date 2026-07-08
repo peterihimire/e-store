@@ -11,13 +11,17 @@ import com.benkih.estore.product.dto.response.ProductResponseDto;
 import com.benkih.estore.product.entity.Product;
 import com.benkih.estore.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 //import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ProductService implements IProductService{
@@ -40,6 +44,8 @@ public class ProductService implements IProductService{
     return productRepository.save(createProduct(request, category));
   }
 
+
+
   private boolean productExists(String name, String brand ){
     return productRepository.existsByNameAndBrand(name, brand);
   }
@@ -61,6 +67,17 @@ public class ProductService implements IProductService{
   public List<Product> getAllProducts() {
     return productRepository.findAll();
   }
+
+@Transactional(readOnly = true)
+@Override
+public Page<ProductResponseDto> getAllProducts(int page, int limit) {
+
+  Pageable pageable = PageRequest.of(page, limit);
+
+  return productRepository
+      .findAll(pageable)
+      .map(this::convertToDto);
+}
 
 //  @Transactional(readOnly = true)
   @Override
@@ -117,8 +134,13 @@ public class ProductService implements IProductService{
 
   @Override
   public List<Product> getProductsByBrandAndName(String brand, String name) {
-    return productRepository.findByBrandAndName(brand, name);
+    return List.of();
   }
+
+//  @Override
+//  public List<Product> getProductsByBrandAndName(String brand, String name) {
+//    return productRepository.findByBrandAndName(brand, name);
+//  }
 
   //  @Override
   //  public Product getProductById(Long id) {
@@ -184,5 +206,42 @@ public class ProductService implements IProductService{
   @Override
   public Long countProductByBrandAndName(String brand, String name) {
     return productRepository.countByBrandAndName(brand, name);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public Page<ProductResponseDto> getAllProducts(Pageable pageable) {
+    log.info("Fetching products with page: {}, size: {}",
+        pageable.getPageNumber(), pageable.getPageSize());
+
+
+      Page<Product> productPage = productRepository.findAll(pageable);
+
+      if (productPage.isEmpty()) {
+        log.info("No products found for page: {}", pageable.getPageNumber());
+        return Page.empty(pageable);
+      }
+
+      return productPage.map(this::convertToDto);
+
+  }
+
+  @Override
+  public Page<ProductResponseDto> getProductsByBrandAndName(String brand, String name,
+                                                  Pageable pageable) {
+    log.info("Fetching products with page: {}, size: {}",
+        pageable.getPageNumber(), pageable.getPageSize());
+
+
+      Page<Product> productPage =
+          productRepository.findByBrandAndName(brand, name, pageable);
+
+      if (productPage.isEmpty()) {
+        log.info("No products found for brand: {} and name: {}", brand, name);
+        return Page.empty(pageable);
+      }
+
+      return productPage.map(this::convertToDto);
+
   }
 }

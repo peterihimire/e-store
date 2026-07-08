@@ -4,9 +4,11 @@ import com.benkih.estore.common.response.ApiResponse;
 import com.benkih.estore.order.dto.response.OrderResponseDto;
 import com.benkih.estore.order.entity.Order;
 import com.benkih.estore.order.service.IOrderService;
+import com.benkih.estore.security.user.StoreUserDetails;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,9 +20,9 @@ import java.util.List;
 public class OrderController {
   private final IOrderService orderService;
 
-  @PostMapping("/order/user/{userSlug}")
-  public ResponseEntity<ApiResponse> createOrder(@PathVariable String userSlug){
-      OrderResponseDto order = orderService.placeOrder(userSlug); // if error, this will throw error, now global error handler will process it
+  @PostMapping("/order/place-order")
+  public ResponseEntity<ApiResponse> createOrder(@AuthenticationPrincipal StoreUserDetails userDetails){
+      OrderResponseDto order = orderService.placeOrder(userDetails.getSlug()); // if error, this will throw error, now global error handler will process it
       log.info("Here is the order data:{}", order);
   //      OrderResponseDto dto = orderService.convertToDto(order);
       return ResponseEntity.ok(new ApiResponse("success","Order created success", order));

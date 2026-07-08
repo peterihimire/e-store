@@ -1,6 +1,8 @@
 package com.benkih.estore.product.repository;
 
 import com.benkih.estore.product.entity.Product;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -25,7 +27,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
   List<Product> findByName(String name);
 
   @EntityGraph(attributePaths = {"images", "category"})
-  List<Product> findByBrandAndName(String brand, String name);
+  Page<Product> findByBrandAndName(String brand, String name,
+                                   Pageable pageable);
 
   Long countByBrandAndName(String brand, String name);
 

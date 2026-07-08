@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Login Notification</title>
+</head>
+<body style="font-family: Arial, Helvetica, sans-serif; line-height: 1.6; color: #333;">
+    <h2>Hello <span th:text="${name}">Customer</span>,</h2>
+
+    <p>
+      We noticed a successful sign-in to your <strong>E-Store</strong> account.
+    </p>
+
+    <p>
+      <strong>Login Details</strong>
+    </p>
+
+    <ul>
+      <li><strong>Email:</strong> <span th:text="${email}"></span></li>
+      <li><strong>Date &amp; Time:</strong> <span th:text="${loginTime}"></span></li>
+      <li><strong>IP Address:</strong> <span th:text="${ipAddress}"></span></li>
+      <li><strong>Device:</strong> <span th:text="${device}"></span></li>
+    </ul>
+
+    <p>
+      If this was you, no further action is required.
+    </p>
+
+    <p>
+      <strong>If you do not recognize this login, please change your password immediately and contact our support team.</strong>
+    </p>
+
+    <p>
+      Thank you,<br>
+      <strong>The E-Store Team</strong>
+    </p>
+</body>
+</html>

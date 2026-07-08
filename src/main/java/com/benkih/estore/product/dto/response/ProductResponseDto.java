@@ -12,15 +12,12 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ProductResponseDto {
-
   private String slug;
   private String name;
   private String brand;
   private String description;
   private BigDecimal price;
   private int inventory;
-
   private String category;
-
   private List<ImageDto> images;
 }

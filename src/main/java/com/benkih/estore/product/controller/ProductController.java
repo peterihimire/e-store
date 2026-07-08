@@ -1,15 +1,21 @@
 package com.benkih.estore.product.controller;
 
 
+import com.benkih.estore.common.dto.PaginatedResponse;
 import com.benkih.estore.common.exceptions.AlreadyExistsException;
 import com.benkih.estore.common.exceptions.ResourceNotFoundException;
 import com.benkih.estore.common.response.ApiResponse;
 import com.benkih.estore.product.dto.request.AddProductRequest;
 import com.benkih.estore.product.dto.request.UpdateProductRequest;
+import com.benkih.estore.product.dto.response.ProductPageResponseDto;
 import com.benkih.estore.product.dto.response.ProductResponseDto;
 import com.benkih.estore.product.entity.Product;
 import com.benkih.estore.product.service.IProductService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -24,22 +30,30 @@ import static org.springframework.http.HttpStatus.*;
 public class ProductController {
   private final IProductService productService;
 
+
+
   @GetMapping("/all")
-  public ResponseEntity<ApiResponse> getAllProducts() {
-    List<Product> productsData = productService.getAllProducts();
-    List<ProductResponseDto> products = productService.getConvertedProducts(productsData);
-    return ResponseEntity.ok(new ApiResponse("success","Product returned", products));
+  public ResponseEntity<ApiResponse> getAllProducts(
+      @RequestParam(defaultValue = "1") int page,
+      @RequestParam(defaultValue = "10") int limit) {
+
+    // Convert to zero-based for Spring
+    Pageable pageable = PageRequest.of(page - 1, limit);
+    Page<ProductResponseDto> productPage = productService.getAllProducts(pageable);
+
+    // Build paginated response
+    PaginatedResponse<ProductResponseDto> response = PaginatedResponse.from(productPage, page);
+
+    return ResponseEntity.ok(new ApiResponse("success", "Products retrieved", response));
   }
 
-  //  @GetMapping("/{id}")
-  //  public ResponseEntity<ApiResponse> getProductById(@PathVariable Long id){
-  //    try {
-  //      Product product = productService.getProductById(id);
-  //      return ResponseEntity.ok(new ApiResponse("success", product));
-  //    } catch (NotFoundException e) {
-  //      return ResponseEntity.status(NOT_FOUND).body(new ApiResponse(e.getMessage(), null));
-  //    }
-  //  }
+//  @GetMapping("/all")
+//  public ResponseEntity<ApiResponse> getAllProducts() {
+//    List<Product> productsData = productService.getAllProducts();
+//    List<ProductResponseDto> products = productService.getConvertedProducts(productsData);
+//    return ResponseEntity.ok(new ApiResponse("success","Product returned", products));
+//  }
+
 
   @GetMapping("/{slug}")
   public ResponseEntity<ApiResponse> getProductBySlug(@PathVariable String slug){
@@ -53,16 +67,22 @@ public class ProductController {
   }
 
   @GetMapping("/by/brand-and-name")
-  public ResponseEntity<ApiResponse> getProductByBrandAndName(@RequestParam String brand, @RequestParam String name){
+  public ResponseEntity<ApiResponse> getProductByBrandAndName(
+      @RequestParam String brand,
+      @RequestParam String name,
+      @RequestParam(defaultValue = "1") int page,
+      @RequestParam(defaultValue = "10") int limit,
+      HttpServletRequest request){
     try {
-      List<Product> productsData = productService.getProductsByBrandAndName(brand, name);
 
-      if(productsData.isEmpty()){
-        return ResponseEntity.status(NOT_FOUND).body(new ApiResponse("fauk","No product found", null));
-      }
+      Pageable pageable = PageRequest.of(page - 1, limit);
+      Page<ProductResponseDto> productPage =
+          productService.getProductsByBrandAndName(brand, name, pageable);
 
-      List<ProductResponseDto> products = productService.getConvertedProducts(productsData);
-      return ResponseEntity.ok(new ApiResponse("success","Products returned", products));
+      PaginatedResponse<ProductResponseDto> response = PaginatedResponse.from(productPage, page);
+
+      return ResponseEntity.ok(new ApiResponse("success","Products returned",
+          response));
     } catch (Exception e) {
       return ResponseEntity.status(INTERNAL_SERVER_ERROR).body(new ApiResponse("fail",e.getMessage(), null));
     }

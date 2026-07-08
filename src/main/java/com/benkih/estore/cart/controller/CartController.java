@@ -26,38 +26,44 @@ public class CartController {
   private final ICartService cartService;
   private final IUserService userService;
 
-  @GetMapping("/get-cart")
+  @GetMapping("/my-cart")
   public ResponseEntity<ApiResponse> getCart(@AuthenticationPrincipal StoreUserDetails userDetails){
     try {
       //  User user = getAu
-      CartResponseDto cart = cartService.getCartForCurrentUser(userDetails.getSlug());
+      CartResponseDto cartDto =
+          cartService.getCartForCurrentUser(userDetails.getSlug());
 //      CartResponseDto cartData = cartService.getConvertedCart(cart);
-      return ResponseEntity.ok(new ApiResponse("success","Cart returned", cart));
+      return ResponseEntity.ok(new ApiResponse("success","Cart returned",
+          cartDto));
     } catch (ResourceNotFoundException e) {
       return  ResponseEntity.status(NOT_FOUND).body(new ApiResponse("fail",e.getMessage(), null));
     }
   }
 
-  @DeleteMapping("{cartSlug}/clear")
-  public ResponseEntity<ApiResponse> clearCart(@PathVariable String cartSlug){
+  @DeleteMapping("/clear")
+  public ResponseEntity<ApiResponse> clearCart(@AuthenticationPrincipal StoreUserDetails userDetails){
     try {
-      cartService.clearCart(cartSlug);
+      Cart cart = cartService.getCartByUserSlug(userDetails.getSlug());
+      cartService.clearCart(cart.getSlug());
       return ResponseEntity.ok(new ApiResponse("success","Cart cleared successfully", null));
     } catch (ResourceNotFoundException e) {
       return  ResponseEntity.status(NOT_FOUND).body(new ApiResponse("fail",e.getMessage(), null));
     }
   }
 
-  @GetMapping("{cartSlug}/total-price")
-  public ResponseEntity<ApiResponse> getTotalAmount(@PathVariable String cartSlug){
+  @GetMapping("/total-price")
+  public ResponseEntity<ApiResponse> getTotalAmount(@AuthenticationPrincipal StoreUserDetails userDetails){
     try {
-      BigDecimal totalPrice = cartService.getTotalPrice(cartSlug);
+      Cart cart = cartService.getCartByUserSlug(userDetails.getSlug());
+      BigDecimal totalPrice = cartService.getTotalPrice(cart.getSlug());
       return ResponseEntity.ok(new ApiResponse("success","Total Price Returned", totalPrice));
     } catch (ResourceNotFoundException e) {
       return  ResponseEntity.status(NOT_FOUND).body(new ApiResponse("fail",e.getMessage(), null));
     }
   }
 
+
+  // Should be used in Services, utility classes and non controller classes
   private User getAuthenticatedUser() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     String email = authentication.getName();

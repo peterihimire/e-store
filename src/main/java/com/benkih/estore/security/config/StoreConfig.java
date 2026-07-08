@@ -114,6 +114,7 @@ public class StoreConfig {
             // .requestMatchers("/api/v1/users/**", "/api/v1/profile/**").authenticated()
             .requestMatchers("/api/v1/carts/**").authenticated()
             .requestMatchers("/api/v1/cartItems/**").authenticated()
+            .requestMatchers("/api/v1/orders/**").authenticated()
 
             // All other requests require authentication
             .anyRequest().authenticated()
