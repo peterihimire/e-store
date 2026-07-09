@@ -2,7 +2,7 @@ package com.benkih.estore.user.service;
 
 import com.benkih.estore.cart.dto.response.CartResponseDto;
 import com.benkih.estore.cart.service.ICartService;
-import com.benkih.estore.common.enums.ERole;
+import com.benkih.estore.common.enums.RoleName;
 import com.benkih.estore.common.exceptions.AlreadyExistsException;
 import com.benkih.estore.common.exceptions.ResourceNotFoundException;
 import com.benkih.estore.email.builder.WelcomeEmailBuilder;
@@ -63,20 +63,20 @@ public class UserService implements IUserService {
   @Override
   @Transactional
   public User createUser(CreateUserRequest request) {
-//    Set<String> defaultRoles = Set.of("ROLE_CUSTOMER");
-//    // Assign roles
-//    Set<Role> roles = new HashSet<>();
-//    defaultRoles.forEach(roleName -> {
-//      Role role = roleRepository.findByName(roleName)
-//          .orElseThrow(() -> new RuntimeException("Role not found: " + roleName));
-//      roles.add(role);
-//    });
+  //    Set<String> defaultRoles = Set.of("ROLE_CUSTOMER");
+  //    // Assign roles
+  //    Set<Role> roles = new HashSet<>();
+  //    defaultRoles.forEach(roleName -> {
+  //      Role role = roleRepository.findByName(roleName)
+  //          .orElseThrow(() -> new RuntimeException("Role not found: " + roleName));
+  //      roles.add(role);
+  //    });
 
     Set<Role> defaultRoles = new HashSet<>();
 
     // Add ROLE_CUSTOMER
-    Role customerRole = roleRepository.findByName(ERole.CUSTOMER.name())
-        .orElseThrow(() -> new RuntimeException("Default role not found: " + ERole.CUSTOMER));
+    Role customerRole = roleRepository.findByName(RoleName.CUSTOMER.name())
+        .orElseThrow(() -> new RuntimeException("Default role not found: " + RoleName.CUSTOMER));
 
     defaultRoles.add(customerRole);
 

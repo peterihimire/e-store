@@ -1,6 +1,6 @@
 package com.benkih.estore.common.enums;
 
-public enum ERole {
+public enum RoleName {
   ADMIN,
   MANAGER,
   CUSTOMER

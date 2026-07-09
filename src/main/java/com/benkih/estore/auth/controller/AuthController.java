@@ -3,17 +3,28 @@ package com.benkih.estore.auth.controller;
 import com.benkih.estore.auth.dto.request.LoginRequest;
 import com.benkih.estore.auth.dto.response.LoginResponse;
 import com.benkih.estore.auth.service.AuthService;
+import com.benkih.estore.common.exceptions.AlreadyExistsException;
 import com.benkih.estore.common.response.ApiResponse;
 
+import com.benkih.estore.security.user.StoreUserDetails;
+import com.benkih.estore.user.dto.request.CreateUserRequest;
+import com.benkih.estore.user.dto.response.UserResponseDto;
+import com.benkih.estore.user.entity.User;
+import com.benkih.estore.user.service.IUserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import static org.springframework.http.HttpStatus.CONFLICT;
 
 @Slf4j
 @RestController
@@ -21,6 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AuthController {
   private final AuthService authService;
+  private final IUserService userService;
 //  private final AuthenticationManager authenticationManager;
 //  private final JwtUtils jwtUtils;
 
@@ -31,14 +43,14 @@ public class AuthController {
     return ResponseEntity.ok(new ApiResponse("success", "User login success", response));
   }
 
-//  @PostMapping("/sign-up")
-//  public ResponseEntity<ApiResponse> signup(@Valid @RequestBody SignupRequest request){
-//    Authentication authentication = authenticationManager
-//        .authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
-//    SecurityContextHolder.getContext().setAuthentication(authentication);
-//    String jwt = jwtUtils.generateTokenForUser(authentication);
-//    StoreUserDetails userDetails = (StoreUserDetails) authentication.getPrincipal();
-//    LoginResponse jwtResponse = new LoginResponse(userDetails.getSlug(), jwt);
-//    return ResponseEntity.ok(new ApiResponse("success", "User login success", jwtResponse));
-//  }
+  @PostMapping("/register")
+  public ResponseEntity<ApiResponse> createUser(@Valid @RequestBody CreateUserRequest request){
+    try {
+      User user = authService.register(request);
+      UserResponseDto userDto = userService.convertToDto(user);
+      return ResponseEntity.ok(new ApiResponse("success", "User created", userDto ));
+    } catch (AlreadyExistsException e) {
+      return ResponseEntity.status(CONFLICT).body(new ApiResponse("fail", e.getMessage(), null));
+    }
+  }
 }
