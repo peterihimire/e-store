@@ -11,8 +11,8 @@ import com.benkih.estore.email.service.EmailService;
 import com.benkih.estore.order.dto.response.OrderResponseDto;
 import com.benkih.estore.order.service.IOrderService;
 import com.benkih.estore.product.service.IProductService;
-import com.benkih.estore.role.entity.Role;
-import com.benkih.estore.role.repository.RoleRepository;
+import com.benkih.estore.user.entity.Role;
+import com.benkih.estore.user.repository.RoleRepository;
 import com.benkih.estore.user.dto.request.CreateUserRequest;
 import com.benkih.estore.user.dto.request.UserUpdateRequest;
 import com.benkih.estore.user.dto.response.UserResponseDto;
@@ -87,7 +87,7 @@ public class UserService implements IUserService {
     User user = new User();
 
     user.setEmail(request.getEmail());
-    user.setPassword(passwordEncoder.encode(request.getPassword()));
+//    user.setPassword(passwordEncoder.encode(request.getPassword()));
     user.setFirstName(request.getFirstName());
     user.setLastName(request.getLastName());
     user.setRoles(defaultRoles);

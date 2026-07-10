@@ -1,7 +1,6 @@
-package com.benkih.estore.address.entity;
+package com.benkih.estore.user.entity;
 
 import com.benkih.estore.common.enums.Country;
-import com.benkih.estore.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

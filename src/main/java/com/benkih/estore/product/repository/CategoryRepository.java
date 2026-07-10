@@ -1,6 +1,6 @@
-package com.benkih.estore.category.repository;
+package com.benkih.estore.product.repository;
 
-import com.benkih.estore.category.entity.Category;
+import com.benkih.estore.product.entity.Category;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

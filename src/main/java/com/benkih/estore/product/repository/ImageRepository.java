@@ -1,6 +1,6 @@
-package com.benkih.estore.image.repository;
+package com.benkih.estore.product.repository;
 
-import com.benkih.estore.image.entity.Image;
+import com.benkih.estore.product.entity.Image;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

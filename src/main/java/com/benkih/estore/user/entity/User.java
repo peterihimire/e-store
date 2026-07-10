@@ -1,13 +1,11 @@
 package com.benkih.estore.user.entity;
 
-import com.benkih.estore.address.entity.Address;
 import com.benkih.estore.cart.entity.Cart;
 import com.benkih.estore.common.enums.UserStatus;
 import com.benkih.estore.order.entity.Order;
 import com.benkih.estore.payment.entity.Payment;
 import com.benkih.estore.refreshToken.entity.RefreshToken;
 import com.benkih.estore.review.entity.Review;
-import com.benkih.estore.role.entity.Role;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.NaturalId;

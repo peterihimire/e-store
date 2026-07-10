@@ -1,7 +1,6 @@
-package com.benkih.estore.role.repository;
+package com.benkih.estore.user.repository;
 
-import com.benkih.estore.cart.entity.Cart;
-import com.benkih.estore.role.entity.Role;
+import com.benkih.estore.user.entity.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

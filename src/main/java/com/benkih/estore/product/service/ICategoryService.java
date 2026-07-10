@@ -1,9 +1,6 @@
-package com.benkih.estore.category.service;
+package com.benkih.estore.product.service;
 
-import com.benkih.estore.category.entity.Category;
-import com.benkih.estore.product.dto.request.AddProductRequest;
-import com.benkih.estore.product.dto.request.UpdateProductRequest;
-import com.benkih.estore.product.entity.Product;
+import com.benkih.estore.product.entity.Category;
 
 import java.util.List;
 

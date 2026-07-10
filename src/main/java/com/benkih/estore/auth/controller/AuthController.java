@@ -1,6 +1,7 @@
 package com.benkih.estore.auth.controller;
 
 import com.benkih.estore.auth.dto.request.LoginRequest;
+import com.benkih.estore.auth.dto.request.VerifyEmailRequest;
 import com.benkih.estore.auth.dto.response.LoginResponse;
 import com.benkih.estore.auth.service.AuthService;
 import com.benkih.estore.common.exceptions.AlreadyExistsException;
@@ -48,9 +49,17 @@ public class AuthController {
     try {
       User user = authService.register(request);
       UserResponseDto userDto = userService.convertToDto(user);
-      return ResponseEntity.ok(new ApiResponse("success", "User created", userDto ));
+      return ResponseEntity.ok(new ApiResponse("success", "A code has been sent to your e-mail to verify your account", userDto ));
     } catch (AlreadyExistsException e) {
       return ResponseEntity.status(CONFLICT).body(new ApiResponse("fail", e.getMessage(), null));
     }
+  }
+
+  @PostMapping("/verify-email")
+  public ResponseEntity<ApiResponse> verifyEmail( @RequestBody VerifyEmailRequest request){
+    LoginResponse response = authService.verifyEmail(request);
+//      UserResponseDto userDto = userService.convertToDto(user);
+      return ResponseEntity.ok(new ApiResponse("success", "User verified",
+          response));
   }
 }

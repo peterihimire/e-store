@@ -1,7 +1,7 @@
-package com.benkih.estore.category.service;
+package com.benkih.estore.product.service;
 
-import com.benkih.estore.category.entity.Category;
-import com.benkih.estore.category.repository.CategoryRepository;
+import com.benkih.estore.product.entity.Category;
+import com.benkih.estore.product.repository.CategoryRepository;
 import com.benkih.estore.common.exceptions.AlreadyExistsException;
 import com.benkih.estore.common.exceptions.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +12,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class CategoryService implements ICategoryService{
+public class CategoryService implements ICategoryService {
   private final CategoryRepository categoryRepository;
 
   @Override

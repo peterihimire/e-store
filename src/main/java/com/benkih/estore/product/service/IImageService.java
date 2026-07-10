@@ -1,7 +1,7 @@
-package com.benkih.estore.image.service;
+package com.benkih.estore.product.service;
 
-import com.benkih.estore.image.dto.ImageDto;
-import com.benkih.estore.image.entity.Image;
+import com.benkih.estore.product.dto.response.ImageDto;
+import com.benkih.estore.product.entity.Image;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;

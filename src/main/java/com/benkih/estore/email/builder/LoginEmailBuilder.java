@@ -40,5 +40,4 @@ public class LoginEmailBuilder {
 
     return request;
   }
-
 }

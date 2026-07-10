@@ -1,6 +1,5 @@
 package com.benkih.estore.product.dto.response;
 
-import com.benkih.estore.image.dto.ImageDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

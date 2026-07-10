@@ -1,7 +1,5 @@
 package com.benkih.estore.product.entity;
 
-import com.benkih.estore.category.entity.Category;
-import com.benkih.estore.image.entity.Image;
 import jakarta.persistence.*;
 import lombok.*;
 

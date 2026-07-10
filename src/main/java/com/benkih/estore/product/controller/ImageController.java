@@ -1,10 +1,10 @@
-package com.benkih.estore.image.controller;
+package com.benkih.estore.product.controller;
 
 import com.benkih.estore.common.exceptions.ResourceNotFoundException;
 import com.benkih.estore.common.response.ApiResponse;
-import com.benkih.estore.image.dto.ImageDto;
-import com.benkih.estore.image.entity.Image;
-import com.benkih.estore.image.service.IImageService;
+import com.benkih.estore.product.dto.response.ImageDto;
+import com.benkih.estore.product.entity.Image;
+import com.benkih.estore.product.service.IImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;

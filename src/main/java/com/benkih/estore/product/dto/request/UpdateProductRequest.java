@@ -1,6 +1,5 @@
 package com.benkih.estore.product.dto.request;
 
-import com.benkih.estore.category.entity.Category;
 import lombok.Data;
 
 import java.math.BigDecimal;

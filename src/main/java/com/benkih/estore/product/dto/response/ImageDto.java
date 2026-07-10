@@ -1,4 +1,4 @@
-package com.benkih.estore.image.dto;
+package com.benkih.estore.product.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

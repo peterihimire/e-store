@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Verify your Email</title>
+</head>
+
+<body style="font-family: Arial, sans-serif">
+
+<h2>Hello <span th:text="${name}">Customer</span>,</h2>
+
+<p>
+    Thank you for registering with <strong>E-Store</strong>.
+</p>
+
+<p>
+    Before you can start shopping, please verify your email address.
+</p>
+
+<p>
+    <strong>Email:</strong>
+    <span th:text="${email}"></span>
+</p>
+
+<p>
+    Your verification code is:
+</p>
+
+<h1
+        style="
+        letter-spacing:6px;
+        color:#0d6efd;
+        text-align:center;
+    "
+        th:text="${token}">
+    123456
+</h1>
+
+<p>
+    This code will expire in <strong>10 minutes</strong>.
+</p>
+
+<p>
+    If you did not create this account, you can safely ignore this email.
+</p>
+
+<br>
+
+<p>
+    Regards,<br>
+    <strong>The E-Store Team</strong>
+</p>
+
+</body>
+</html>

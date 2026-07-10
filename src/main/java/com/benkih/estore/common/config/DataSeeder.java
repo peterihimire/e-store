@@ -1,7 +1,7 @@
 package com.benkih.estore.common.config;
 
-import com.benkih.estore.role.entity.Role;
-import com.benkih.estore.role.repository.RoleRepository;
+import com.benkih.estore.user.entity.Role;
+import com.benkih.estore.user.repository.RoleRepository;
 import com.benkih.estore.user.entity.User;
 import com.benkih.estore.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;

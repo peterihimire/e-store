@@ -1,10 +1,10 @@
 package com.benkih.estore.product.service;
 
-import com.benkih.estore.category.entity.Category;
-import com.benkih.estore.category.repository.CategoryRepository;
+import com.benkih.estore.product.entity.Category;
+import com.benkih.estore.product.repository.CategoryRepository;
 import com.benkih.estore.common.exceptions.AlreadyExistsException;
 import com.benkih.estore.common.exceptions.ResourceNotFoundException;
-import com.benkih.estore.image.dto.ImageDto;
+import com.benkih.estore.product.dto.response.ImageDto;
 import com.benkih.estore.product.dto.request.AddProductRequest;
 import com.benkih.estore.product.dto.request.UpdateProductRequest;
 import com.benkih.estore.product.dto.response.ProductResponseDto;

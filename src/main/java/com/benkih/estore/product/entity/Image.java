@@ -1,6 +1,5 @@
-package com.benkih.estore.image.entity;
+package com.benkih.estore.product.entity;
 
-import com.benkih.estore.product.entity.Product;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;

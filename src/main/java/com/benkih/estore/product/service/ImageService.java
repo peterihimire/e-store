@@ -1,13 +1,12 @@
-package com.benkih.estore.image.service;
+package com.benkih.estore.product.service;
 
 import com.benkih.estore.common.exceptions.ResourceNotFoundException;
-import com.benkih.estore.image.dto.ImageDto;
-import com.benkih.estore.image.entity.Image;
-import com.benkih.estore.image.repository.ImageRepository;
+import com.benkih.estore.product.dto.response.ImageDto;
+import com.benkih.estore.product.entity.Image;
+import com.benkih.estore.product.repository.ImageRepository;
 //import com.benkih.estore.product.dto.response.ProductsResponseDto;
 import com.benkih.estore.product.entity.Product;
 import com.benkih.estore.product.repository.ProductRepository;
-import com.benkih.estore.product.service.IProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -28,7 +27,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class ImageService implements IImageService{
+public class ImageService implements IImageService {
   private final ImageRepository imageRepository;
   private final IProductService productService;
   private final ProductRepository productRepository;

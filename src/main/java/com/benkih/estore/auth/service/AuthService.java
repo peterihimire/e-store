@@ -16,13 +16,15 @@ import com.benkih.estore.email.builder.VerificationEmailBuilder;
 import com.benkih.estore.email.builder.WelcomeEmailBuilder;
 import com.benkih.estore.email.dto.EmailRequest;
 import com.benkih.estore.email.service.EmailService;
-import com.benkih.estore.role.entity.Role;
-import com.benkih.estore.role.repository.RoleRepository;
+import com.benkih.estore.user.entity.Role;
+import com.benkih.estore.user.repository.RoleRepository;
 import com.benkih.estore.security.jwt.JwtUtils;
 import com.benkih.estore.security.user.StoreUserDetails;
 import com.benkih.estore.user.dto.request.CreateUserRequest;
+import com.benkih.estore.user.dto.response.UserResponseDto;
 import com.benkih.estore.user.entity.User;
 import com.benkih.estore.user.repository.UserRepository;
+import com.benkih.estore.user.service.IUserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -35,7 +37,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
@@ -56,6 +57,8 @@ public class AuthService implements IAuthService {
   private final VerificationEmailBuilder verificationEmailBuilder;
   private final VerificationService verificationService;
   private final EmailVerificationRepository verificationRepository;
+  private final IUserService userService;
+
 
 
   @Transactional
@@ -113,7 +116,8 @@ public class AuthService implements IAuthService {
   }
 
   @Transactional
-  public void verifyEmail(VerifyEmailRequest request) {
+  @Override
+  public LoginResponse verifyEmail(VerifyEmailRequest request) {
 
     User user = userRepository.findByEmail(request.getEmail())
         .orElseThrow(() ->
@@ -128,13 +132,12 @@ public class AuthService implements IAuthService {
             .orElseThrow(() ->
                 new BadRequestException("Verification code not found."));
 
-
-//    if (verification.getExpiresAt().isBefore(LocalDateTime.now())) {
-//      throw new BadRequestException("Verification code expired.");
-//    }
-
     if (verification.isExpired()) {
       throw new BadRequestException("Verification code expired.");
+    }
+
+    if (verification.isUsed()) {
+      throw new BadRequestException("Verification code has already been used.");
     }
 
     if (!passwordEncoder.matches(
@@ -144,15 +147,9 @@ public class AuthService implements IAuthService {
       throw new BadRequestException("Invalid verification code.");
     }
 
-//    if (verification.getUsedAt() != null) {
-//      throw new BadRequestException("Verification code has already been used.");
-//    }
-//
-    if(verification.isUsed()){
-      throw new BadRequestException("Verification code has already been used.");
-    }
     verification.setUsedAt(LocalDateTime.now());
 
+    user.setPassword(passwordEncoder.encode(request.getPassword()));
     user.setEmailVerified(true);
     user.setStatus(UserStatus.ACTIVE);
 
@@ -165,7 +162,180 @@ public class AuthService implements IAuthService {
     } catch (Exception ex) {
       log.error("Unable to send welcome email", ex);
     }
+
+    return createLoginResponse(user);
   }
+
+
+
+@Transactional(readOnly = true)
+@Override
+public LoginResponse login(LoginRequest request) {
+
+  Authentication authentication = authenticationManager.authenticate(
+      new UsernamePasswordAuthenticationToken(
+          request.getEmail(),
+          request.getPassword()
+      )
+  );
+
+  SecurityContextHolder.getContext().setAuthentication(authentication);
+
+  User user = userRepository.findByEmail(request.getEmail())
+      .orElseThrow(() ->
+          new UsernameNotFoundException("User not found"));
+
+  try {
+    EmailRequest email = loginEmailBuilder.build(user);
+    emailService.send(email);
+  } catch (Exception ex) {
+    log.error("Unable to send login email", ex);
+  }
+
+  return createLoginResponse(authentication, user);
+}
+
+
+
+private LoginResponse createLoginResponse(Authentication authentication, User user) {
+
+  String jwt = jwtUtils.generateTokenForUser(authentication);
+
+  StoreUserDetails userDetails =
+      (StoreUserDetails) authentication.getPrincipal();
+
+  UserResponseDto userDto = userService.convertToDto(user);
+
+  return new LoginResponse(
+      jwt,
+      "",
+      userDto
+  );
+}
+
+  private LoginResponse createLoginResponse(User user) {
+
+    StoreUserDetails userDetails =
+        StoreUserDetails.buildUserDetails(user);
+
+    Authentication authentication =
+        new UsernamePasswordAuthenticationToken(
+            userDetails,
+            null,
+            userDetails.getAuthorities()
+        );
+
+    SecurityContextHolder.getContext().setAuthentication(authentication);
+
+    String jwt = jwtUtils.generateTokenForUser(authentication);
+    UserResponseDto userDto = userService.convertToDto(user);
+
+    return new LoginResponse(
+        jwt,
+        "",
+        userDto
+    );
+  }
+}
+
+//  @Override
+//  public LoginResponse login(LoginRequest request) {
+//    Authentication authentication = authenticationManager.authenticate(
+//        new UsernamePasswordAuthenticationToken(
+//            request.getEmail(),
+//            request.getPassword()
+//        )
+//    );
+//
+//    SecurityContextHolder.getContext().setAuthentication(authentication);
+//    String jwt = jwtUtils.generateTokenForUser(authentication);
+//    StoreUserDetails userDetails = (StoreUserDetails) authentication.getPrincipal();
+//
+//    User user = userRepository.findByEmail(request.getEmail())
+//        .orElseThrow(() ->
+//            new UsernameNotFoundException("User not found"));
+//    if (!user.isEmailVerified()) {
+//      throw new BadRequestException("Please verify your email before logging in.");
+//    }
+//
+//    if (user.getStatus() != UserStatus.ACTIVE) {
+//      throw new BadRequestException("Your account is not active.");
+//    }
+////    UserResponseDto userDto = userService.convertToDto(user);
+////    String refreshToken = "yet to work on the feature";
+//    try {
+//      EmailRequest email = loginEmailBuilder.build(user);
+//      emailService.send(email);
+//    } catch (Exception ex) {
+//      log.error("Unable to send login email", ex);
+//    }
+//
+//    return new LoginResponse(
+//        jwt,
+//      userDetails.getSlug(),
+//    );
+//  }
+
+
+//  @Transactional
+//  public LoginResponse verifyEmail(VerifyEmailRequest request) {
+//
+//    User user = userRepository.findByEmail(request.getEmail())
+//        .orElseThrow(() ->
+//            new ResourceNotFoundException("User not found"));
+//
+//    if (user.isEmailVerified()) {
+//      throw new BadRequestException("Email already verified.");
+//    }
+//
+//    EmailVerification verification =
+//        verificationRepository.findTopByUserOrderByCreatedAtDesc(user)
+//            .orElseThrow(() ->
+//                new BadRequestException("Verification code not found."));
+//
+//
+////    if (verification.getExpiresAt().isBefore(LocalDateTime.now())) {
+////      throw new BadRequestException("Verification code expired.");
+////    }
+//
+//    if (verification.isExpired()) {
+//      throw new BadRequestException("Verification code expired.");
+//    }
+//
+//    if (!passwordEncoder.matches(
+//        request.getCode(),
+//        verification.getToken())) {
+//
+//      throw new BadRequestException("Invalid verification code.");
+//    }
+//
+////    if (verification.getUsedAt() != null) {
+////      throw new BadRequestException("Verification code has already been used.");
+////    }
+////
+//    if(verification.isUsed()){
+//      throw new BadRequestException("Verification code has already been used.");
+//    }
+//    verification.setUsedAt(LocalDateTime.now());
+//
+//    user.setEmailVerified(true);
+//    user.setStatus(UserStatus.ACTIVE);
+//
+//    verificationRepository.save(verification);
+//    userRepository.save(user);
+//
+//    String accessToken = jwtService.generateAccessToken(user);
+//    String jwt = jwtUtils.generateTokenForUser(authentication);
+////    String refreshToken = refreshTokenService.createRefreshToken(user);
+//
+//
+//    try {
+//      EmailRequest email = welcomeEmailBuilder.build(user);
+//      emailService.send(email);
+//    } catch (Exception ex) {
+//      log.error("Unable to send welcome email", ex);
+//    }
+//  }
 
 //  @Transactional
 //  @Override
@@ -203,34 +373,3 @@ public class AuthService implements IAuthService {
 //
 //    return user;
 //  }
-
-  @Override
-  public LoginResponse login(LoginRequest request) {
-    Authentication authentication = authenticationManager.authenticate(
-        new UsernamePasswordAuthenticationToken(
-            request.getEmail(),
-            request.getPassword()
-        )
-    );
-
-    SecurityContextHolder.getContext().setAuthentication(authentication);
-    String jwt = jwtUtils.generateTokenForUser(authentication);
-    StoreUserDetails userDetails = (StoreUserDetails) authentication.getPrincipal();
-
-    User user = userRepository.findByEmail(request.getEmail())
-        .orElseThrow(() ->
-            new UsernameNotFoundException("User not found"));
-
-    try {
-      EmailRequest email = loginEmailBuilder.build(user);
-      emailService.send(email);
-    } catch (Exception ex) {
-      log.error("Unable to send login email", ex);
-    }
-
-    return new LoginResponse(
-        userDetails.getSlug(),
-        jwt
-    );
-  }
-}

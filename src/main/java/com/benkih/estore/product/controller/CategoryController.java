@@ -1,8 +1,8 @@
-package com.benkih.estore.category.controller;
+package com.benkih.estore.product.controller;
 
 
-import com.benkih.estore.category.entity.Category;
-import com.benkih.estore.category.service.ICategoryService;
+import com.benkih.estore.product.entity.Category;
+import com.benkih.estore.product.service.ICategoryService;
 import com.benkih.estore.common.exceptions.AlreadyExistsException;
 import com.benkih.estore.common.exceptions.ResourceNotFoundException;
 import com.benkih.estore.common.response.ApiResponse;

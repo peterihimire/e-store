@@ -1,6 +1,6 @@
 package com.benkih.estore.order.entity;
 
-import com.benkih.estore.address.entity.Address;
+import com.benkih.estore.user.entity.Address;
 import com.benkih.estore.common.enums.Currency;
 import com.benkih.estore.common.enums.OrderStatus;
 import com.benkih.estore.common.enums.PaymentStatus;
@@ -10,7 +10,6 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
