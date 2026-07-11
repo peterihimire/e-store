@@ -11,6 +11,8 @@ import com.benkih.estore.email.service.EmailService;
 import com.benkih.estore.order.dto.response.OrderResponseDto;
 import com.benkih.estore.order.service.IOrderService;
 import com.benkih.estore.product.service.IProductService;
+import com.benkih.estore.security.user.CurrentUserService;
+import com.benkih.estore.user.dto.response.AddressResponseDto;
 import com.benkih.estore.user.entity.Role;
 import com.benkih.estore.user.repository.RoleRepository;
 import com.benkih.estore.user.dto.request.CreateUserRequest;
@@ -43,6 +45,8 @@ public class UserService implements IUserService {
   private final RoleRepository roleRepository;
   private final EmailService emailService;
   private final WelcomeEmailBuilder welcomeEmailBuilder;
+  private final CurrentUserService currentUserService;
+  private final AddressService addressService;
 
   @Override
   @Transactional(readOnly = true)
@@ -154,6 +158,12 @@ public class UserService implements IUserService {
     if (user.getCart() != null) {
       cartDto = cartService.getConvertedCart(user.getCart());
     }
+
+    List<AddressResponseDto> addressDtos = Optional.ofNullable(user.getAddresses())
+        .orElse(List.of())
+        .stream()
+        .map(addressService::convertToDto)
+        .toList();
     log.info("User cart dto data={}", cartDto);
     return new UserResponseDto(
         user.getSlug(),
@@ -161,7 +171,8 @@ public class UserService implements IUserService {
         user.getLastName(),
         user.getEmail(),
         orderDtos,
-        cartDto
+        cartDto,
+        addressDtos
     );
   }
 
@@ -169,6 +180,14 @@ public class UserService implements IUserService {
   public User getAuthenticatedUser() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     String email = authentication.getName();
-    return userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found."));
+    return userRepository.findByEmail(email)
+        .orElseThrow(() ->
+            new ResourceNotFoundException("User not found."));
+  }
+
+  @Override
+  public UserResponseDto getUserInfo(){
+    User user = currentUserService.getCurrentUser();
+    return convertToDto(user);
   }
 }

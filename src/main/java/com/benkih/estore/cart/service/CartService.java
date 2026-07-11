@@ -8,10 +8,13 @@ import com.benkih.estore.cart.repository.CartItemRepository;
 import com.benkih.estore.common.exceptions.ResourceNotFoundException;
 import com.benkih.estore.product.entity.Product;
 import com.benkih.estore.product.service.IProductService;
+import com.benkih.estore.security.user.StoreUserDetails;
 import com.benkih.estore.user.entity.User;
 import com.benkih.estore.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +35,23 @@ public class CartService  implements ICartService{
   private final IProductService productService;
   private final UserRepository userRepository;
 
+
+
+
+  @Transactional // Don't use insert[save] in a read only method
+  @Override
+  public CartResponseDto getCartForCurrentUser(String slug) {
+    User user = userRepository.findBySlug(slug)
+        .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+    Cart cart = cartRepository.findByUser(user);
+    if (cart == null) {
+      cart = new Cart();
+      cart.setUser(user);
+      cart = cartRepository.save(cart);
+    }
+    return getConvertedCart(cart);
+  }
 
   @Override
   public Cart getCart(String slug) {
@@ -164,18 +184,18 @@ public class CartService  implements ICartService{
     return cartRepository.findByUser(user);
   }
 
-  @Transactional // Don't use insert[save] in a read only method
-  @Override
-  public CartResponseDto getCartForCurrentUser(String slug) {
-    User user = userRepository.findBySlug(slug)
-        .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-    Cart cart = cartRepository.findByUser(user);
-    if (cart == null) {
-      cart = new Cart();
-      cart.setUser(user);
-      cart = cartRepository.save(cart);
-    }
-    return getConvertedCart(cart);
+  private User getCurrentUser() {
+
+    StoreUserDetails principal =
+        (StoreUserDetails) SecurityContextHolder
+            .getContext()
+            .getAuthentication()
+            .getPrincipal();
+
+    return userRepository.findBySlug(principal.getSlug())
+        .orElseThrow(() ->
+            new UsernameNotFoundException("User not found"));
   }
+
 }

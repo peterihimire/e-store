@@ -20,4 +20,7 @@ public interface IUserService {
   UserResponseDto convertToDto(User user);
 
   User getAuthenticatedUser();
+
+  @Transactional(readOnly = true)
+  UserResponseDto getUserInfo();
 }

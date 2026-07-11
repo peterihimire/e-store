@@ -40,6 +40,13 @@ public class UserController {
     return ResponseEntity.ok(new ApiResponse("success", "User data returned", dto));
   }
 
+  @GetMapping("/user/info")
+  @PreAuthorize("isAuthenticated()")
+  public ResponseEntity<ApiResponse> getUserInfo() {
+    UserResponseDto dto = userService.getUserInfo();
+    return ResponseEntity.ok(new ApiResponse("success", "User data returned", dto));
+  }
+
   @PostMapping("/user/add")
   public ResponseEntity<ApiResponse> createUser(@Valid @RequestBody CreateUserRequest request){
     try {

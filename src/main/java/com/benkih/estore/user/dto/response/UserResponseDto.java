@@ -20,4 +20,5 @@ public class UserResponseDto {
   private String email;
   private List<OrderResponseDto> orders;
   private CartResponseDto cart;
+  private List<AddressResponseDto> addresses;
 }

@@ -22,7 +22,7 @@ public class Address {
   @Column(nullable = false, unique = true, updatable = false)
   private String slug;
 
-  @Column(nullable = false)
+  @Column(nullable = false) // need to update this to use first and last names
   private String fullName;
 
   @Column(nullable = false)
@@ -45,7 +45,7 @@ public class Address {
   private String postalCode;
 
   @Column(nullable = false)
-  private Boolean defaultAddress = false;
+  private boolean defaultAddress;
 
   private String createdBy;
 
