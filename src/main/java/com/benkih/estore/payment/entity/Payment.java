@@ -1,6 +1,7 @@
 package com.benkih.estore.payment.entity;
 
 import com.benkih.estore.common.enums.Currency;
+import com.benkih.estore.common.enums.PaymentProvider;
 import com.benkih.estore.common.enums.PaymentMethod;
 import com.benkih.estore.common.enums.PaymentStatus;
 import com.benkih.estore.order.entity.Order;
@@ -41,11 +42,15 @@ public class Payment {
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
-  private PaymentMethod paymentMethod = PaymentMethod.PAYSTACK;
+  private PaymentMethod paymentMethod = PaymentMethod.CARD;
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   private PaymentStatus paymentStatus = PaymentStatus.PENDING;
+
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private PaymentProvider paymentProvider = PaymentProvider.PAYSTACK;
 
   /**
    * Transaction ID returned by Paystack
@@ -58,12 +63,18 @@ public class Payment {
    */
   private String authorizationCode;
 
+  @Column(columnDefinition = "TEXT")
+  private String gatewayRequest;
+
   /**
    * Gateway response
    * e.g. "Successful"
    */
   @Column(columnDefinition = "TEXT")
   private String gatewayResponse;
+
+  @Column(columnDefinition = "TEXT")
+  private String gatewayReference;
 
   /**
    * Optional failure reason

@@ -7,11 +7,9 @@ import lombok.Data;
 public class AddressResponseDto {
   private String slug;
 
-  private String fullName;
+  private String firstName;
 
-//  private String firstName;
-
-//  private String lastName;
+  private String lastName;
 
   private String phoneNumber;
 

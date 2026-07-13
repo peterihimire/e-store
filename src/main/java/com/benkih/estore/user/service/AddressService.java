@@ -31,7 +31,8 @@ public class AddressService implements IAddressService {
 
     Address address = new Address();
 
-    address.setFullName(request.getFullName());
+    address.setFirstName(request.getFirstName());
+    address.setLastName(request.getLastName());
     address.setPhoneNumber(request.getPhoneNumber());
     address.setAddressLine1(request.getAddressLine1());
     address.setAddressLine2(request.getAddressLine2());
@@ -74,10 +75,14 @@ public class AddressService implements IAddressService {
             .orElseThrow(()->
                 new ResourceNotFoundException("Address not found."));
 
-    //    address.setFirstName(request.getFirstName());
-    //    address.setLastName(request.getLastName());
-    if (request.getFullName() != null) {
-      address.setFullName(request.getFullName());
+
+
+    if (request.getFirstName() != null) {
+      address.setFirstName(request.getFirstName());
+    }
+
+    if (request.getLastName() != null) {
+      address.setLastName(request.getLastName());
     }
 
     if (request.getPhoneNumber() != null) {
@@ -145,9 +150,8 @@ public class AddressService implements IAddressService {
     AddressResponseDto dto = new AddressResponseDto();
 
     dto.setSlug(address.getSlug());
-    dto.setFullName(address.getFullName());
-    //    dto.setFirstName(address.getFirstName());
-    //    dto.setLastName(address.getLastName());
+        dto.setFirstName(address.getFirstName());
+        dto.setLastName(address.getLastName());
     dto.setPhoneNumber(address.getPhoneNumber());
     dto.setAddressLine1(address.getAddressLine1());
     dto.setAddressLine2(address.getAddressLine2());

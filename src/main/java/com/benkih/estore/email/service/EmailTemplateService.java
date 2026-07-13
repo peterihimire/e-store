@@ -19,5 +19,4 @@ public class EmailTemplateService {
     context.setVariables(variables);
     return templateEngine.process(template, context);
   }
-
 }

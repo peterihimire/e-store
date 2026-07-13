@@ -1,10 +1,15 @@
 package com.benkih.estore.common.enums;
 
 public enum PaymentStatus {
-  UNPAID,
   PENDING,
+  PROCESSING,
+  SUCCESS,
+  FAILED,
+  CANCELLED,
+  EXPIRED,
+
+  UNPAID,
   PAID,
-  FAILED ,
   REFUNDED,
   PARTIALLY_REFUNDED
 }

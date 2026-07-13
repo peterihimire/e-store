@@ -5,13 +5,13 @@ import lombok.Data;
 
 @Data
 public class UpdateAddressRequest {
-  private String fullName;
+//  private String fullName;
 
 //  @NotBlank
-//  private String firstName;
+  private String firstName;
 
 //  @NotBlank
-//  private String lastName;
+  private String lastName;
 
   private String phoneNumber;
 

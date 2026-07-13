@@ -23,7 +23,10 @@ public class Address {
   private String slug;
 
   @Column(nullable = false) // need to update this to use first and last names
-  private String fullName;
+  private String firstName;
+
+  @Column(nullable = false) // need to update this to use first and last names
+  private String lastName;
 
   @Column(nullable = false)
   private String phoneNumber;

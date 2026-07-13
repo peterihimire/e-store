@@ -58,7 +58,7 @@ public class AuthController {
   @PostMapping("/verify-email")
   public ResponseEntity<ApiResponse> verifyEmail( @RequestBody VerifyEmailRequest request){
     LoginResponse response = authService.verifyEmail(request);
-//      UserResponseDto userDto = userService.convertToDto(user);
+    //   UserResponseDto userDto = userService.convertToDto(user);
       return ResponseEntity.ok(new ApiResponse("success", "User verified",
           response));
   }

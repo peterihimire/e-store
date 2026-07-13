@@ -7,14 +7,14 @@ import lombok.Data;
 @Data
 public class CreateAddressRequest {
 
+//  @NotBlank
+//  private String fullName;
+
   @NotBlank
-  private String fullName;
+  private String firstName;
 
-//  @NotBlank
-//  private String firstName;
-
-//  @NotBlank
-//  private String lastName;
+  @NotBlank
+  private String lastName;
 
   @NotBlank
   private String phoneNumber;
