@@ -34,7 +34,7 @@ public class DataSeeder implements CommandLineRunner {
       log.info("Starting data seeding...");
 
       //       // Always create roles if they don't exist
-      //       createDefaultRoles();
+//             createDefaultRoles();
 
       //      // Only create users if none exist
       //      if (userRepository.count() == 0) {

@@ -1,6 +1,5 @@
 package com.benkih.estore.vendor;
 
-import com.benkih.estore.common.config.WebClientConfig;
 import com.benkih.estore.common.enums.PaymentStatus;
 import com.benkih.estore.payment.dto.request.InitializePaymentRequest;
 import com.benkih.estore.payment.dto.request.PaystackInitializeRequest;
@@ -8,19 +7,26 @@ import com.benkih.estore.payment.dto.response.InitializePaymentResponse;
 import com.benkih.estore.payment.dto.response.PaystackInitializeResponse;
 import com.benkih.estore.payment.dto.response.PaystackVerifyResponse;
 import com.benkih.estore.payment.dto.response.VerifyPaymentResponse;
+import com.benkih.estore.payment.dto.webhook.PaystackWebhookEvent;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
-
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import org.springframework.util.DigestUtils;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.util.HexFormat;
 
 @Component
 @RequiredArgsConstructor
 public class PaystackClient {
   private final WebClient webClient;
+  private final ObjectMapper objectMapper;
 
   @Value("${paystack.secret-key}")
   private String secretKey;
@@ -67,6 +73,32 @@ public class PaystackClient {
         .map(this::map)
         .block();
   }
+
+
+  public boolean verifyWebhookSignature(String signature, String payload) {
+    try {
+      Mac mac = Mac.getInstance("HmacSHA512");
+
+      mac.init(new SecretKeySpec(secretKey.getBytes(StandardCharsets.UTF_8), "HmacSHA512"));
+      byte[] hash = mac.doFinal(payload.getBytes(StandardCharsets.UTF_8));
+      String computed = HexFormat.of().formatHex(hash);
+
+      return computed.equalsIgnoreCase(signature);
+
+    } catch (Exception e) {
+      throw new RuntimeException("Unable to verify Paystack webhook signature", e);
+    }
+  }
+
+
+  public PaystackWebhookEvent parseWebhook(String payload) {
+    try {
+      return objectMapper.readValue(payload, PaystackWebhookEvent.class);
+    } catch (Exception e) {
+      throw new RuntimeException("Unable to parse Paystack webhook payload", e);
+    }
+  }
+
 
   private InitializePaymentResponse map(
       PaystackInitializeResponse response) {

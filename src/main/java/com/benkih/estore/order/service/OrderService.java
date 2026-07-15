@@ -3,6 +3,7 @@ package com.benkih.estore.order.service;
 import com.benkih.estore.cart.entity.Cart;
 import com.benkih.estore.cart.service.CartService;
 import com.benkih.estore.common.enums.OrderStatus;
+import com.benkih.estore.common.enums.PaymentStatus;
 import com.benkih.estore.common.exceptions.ResourceNotFoundException;
 import com.benkih.estore.order.dto.response.OrderItemResponseDto;
 import com.benkih.estore.order.dto.response.OrderResponseDto;
@@ -13,6 +14,7 @@ import com.benkih.estore.product.entity.Product;
 import com.benkih.estore.product.repository.ProductRepository;
 import com.benkih.estore.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,7 +22,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrderService implements IOrderService{
@@ -145,5 +147,14 @@ public class OrderService implements IOrderService{
         order.getOrderStatus().name(),
         items
     );
+  }
+
+  @Transactional
+  public void markAsPaid(Order order) {
+    log.info("Before: {}", order.getPaymentStatus());
+    if (order.getPaymentStatus() != PaymentStatus.PAID) {
+      order.setPaymentStatus(PaymentStatus.PAID);
+    }
+    log.info("After: {}", order.getPaymentStatus());
   }
 }

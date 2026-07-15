@@ -9,12 +9,14 @@ import java.util.List;
 public interface IOrderService {
   //  Order placeOrder(String orderSlug);
   OrderResponseDto placeOrder(String userSlug);
+
   Order getOrder(String orderSlug);
 
   @Transactional(readOnly = true)
   OrderResponseDto getOrderDtoBySlug(String slug);
 
   List<Order> getUserOrders(String slug);
+
   @Transactional(readOnly = true)
   List<OrderResponseDto> getConvertedOrders(List<Order> orders);
 

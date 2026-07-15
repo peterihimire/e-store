@@ -103,6 +103,7 @@ public class StoreConfig {
             .requestMatchers("/api/v1/auth/**").permitAll()
             .requestMatchers("/api/v1/products/**").permitAll()
             .requestMatchers("/api/v1/users/**").permitAll()
+            .requestMatchers("/api/v1/webhooks/**").permitAll()
             .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll() // If using Swagger
             .requestMatchers("/h2-console/**").permitAll()  // If using H2 (development only)
 
