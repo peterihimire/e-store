@@ -250,6 +250,73 @@ public class GlobalExceptionHandler {
     return buildError(HttpStatus.FORBIDDEN, message, request);
   }
 
+  // In GlobalExceptionHandler
+  @ExceptionHandler(PaymentException.class)
+  public ResponseEntity<ApiError> handlePaymentException(
+      PaymentException ex,
+      HttpServletRequest request) {
+
+    log.warn("Payment error: {}", ex.getMessage());
+
+    String message = "Payment processing failed: " + ex.getMessage();
+    if (ex.getCause() != null) {
+      log.debug("Payment exception cause: ", ex.getCause());
+    }
+
+    return buildError(HttpStatus.BAD_REQUEST, message, request);
+  }
+
+  @ExceptionHandler(PaymentGatewayException.class)
+  public ResponseEntity<ApiError> handlePaymentGatewayException(
+      PaymentGatewayException ex,
+      HttpServletRequest request) {
+
+    log.error("Payment gateway error: {}", ex.getMessage(), ex);
+
+    String message = "Payment gateway is currently unavailable. Please try again later.";
+    if (ex.getCause() != null) {
+      log.debug("Gateway exception cause: ", ex.getCause());
+    }
+
+    return buildError(HttpStatus.BAD_GATEWAY, message, request);
+  }
+
+  @ExceptionHandler(DuplicatePaymentException.class)
+  public ResponseEntity<ApiError> handleDuplicatePaymentException(
+      DuplicatePaymentException ex,
+      HttpServletRequest request) {
+
+    log.warn("Duplicate payment detected: {}", ex.getMessage());
+
+    String message = "Duplicate payment detected: " + ex.getMessage();
+
+    return buildError(HttpStatus.CONFLICT, message, request);
+  }
+
+  @ExceptionHandler(PaymentVerificationException.class)
+  public ResponseEntity<ApiError> handlePaymentVerificationException(
+      PaymentVerificationException ex,
+      HttpServletRequest request) {
+
+    log.error("Payment verification failed: {}", ex.getMessage(), ex);
+
+    String message = "Payment verification failed: " + ex.getMessage();
+
+    return buildError(HttpStatus.BAD_REQUEST, message, request);
+  }
+
+  @ExceptionHandler(PaymentTimeoutException.class)
+  public ResponseEntity<ApiError> handlePaymentTimeoutException(
+      PaymentTimeoutException ex,
+      HttpServletRequest request) {
+
+    log.error("Payment timeout: {}", ex.getMessage(), ex);
+
+    String message = "Payment request timed out. Please try again.";
+
+    return buildError(HttpStatus.REQUEST_TIMEOUT, message, request);
+  }
+
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ApiError> handleException(
       Exception ex,

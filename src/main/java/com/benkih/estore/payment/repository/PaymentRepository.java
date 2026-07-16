@@ -1,5 +1,7 @@
 package com.benkih.estore.payment.repository;
 
+import com.benkih.estore.common.enums.PaymentStatus;
+import com.benkih.estore.order.entity.Order;
 import com.benkih.estore.payment.entity.Payment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -15,5 +17,7 @@ public interface PaymentRepository
 
   Optional<Payment> findBySlug(
       String slug);
+
+  Optional<Payment> findByOrderAndPaymentStatus(Order order, PaymentStatus status);
 
 }

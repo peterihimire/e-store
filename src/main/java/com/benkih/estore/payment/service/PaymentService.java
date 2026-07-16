@@ -1,8 +1,10 @@
 package com.benkih.estore.payment.service;
 
+import com.benkih.estore.common.enums.Currency;
+import com.benkih.estore.common.enums.OrderStatus;
+import com.benkih.estore.common.enums.PaymentEventType;
 import com.benkih.estore.common.enums.PaymentStatus;
-import com.benkih.estore.common.exceptions.ForbiddenException;
-import com.benkih.estore.common.exceptions.ResourceNotFoundException;
+import com.benkih.estore.common.exceptions.*;
 import com.benkih.estore.order.service.OrderService;
 import com.benkih.estore.payment.dto.request.CheckoutRequest;
 import com.benkih.estore.payment.dto.request.InitializePaymentRequest;
@@ -21,9 +23,12 @@ import com.benkih.estore.user.entity.User;
 import com.benkih.estore.vendor.PaystackClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -31,6 +36,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PaymentService implements IPaymentService {
 
+  @Value("${app.payment.callback-url}")
+  private String callbackUrl;
   private final PaymentRepository paymentRepository;
   private final OrderRepository orderRepository;
   private final PaymentGatewayFactory gatewayFactory;
@@ -38,42 +45,126 @@ public class PaymentService implements IPaymentService {
   private final OrderService orderService;
   private final PaystackClient paystackClient;
 
+
   @Override
   public InitializePaymentResponse checkout(CheckoutRequest request) {
-
     Order order = orderRepository.findBySlug(request.getOrderSlug())
-        .orElseThrow();
+        .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
     log.info("here is the order data={}",order);
 
     if (!order.getUser().getSlug().equals(currentUserService.getCurrentUserSlug())) {
       throw new ForbiddenException("You are not allowed to pay for this order.");
     }
 
-    Payment payment = new Payment();
+    //  Check if order can be paid
+    validateOrderCanBePaid(order);
 
-    payment.setReference(UUID.randomUUID().toString());
-    payment.setAmount(order.getTotalAmount());
-    payment.setCurrency(order.getCurrency());
-    payment.setOrder(order);
-    payment.setUser(order.getUser());
+    Optional<Payment> existing = paymentRepository
+        .findByOrderAndPaymentStatus(order, PaymentStatus.PENDING);
 
-    payment.setPaymentMethod(request.getPaymentMethod());
-    payment.setPaymentProvider(request.getPaymentProvider());
 
-    paymentRepository.save(payment);
+    if (existing.isPresent()) {
+      Payment payment = existing.get();
 
-    PaymentGateway gateway = gatewayFactory.get(request.getPaymentProvider());
-
-    InitializePaymentRequest gatewayRequest =
-        InitializePaymentRequest.builder()
-            .email(order.getUser().getEmail())
-            .amount(order.getTotalAmount())
-            .currency(order.getCurrency())
+      // If payment already has authorizationUrl, return it (idempotent)
+      if (payment.getAuthorizationUrl() != null && payment.getAccessCode() != null) {
+        log.info("Returning existing payment for order: {}", order.getSlug());
+        return InitializePaymentResponse.builder() // had to add @Builder annotation to use it
+            .authorizationUrl(payment.getAuthorizationUrl())
+            .accessCode(payment.getAccessCode())
             .reference(payment.getReference())
-            .callbackUrl("http://localhost:8080/api/v1/payments/callback")
             .build();
 
-    return gateway.initialize(gatewayRequest);
+        //        return new InitializePaymentResponse(
+        //            existing.get().getAuthorizationUrl(),
+        //            existing.get().getAccessCode(),
+        //            existing.get().getReference()
+        //        );
+      }
+
+      // If payment is stale (> 5 minutes), mark as expired and create new
+      if (payment.getCreatedAt().isBefore(LocalDateTime.now().minusMinutes(5))) {
+        log.warn("Stale payment found for order: {}, marking as expired", order.getSlug());
+        payment.setPaymentStatus(PaymentStatus.EXPIRED);
+        payment.setFailureReason("Payment attempt expired");
+        paymentRepository.save(payment);
+
+        // Continue to create new payment
+      } else {
+        // Still within 5 minutes, but no authorizationUrl - something went wrong
+        log.error("Payment exists but missing gateway details: {}", payment.getReference());
+        payment.setPaymentStatus(PaymentStatus.FAILED);
+        payment.setFailureReason("Payment initiation failed - missing gateway response");
+        paymentRepository.save(payment);
+
+        throw new PaymentException("Payment initiation failed. Please try again.");
+      }
+    }
+
+    // Create new payment
+    Payment payment = createPayment(order, request);
+    log.info("Payment created with reference: {}", payment.getReference());
+
+    try {
+      PaymentGateway gateway = gatewayFactory.get(request.getPaymentProvider());
+
+      InitializePaymentRequest gatewayRequest = InitializePaymentRequest.builder()
+          .email(order.getUser().getEmail())
+          .amount(order.getTotalAmount())
+          .currency(order.getCurrency())
+          .reference(payment.getReference())
+          .callbackUrl(callbackUrl)
+          .build();
+
+      InitializePaymentResponse gatewayResponse = gateway.initialize(gatewayRequest);
+      log.info("Gateway response received for reference: {}", payment.getReference());
+
+
+      // Check if gateway initialization was successful
+      if (!gatewayResponse.isSuccess()) {
+        log.error("Gateway initialization failed: {}", gatewayResponse.getMessage());
+
+        payment.setPaymentStatus(PaymentStatus.FAILED);
+        payment.setFailureReason(gatewayResponse.getMessage());
+        payment.setGatewayResponse(gatewayResponse.getMessage());
+        paymentRepository.save(payment);
+
+        throw new PaymentException("Payment initialization failed: " + gatewayResponse.getMessage());
+      }
+
+      //  Update payment with complete gateway response
+      payment.setAuthorizationUrl(gatewayResponse.getAuthorizationUrl());
+      payment.setAccessCode(gatewayResponse.getAccessCode());
+      payment.setGatewayResponse(gatewayResponse.getMessage());
+      payment.setPaymentStatus(PaymentStatus.INITIATED);
+
+      paymentRepository.save(payment);
+      log.info("Payment updated with gateway details: {}", payment.getReference());
+
+      return InitializePaymentResponse.builder()
+          .authorizationUrl(payment.getAuthorizationUrl())
+          .accessCode(payment.getAccessCode())
+          .reference(payment.getReference())
+          .build();
+
+    } catch (PaymentGatewayException e) {
+      log.error("Payment gateway error: {}", e.getMessage(), e);
+
+      payment.setPaymentStatus(PaymentStatus.FAILED);
+      payment.setFailureReason(e.getMessage());
+      paymentRepository.save(payment);
+
+      throw new PaymentGatewayException("Payment gateway is currently unavailable. Please try again later.", e);
+
+    } catch (Exception e) {
+      log.error("Payment initialization error: {}", e.getMessage(), e);
+
+      payment.setPaymentStatus(PaymentStatus.FAILED);
+      payment.setFailureReason(e.getMessage());
+      paymentRepository.save(payment);
+
+      throw new PaymentException("Payment initialization failed: " + e.getMessage(), e);
+    }
   }
 
   @Override
@@ -89,9 +180,7 @@ public class PaymentService implements IPaymentService {
     }
 
     PaymentGateway gateway = gatewayFactory.get(payment.getPaymentProvider());
-
     VerifyPaymentResponse response = gateway.verify(reference);
-
     synchronizePayment(payment, response);
 
     return convertToDto(payment);
@@ -105,21 +194,17 @@ public class PaymentService implements IPaymentService {
     if (!paystackClient.verifyWebhookSignature(signature, payload)) {
       throw new IllegalArgumentException("Invalid webhook signature");
     }
-
     // 2. Parse the JSON payload
     PaystackWebhookEvent event = paystackClient.parseWebhook(payload);
     log.info("Lets see the event={}", event);
-
     // 3. Ignore events you don't care about
     if (!"charge.success".equals(event.getEvent())) {
       return;
     }
-
     // 4. Find the payment using the reference sent by Paystack
     Payment payment = paymentRepository.findByReference(event.getData().getReference())
         .orElseThrow(() -> new ResourceNotFoundException("Payment not found"));
     log.info("Lets see the payment={}", payment);
-
     // 5. Verify directly with Paystack (recommended)
     VerifyPaymentResponse response = paystackClient.verify(payment.getReference());
       log.info("Lets see the paystack client info response={}", response);
@@ -140,7 +225,6 @@ public class PaymentService implements IPaymentService {
 
   @Override
   public PaymentResponse convertToDto(Payment payment) {
-
     return new PaymentResponse(
         payment.getSlug(),
         payment.getReference(),
@@ -156,14 +240,59 @@ public class PaymentService implements IPaymentService {
     );
   }
 
-
   private void synchronizePayment(Payment payment, VerifyPaymentResponse response) {
-
     if (payment.getPaymentStatus() != response.getStatus()) {
       payment.setPaymentStatus(response.getStatus());
       payment.setTransactionId(response.getTransactionId());
       payment.setGatewayResponse(response.getGatewayResponse());
       payment.setPaidAt(response.getPaidAt());
+    }
+  }
+
+  private Payment createPayment(Order order, CheckoutRequest request) {
+    Payment payment = new Payment();
+    payment.setReference(generateReference()); // Use proper reference generation
+    payment.setAmount(order.getTotalAmount());
+    payment.setCurrency(order.getCurrency() != null ? order.getCurrency() : Currency.NGN);
+    payment.setOrder(order);
+    payment.setUser(order.getUser());
+    payment.setPaymentMethod(request.getPaymentMethod());
+    payment.setPaymentProvider(request.getPaymentProvider());
+    payment.setPaymentStatus(PaymentStatus.PENDING);
+    payment.setCreatedBy(order.getUser().getSlug());
+
+    return paymentRepository.save(payment);
+  }
+
+  private String generateReference() {
+    return "PAY-" + UUID.randomUUID().toString().replace("-", "").substring(0, 12).toUpperCase();
+  }
+
+  private void validateOrderCanBePaid(Order order) {
+    if (order.getOrderStatus() == OrderStatus.PAID) {
+      throw new DuplicatePaymentException(
+          String.format("Order %s has already been paid for.", order.getSlug())
+      );
+    }
+
+    if (order.getOrderStatus() == OrderStatus.PROCESSING ||
+        order.getOrderStatus() == OrderStatus.SHIPPED ||
+        order.getOrderStatus() == OrderStatus.DELIVERED) {
+      throw new PaymentException(
+          String.format("Order %s is already being processed and cannot be paid for.", order.getSlug())
+      );
+    }
+
+    if (order.getOrderStatus() == OrderStatus.CANCELLED) {
+      throw new PaymentException(
+          String.format("Order %s has been cancelled.", order.getSlug())
+      );
+    }
+
+    if (order.getOrderStatus() == OrderStatus.EXPIRED) {
+      throw new PaymentException(
+          String.format("Order %s has expired.", order.getSlug())
+      );
     }
   }
 }

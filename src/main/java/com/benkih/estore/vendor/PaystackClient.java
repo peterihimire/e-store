@@ -100,18 +100,18 @@ public class PaystackClient {
   }
 
 
-  private InitializePaymentResponse map(
-      PaystackInitializeResponse response) {
-
+  private InitializePaymentResponse map(PaystackInitializeResponse response) {
     return new InitializePaymentResponse(
+        response.isStatus(),
         response.getData().getAuthorizationUrl(),
         response.getData().getAccessCode(),
-        response.getData().getReference()
+        response.getData().getReference(),
+        response.getMessage()
+//        response.getData().
     );
   }
 
   private VerifyPaymentResponse map(PaystackVerifyResponse response) {
-
     BigDecimal amount = BigDecimal
         .valueOf(response.getData().getAmount())
         .movePointLeft(2);

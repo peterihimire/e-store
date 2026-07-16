@@ -19,8 +19,6 @@ public class PaymentWebhookController {
   public ResponseEntity<ApiResponse> handlePaystackWebhook(
       @RequestHeader("x-paystack-signature") String signature,
       @RequestBody String payload) {
-    System.out.println("============== WEBHOOK CONTROLLER HIT ==============");
-    System.err.println("============== WEBHOOK CONTROLLER HIT ==============");
     log.info("Here is the controller, execution got here");
     paymentService.handlePaystackWebhook(signature, payload);
     return ResponseEntity.ok(new ApiResponse("success", "Paystack webhook success", null));
