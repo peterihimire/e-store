@@ -2,7 +2,7 @@ package com.benkih.estore.common.enums;
 
 public enum PaymentStatus {
   PENDING,
-  INITIATED,
+  PAID,
   PROCESSING,
   SUCCESS,
   FAILED,
