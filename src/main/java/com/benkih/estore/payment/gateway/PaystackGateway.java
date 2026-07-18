@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class PaystackGateway implements PaymentGateway {
-  private final PaystackClient client;
+  private final PaystackClient paystackClient;
 
   @Override
   public PaymentProvider supports(){
@@ -21,11 +21,16 @@ public class PaystackGateway implements PaymentGateway {
 
   @Override
   public InitializePaymentResponse initialize(InitializePaymentRequest request){
-    return client.initialize(request);
+    return paystackClient.initialize(request);
   }
 
   @Override
   public VerifyPaymentResponse verify(String reference){
-    return client.verify(reference);
+    return paystackClient.verify(reference);
   }
+
+//  @Override
+//  public WebhookEvent parseAndVerifyWebhook(String signature, String payload) {
+//    return null;
+//  }
 }

@@ -1,5 +1,8 @@
 package com.benkih.estore.vendor;
 
+import com.benkih.estore.audit.entity.ApiLog;
+import com.benkih.estore.audit.service.ApiLogService;
+import com.benkih.estore.audit.service.IApiLogService;
 import com.benkih.estore.common.enums.PaymentStatus;
 import com.benkih.estore.payment.dto.request.InitializePaymentRequest;
 import com.benkih.estore.payment.dto.request.PaystackInitializeRequest;
@@ -27,6 +30,7 @@ import java.util.HexFormat;
 public class PaystackClient {
   private final WebClient webClient;
   private final ObjectMapper objectMapper;
+  private final IApiLogService apiLogService;
 
   @Value("${paystack.secret-key}")
   private String secretKey;
@@ -36,7 +40,6 @@ public class PaystackClient {
 
 
   public InitializePaymentResponse initialize(InitializePaymentRequest request){
-
     // with using @Data annotation
     //    PaystackInitializeRequest body = new PaystackInitializeRequest();
     //
@@ -49,29 +52,72 @@ public class PaystackClient {
     // with using @Builder and the rest annotations
     PaystackInitializeRequest body = PaystackInitializeRequest.builder()
         .email(request.getEmail())
-        .amount(request.getAmount()
-            .multiply(BigDecimal.valueOf(100)))
-            .reference(request.getReference())
-            .currency(request.getCurrency().name())
-            .callbackUrl(request.getCallbackUrl())
-            .build();
+        .amount(request.getAmount().multiply(BigDecimal.valueOf(100)))
+        .reference(request.getReference())
+        .currency(request.getCurrency().name())
+        .callbackUrl(request.getCallbackUrl())
+        .build();
 
-    return webClient.post().uri(baseUrl+"/transaction/initialize")
-        .header(HttpHeaders.AUTHORIZATION, "Bearer "+secretKey)
-        .bodyValue(body)
-        .retrieve()
-        .bodyToMono(PaystackInitializeResponse.class)
-        .map(this::map)
-        .block();
+    try {
+      PaystackInitializeResponse response = webClient.post()
+          .uri(baseUrl + "/transaction/initialize")
+          .header(HttpHeaders.AUTHORIZATION, "Bearer " + secretKey)
+          .bodyValue(body)
+          .retrieve()
+          .bodyToMono(PaystackInitializeResponse.class)
+          .block();
+
+      apiLogService.saveOutboundLog(
+          "POST",
+          baseUrl + "/transaction/initialize",
+          body,
+          200,
+          response,
+          null);
+
+      return map(response);
+    } catch (Exception e){
+      apiLogService.saveOutboundLog(
+          "POST",
+          baseUrl + "/transaction/initialize",
+          body,
+          500,
+          e.getMessage(),
+          e
+      );
+        throw e;
+    }
   }
 
   public VerifyPaymentResponse verify(String reference){
-    return webClient.get().uri(baseUrl+ "/transaction/verify/"+reference)
-        .header(HttpHeaders.AUTHORIZATION, "Bearer "+secretKey)
-        .retrieve()
-        .bodyToMono(PaystackVerifyResponse.class)
-        .map(this::map)
-        .block();
+    try {
+      PaystackVerifyResponse response = webClient.get().uri(baseUrl +
+              "/transaction/verify/" + reference)
+          .header(HttpHeaders.AUTHORIZATION, "Bearer " + secretKey)
+          .retrieve()
+          .bodyToMono(PaystackVerifyResponse.class)
+          .block();
+
+      apiLogService.saveOutboundLog(
+          "GET",
+          baseUrl + "/transaction/verify/" + reference,
+          null,
+          200,
+          response,
+          null);
+
+      return map(response);
+    } catch(Exception e){
+      apiLogService.saveOutboundLog(
+          "GET",
+          baseUrl + "/transaction/verify/" + reference,
+          null,
+          500,
+          e.getMessage(),
+          e
+      );
+      throw e;
+    }
   }
 
 

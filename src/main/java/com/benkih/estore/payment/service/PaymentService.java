@@ -67,9 +67,9 @@ public class PaymentService implements IPaymentService {
 
     Optional<InitializePaymentResponse> existingPaymentResponse = handleExistingPayment(order);
 
-    if (existingPaymentResponse.isPresent()) {
-      return existingPaymentResponse.get();
-    }
+//    if (existingPaymentResponse.isPresent()) {
+//      return existingPaymentResponse.get();
+//    }
 
     // Create new payment
     Payment payment = createPayment(order, request);
