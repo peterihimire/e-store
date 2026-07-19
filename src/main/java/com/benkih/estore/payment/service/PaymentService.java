@@ -1,9 +1,7 @@
 package com.benkih.estore.payment.service;
 
-import com.benkih.estore.common.enums.Currency;
-import com.benkih.estore.common.enums.OrderStatus;
-import com.benkih.estore.common.enums.PaymentEventType;
-import com.benkih.estore.common.enums.PaymentStatus;
+import com.benkih.estore.audit.service.ApiLogService;
+import com.benkih.estore.common.enums.*;
 import com.benkih.estore.common.exceptions.*;
 import com.benkih.estore.order.service.OrderService;
 import com.benkih.estore.payment.dto.request.CheckoutRequest;
@@ -13,11 +11,14 @@ import com.benkih.estore.payment.dto.response.PaymentResponse;
 import com.benkih.estore.order.entity.Order;
 import com.benkih.estore.order.repository.OrderRepository;
 import com.benkih.estore.payment.dto.response.VerifyPaymentResponse;
+import com.benkih.estore.payment.dto.webhook.PaymentWebhookEvent;
 import com.benkih.estore.payment.dto.webhook.PaystackWebhookEvent;
 import com.benkih.estore.payment.entity.Payment;
 import com.benkih.estore.payment.entity.PaymentEvent;
 import com.benkih.estore.payment.provider.PaymentGateway;
 import com.benkih.estore.payment.provider.PaymentGatewayFactory;
+import com.benkih.estore.payment.provider.PaymentWebhookHandler;
+import com.benkih.estore.payment.provider.PaymentWebhookHandlerFactory;
 import com.benkih.estore.payment.repository.PaymentEventRepository;
 import com.benkih.estore.payment.repository.PaymentRepository;
 import com.benkih.estore.security.user.CurrentUserService;
@@ -42,6 +43,8 @@ public class PaymentService implements IPaymentService {
   private String callbackUrl;
   @Value("${app.payment.timeout.minutes:5}")
   private int paymentTimeoutMinutes;
+  @Value("${api.prefix}")
+  private String apiPrefix;
 
   private final PaymentRepository paymentRepository;
   private final OrderRepository orderRepository;
@@ -50,6 +53,8 @@ public class PaymentService implements IPaymentService {
   private final OrderService orderService;
   private final PaystackClient paystackClient;
   private final PaymentEventRepository paymentEventRepository;
+  private final PaymentWebhookHandlerFactory paymentWebhookHandlerFactory;
+  private final ApiLogService apiLogService;
 
 
   @Override
@@ -67,9 +72,9 @@ public class PaymentService implements IPaymentService {
 
     Optional<InitializePaymentResponse> existingPaymentResponse = handleExistingPayment(order);
 
-//    if (existingPaymentResponse.isPresent()) {
-//      return existingPaymentResponse.get();
-//    }
+    if (existingPaymentResponse.isPresent()) {
+      return existingPaymentResponse.get();
+    }
 
     // Create new payment
     Payment payment = createPayment(order, request);
@@ -98,30 +103,92 @@ public class PaymentService implements IPaymentService {
   }
 
   @Transactional
-  public void handlePaystackWebhook(String signature, String payload) {
-    log.info("Received Paystack webhook");
+  public void handleWebhook(PaymentProvider provider, String signature,
+                            String payload, String url) {
+    String endpoint = url;
+    try {
+      PaymentWebhookHandler handler = paymentWebhookHandlerFactory.get(provider);
 
-    verifyWebhook(signature, payload);
-    PaystackWebhookEvent event = paystackClient.parseWebhook(payload);
+      handler.verifySignature(signature, payload);
 
-    if (shouldIgnore(event)) {
-      return;
+      PaymentWebhookEvent event = handler.parseWebhook(payload);
+      if (shouldIgnore(event)) {
+        apiLogService.saveInboundLog(
+            "POST",
+            endpoint,
+            payload,
+            200,
+            "Ignored webhook event: " + event.eventType(),
+            null
+        );
+        return;
+      }
+
+      Payment payment = getPayment(event.reference());
+      if (isDuplicateWebhook(payment, event, payload)) {
+        apiLogService.saveInboundLog(
+            "POST",
+            endpoint,
+            payload,
+            200,
+            "Duplicate webhook ignored",
+            null
+        );
+        return;
+      }
+
+      saveWebhookEvent(payment, event.eventType(), payload, signature);
+      VerifyPaymentResponse response = handler.verify(event.reference());
+      synchronizePayment(payment, response);
+      processOrder(payment);
+
+      saveFinalPaymentEvent(payment, event, response);
+      apiLogService.saveInboundLog(
+          "POST",
+          endpoint,
+          payload,
+          200,
+          "Webhook processed successfully",
+          null
+      );
+    }catch(Exception e){
+      apiLogService.saveInboundLog(
+          "POST",
+          endpoint,
+          payload,
+          500,
+          null,
+          e
+      );
+      throw e; // will allow the global exception handler to handle it
     }
-
-    String reference = event.getData().getReference();
-
-    Payment payment = getPayment(reference);
-    if (isDuplicateWebhook(payment, event, payload)) {
-      return;
-    }
-
-    saveWebhookEvent(payment, event.getEvent(), payload, signature);
-    VerifyPaymentResponse response = paystackClient.verify(reference);
-    synchronizePayment(payment, response);
-
-    processOrder(payment);
-    saveFinalPaymentEvent(payment, event, response);
   }
+
+//  @Transactional
+//  public void handlePaystackWebhook(String signature, String payload) {
+//    log.info("Received Paystack webhook");
+//
+//    verifyWebhook(signature, payload);
+//    PaystackWebhookEvent event = paystackClient.parseWebhook(payload);
+//
+//    if (shouldIgnore(event)) {
+//      return;
+//    }
+//
+//    String reference = event.getData().getReference();
+//
+//    Payment payment = getPayment(reference);
+//    if (isDuplicateWebhook(payment, event, payload)) {
+//      return;
+//    }
+//
+//    saveWebhookEvent(payment, event.getEvent(), payload, signature);
+//    VerifyPaymentResponse response = paystackClient.verify(reference);
+//    synchronizePayment(payment, response);
+//
+//    processOrder(payment);
+//    saveFinalPaymentEvent(payment, event, response);
+//  }
 
   @Override
   public PaymentResponse convertToDto(Payment payment) {
@@ -145,7 +212,8 @@ public class PaymentService implements IPaymentService {
     log.info("Latest payment={}", latestPayment);
 
     if (latestPayment.isEmpty()) {
-      return null;
+      return Optional.empty();
+//      return null;
     }
 
     Payment payment = latestPayment.get();
@@ -174,7 +242,8 @@ public class PaymentService implements IPaymentService {
           payment.setPaymentStatus(PaymentStatus.EXPIRED);
           payment.setFailureReason("Payment attempt expired");
           paymentRepository.save(payment);
-          return null;
+          return Optional.empty();
+//          return null;
         }
 
         throw new PaymentException("A payment for this order is already in progress.");
@@ -182,7 +251,8 @@ public class PaymentService implements IPaymentService {
 
       case FAILED, EXPIRED -> {
         log.info("Previous payment {} is {}, creating a new payment.", payment.getReference(), payment.getPaymentStatus());
-        return null;
+        return Optional.empty();
+//        return null;
       }
 
       default -> {
@@ -335,8 +405,8 @@ public class PaymentService implements IPaymentService {
     }
   }
 
-  private boolean shouldIgnore(PaystackWebhookEvent event) {
-    String eventType = event.getEvent();
+  private boolean shouldIgnore(PaymentWebhookEvent event) {
+    String eventType = event.eventType();
     if (!"charge.success".equals(eventType) && !"charge.failed".equals(eventType)) {
       log.info("Ignoring webhook event {}", eventType);
       return true;
@@ -349,19 +419,19 @@ public class PaymentService implements IPaymentService {
         .orElseThrow(() -> new ResourceNotFoundException("Payment not found for reference: " + reference));
   }
 
-  private boolean isDuplicateWebhook(Payment payment, PaystackWebhookEvent event, String payload) {
-    String reference = event.getData().getReference();
-    String transactionId = String.valueOf(event.getData().getId());
+  private boolean isDuplicateWebhook(Payment payment, PaymentWebhookEvent event, String payload) {
+    String reference = payment.getReference();
+    String transactionId = String.valueOf(payment.getTransactionId());
 
     if (payment.getPaymentStatus() == PaymentStatus.SUCCESS) {
       log.info("Payment {} already successful", reference);
-      saveWebhookEvent(payment, event.getEvent(), payload, null);
+      saveWebhookEvent(payment, event.eventType(), payload, null);
       return true;
     }
 
     if (payment.getTransactionId() != null && payment.getTransactionId().equals(transactionId)) {
       log.info("Transaction {} already processed", transactionId);
-      saveWebhookEvent(payment, event.getEvent(), payload, null);
+      saveWebhookEvent(payment, event.eventType(), payload, null);
       return true;
     }
     return false;
@@ -374,14 +444,14 @@ public class PaymentService implements IPaymentService {
     }
   }
 
-  private void saveFinalPaymentEvent(Payment payment, PaystackWebhookEvent event, VerifyPaymentResponse response) {
+  private void saveFinalPaymentEvent(Payment payment, PaymentWebhookEvent event, VerifyPaymentResponse response) {
     PaymentEventType type = payment.getPaymentStatus() == PaymentStatus.SUCCESS
             ? PaymentEventType.SUCCESS
             : PaymentEventType.FAILED;
 
     String message = payment.getPaymentStatus() == PaymentStatus.SUCCESS
-            ? "Payment successful via webhook: " + event.getEvent()
-            : "Payment failed via webhook: " + event.getEvent() + " - " + response.getGatewayResponse();
+            ? "Payment successful via webhook: " + event.eventType()
+            : "Payment failed via webhook: " + event.eventType() + " - " + response.getGatewayResponse();
 
     savePaymentEvent(payment, type, message);
   }

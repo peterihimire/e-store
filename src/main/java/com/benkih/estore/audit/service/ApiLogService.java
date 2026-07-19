@@ -60,9 +60,9 @@ public class ApiLogService implements IApiLogService{
   public void saveOutboundLog(
       String method,
       String endpoint,
-      Object request,
+      Object requestBody,
       Integer statusCode,
-      Object response,
+      Object responseBody,
       Exception exception
   ) {
     ApiLog log = new ApiLog();
@@ -71,8 +71,32 @@ public class ApiLogService implements IApiLogService{
     log.setEndpoint(endpoint);
     log.setStatusCode(statusCode);
 
-    log.setRequestBody(writeJson(request));
-    log.setResponseBody(writeJson(response));
+    log.setRequestBody(writeJson(requestBody));
+    log.setResponseBody(writeJson(responseBody));
+
+    if (exception != null) {
+      log.setExceptionMessage(exception.getMessage());
+    }
+    apiLogRepository.save(log);
+  }
+
+  @Override
+  public void saveInboundLog(
+      String method,
+      String endpoint,
+      Object requestBody,
+      Integer statusCode,
+      Object responseBody,
+      Exception exception
+  ) {
+    ApiLog log = new ApiLog();
+
+    log.setMethod(method);
+    log.setEndpoint(endpoint);
+    log.setStatusCode(statusCode);
+
+    log.setRequestBody(writeJson(requestBody));
+    log.setResponseBody(writeJson(responseBody));
 
     if (exception != null) {
       log.setExceptionMessage(exception.getMessage());

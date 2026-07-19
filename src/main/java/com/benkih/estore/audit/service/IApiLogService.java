@@ -11,4 +11,7 @@ public interface IApiLogService {
 
   void saveOutboundLog(String method, String endpoint, Object request,
                        Integer statusCode, Object response, Exception exception);
+
+  void saveInboundLog(String method, String endpoint, Object request,
+                       Integer statusCode, Object response, Exception exception);
 }
