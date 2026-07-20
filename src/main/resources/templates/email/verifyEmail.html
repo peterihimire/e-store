@@ -1,55 +1,210 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
     <title>Verify your Email</title>
 </head>
 
-<body style="font-family: Arial, sans-serif">
-
-<h2>Hello <span th:text="${name}">Customer</span>,</h2>
-
-<p>
-    Thank you for registering with <strong>E-Store</strong>.
-</p>
-
-<p>
-    Before you can start shopping, please verify your email address.
-</p>
-
-<p>
-    <strong>Email:</strong>
-    <span th:text="${email}"></span>
-</p>
-
-<p>
-    Your verification code is:
-</p>
-
-<h1
+<body
         style="
-        letter-spacing:6px;
-        color:#0d6efd;
-        text-align:center;
-    "
-        th:text="${token}">
-    123456
-</h1>
+        margin:0;
+        padding:40px 20px;
+        background:#f5f6fa;
+        font-family:Arial,Helvetica,sans-serif;
+        color:#333333;
+    ">
 
-<p>
-    This code will expire in <strong>10 minutes</strong>.
-</p>
+<table
+        role="presentation"
+        width="100%"
+        cellspacing="0"
+        cellpadding="0">
 
-<p>
-    If you did not create this account, you can safely ignore this email.
-</p>
+    <tr>
+        <td align="center">
 
-<br>
+            <table
+                    role="presentation"
+                    width="600"
+                    cellspacing="0"
+                    cellpadding="0"
+                    style="
+                    background:#ffffff;
+                    border-radius:8px;
+                    overflow:hidden;
+                    border:1px solid #e5e5e5;
+                ">
 
-<p>
-    Regards,<br>
-    <strong>The E-Store Team</strong>
-</p>
+                <tr>
+                    <td
+                            align="center"
+                            style="
+                            background:#0d6efd;
+                            color:#ffffff;
+                            padding:24px;
+                        ">
+
+                        <h1 style="margin:0;">
+                            E-Store
+                        </h1>
+
+                    </td>
+                </tr>
+
+                <tr>
+
+                    <td style="padding:40px;">
+
+                        <h2 style="margin-top:0;">
+                            Hello
+                            <span th:text="${name}">
+                                Customer
+                            </span>,
+                        </h2>
+
+                        <p>
+                            Thank you for registering with
+                            <strong>E-Store</strong>.
+                        </p>
+
+                        <p>
+                            Before you can start shopping, please verify your email address.
+                        </p>
+
+                        <p>
+                            <strong>Email:</strong>
+                            <span th:text="${email}"></span>
+                        </p>
+
+                        <p>
+                            Your verification code is:
+                        </p>
+
+                        <div
+                                style="
+                                background:#f4f8ff;
+                                border:1px solid #d7e5ff;
+                                border-radius:6px;
+                                padding:18px;
+                                text-align:center;
+                                margin:30px 0;
+                            ">
+
+                            <span
+                                    th:text="${token}"
+                                    style="
+                                    font-size:34px;
+                                    letter-spacing:8px;
+                                    color:#0d6efd;
+                                    font-weight:bold;
+                                ">
+                                123456
+                            </span>
+
+                        </div>
+
+                        <p>
+                            This code will expire in
+                            <strong>10 minutes</strong>.
+                        </p>
+
+                        <p>
+                            If you did not create this account, you can safely ignore this email.
+                        </p>
+
+                        <br>
+
+                        <p>
+                            Regards,<br>
+                            <strong>The E-Store Team</strong>
+                        </p>
+
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <td
+                            align="center"
+                            style="
+                            padding:20px;
+                            background:#fafafa;
+                            color:#777777;
+                            font-size:12px;
+                            border-top:1px solid #eeeeee;
+                        ">
+
+                        © 2026 E-Store. All rights reserved.
+
+                    </td>
+
+                </tr>
+
+            </table>
+
+        </td>
+    </tr>
+
+</table>
 
 </body>
+
 </html>
+
+<!--<!DOCTYPE html>-->
+<!--<html xmlns:th="http://www.thymeleaf.org">-->
+<!--<head>-->
+<!--    <meta charset="UTF-8">-->
+<!--    <title>Verify your Email</title>-->
+<!--</head>-->
+
+<!--<body style="font-family: Arial, sans-serif">-->
+
+<!--<h2>Hello <span th:text="${name}">Customer</span>,</h2>-->
+
+<!--<p>-->
+<!--    Thank you for registering with <strong>E-Store</strong>.-->
+<!--</p>-->
+
+<!--<p>-->
+<!--    Before you can start shopping, please verify your email address.-->
+<!--</p>-->
+
+<!--<p>-->
+<!--    <strong>Email:</strong>-->
+<!--    <span th:text="${email}"></span>-->
+<!--</p>-->
+
+<!--<p>-->
+<!--    Your verification code is:-->
+<!--</p>-->
+
+<!--<h1-->
+<!--        style="-->
+<!--        letter-spacing:6px;-->
+<!--        color:#0d6efd;-->
+<!--        text-align:center;-->
+<!--    "-->
+<!--        th:text="${token}">-->
+<!--    123456-->
+<!--</h1>-->
+
+<!--<p>-->
+<!--    This code will expire in <strong>10 minutes</strong>.-->
+<!--</p>-->
+
+<!--<p>-->
+<!--    If you did not create this account, you can safely ignore this email.-->
+<!--</p>-->
+
+<!--<br>-->
+
+<!--<p>-->
+<!--    Regards,<br>-->
+<!--    <strong>The E-Store Team</strong>-->
+<!--</p>-->
+
+<!--</body>-->
+<!--</html>-->

@@ -16,6 +16,7 @@ import com.benkih.estore.email.builder.VerificationEmailBuilder;
 import com.benkih.estore.email.builder.WelcomeEmailBuilder;
 import com.benkih.estore.email.dto.EmailRequest;
 import com.benkih.estore.email.service.EmailService;
+import com.benkih.estore.notification.INotificationService;
 import com.benkih.estore.user.entity.Role;
 import com.benkih.estore.user.repository.RoleRepository;
 import com.benkih.estore.security.jwt.JwtUtils;
@@ -58,6 +59,7 @@ public class AuthService implements IAuthService {
   private final VerificationService verificationService;
   private final EmailVerificationRepository verificationRepository;
   private final IUserService userService;
+  private final INotificationService notificationService;
 
 
 
@@ -102,16 +104,15 @@ public class AuthService implements IAuthService {
 
     user = userRepository.save(user);
 
-    VerificationTokenResponse token =
-        verificationService.createVerificationToken(user);
-
-    try {
-      EmailRequest email =
-          verificationEmailBuilder.build(user, token.getPlainToken());
-      emailService.send(email);
-    } catch (Exception ex) {
-      log.error("Unable to send verification email", ex);
-    }
+    VerificationTokenResponse token = verificationService.createVerificationToken(user);
+    notificationService.sendVerificationEmail(user, token.getPlainToken());
+//    try {
+//      EmailRequest email =
+//          verificationEmailBuilder.build(user, token.getPlainToken());
+//      emailService.send(email);
+//    } catch (Exception ex) {
+//      log.error("Unable to send verification email", ex);
+//    }
     return user;
   }
 
@@ -155,13 +156,14 @@ public class AuthService implements IAuthService {
 
     verificationRepository.save(verification);
     userRepository.save(user);
+    notificationService.sendWelcomeEmail(user);
 
-    try {
-      EmailRequest email = welcomeEmailBuilder.build(user);
-      emailService.send(email);
-    } catch (Exception ex) {
-      log.error("Unable to send welcome email", ex);
-    }
+//    try {
+//      EmailRequest email = welcomeEmailBuilder.build(user);
+//      emailService.send(email);
+//    } catch (Exception ex) {
+//      log.error("Unable to send welcome email", ex);
+//    }
 
     return createLoginResponse(user);
   }
@@ -185,12 +187,13 @@ public LoginResponse login(LoginRequest request) {
       .orElseThrow(() ->
           new UsernameNotFoundException("User not found"));
 
-  try {
-    EmailRequest email = loginEmailBuilder.build(user);
-    emailService.send(email);
-  } catch (Exception ex) {
-    log.error("Unable to send login email", ex);
-  }
+  notificationService.sendLoginEmail(user);
+//  try {
+//    EmailRequest email = loginEmailBuilder.build(user);
+//    emailService.send(email);
+//  } catch (Exception ex) {
+//    log.error("Unable to send login email", ex);
+//  }
 
   return createLoginResponse(authentication, user);
 }

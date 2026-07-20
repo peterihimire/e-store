@@ -1,10 +1,12 @@
 package com.benkih.estore.vendor;
 
+import com.benkih.estore.email.dto.EmailAttachment;
 import com.benkih.estore.email.dto.EmailRequest;
 import com.benkih.estore.email.provider.AbstractEmailProvider;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
@@ -29,6 +31,17 @@ public class MailTrapSmtpProvider extends AbstractEmailProvider {
       helper.setTo(request.getTo());
       helper.setSubject(request.getSubject());
       helper.setText(request.getHtml(), true);
+
+      if (request.getAttachments() != null && !request.getAttachments().isEmpty()) {
+
+        for (EmailAttachment attachment : request.getAttachments()) {
+          helper.addAttachment(
+              attachment.getFilename(),
+              new ByteArrayResource(attachment.getContent()),
+              attachment.getContentType()
+          );
+        }
+      }
 
       mailSender.send(message);
 

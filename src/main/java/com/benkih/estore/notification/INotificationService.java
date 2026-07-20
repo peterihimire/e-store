@@ -1,0 +1,24 @@
+package com.benkih.estore.notification;
+
+//package com.benkih.estore.notification.service;
+
+import com.benkih.estore.order.entity.Order;
+import com.benkih.estore.payment.entity.Payment;
+import com.benkih.estore.user.entity.User;
+
+public interface INotificationService {
+
+  void sendWelcomeEmail(User user);
+
+  void sendVerificationEmail(User user, String token);
+
+  void sendLoginEmail(User user);
+
+  void sendPaymentReceipt(Payment payment);
+
+  void sendOrderConfirmation(Order order);
+
+  void sendOrderShipped(Order order);
+
+  void sendRefundNotification(Payment payment);
+}
