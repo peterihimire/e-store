@@ -16,6 +16,6 @@ public class EmailRequest {
   private String subject;
   private String html;
   private String text;
-  private List<File> attachments;
+  private List<EmailAttachment> attachments;
 
 }

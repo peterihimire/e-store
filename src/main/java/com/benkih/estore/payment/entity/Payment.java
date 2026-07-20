@@ -63,6 +63,11 @@ public class Payment {
    */
   private String authorizationCode;
 
+  @Column(length = 500)
+  private String authorizationUrl;
+
+  private String accessCode;
+
   @Column(columnDefinition = "TEXT")
   private String gatewayRequest;
 

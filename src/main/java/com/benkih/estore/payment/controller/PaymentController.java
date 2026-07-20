@@ -1,5 +1,6 @@
 package com.benkih.estore.payment.controller;
 
+import com.benkih.estore.common.response.ApiResponse;
 import com.benkih.estore.payment.dto.request.CheckoutRequest;
 import com.benkih.estore.payment.dto.response.InitializePaymentResponse;
 import com.benkih.estore.payment.dto.response.PaymentResponse;
@@ -15,12 +16,14 @@ public class PaymentController {
   private final IPaymentService paymentService;
 
   @PostMapping("/checkout")
-  public ResponseEntity<InitializePaymentResponse> checkout(@RequestBody CheckoutRequest request) {
-    return ResponseEntity.ok(paymentService.checkout(request));
+  public ResponseEntity<ApiResponse> checkout(@RequestBody CheckoutRequest request) {
+    InitializePaymentResponse response = paymentService.checkout(request);
+    return ResponseEntity.ok(new ApiResponse("success", "Checkout returned successful", response));
   }
 
   @GetMapping("/verify/{reference}")
-  public ResponseEntity<PaymentResponse> verify(@PathVariable String reference){
-    return ResponseEntity.ok(paymentService.verify(reference));
+  public ResponseEntity<ApiResponse> verify(@PathVariable String reference){
+    PaymentResponse response = paymentService.verify(reference);
+    return ResponseEntity.ok(new ApiResponse("success", "Payment verified success", response));
   }
 }
