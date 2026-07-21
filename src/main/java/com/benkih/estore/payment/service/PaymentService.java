@@ -365,7 +365,8 @@ public class PaymentService implements IPaymentService {
   }
 
   private void validateOrderCanBePaid(Order order) {
-    if (order.getOrderStatus() == OrderStatus.PAID) {
+//    if (order.getOrderStatus() == OrderStatus.PAID) {
+    if (order.getPaymentStatus() == PaymentStatus.PAID) {
       log.info("Order validate...={}", order.getSlug());
       throw new DuplicatePaymentException(String.format("Order %s has already been paid for.", order.getSlug())
       );
@@ -472,17 +473,28 @@ private void processOrder(Payment payment) {
   if (payment.getPaymentStatus() != PaymentStatus.SUCCESS) {
     return;
   }
-  orderService.markAsPaid(payment.getOrder());
+  orderService.confirmPaidOrder(payment.getOrder());
+//  orderService.markAsPaid(payment.getOrder());
+//  orderService.setOrderConfirmed(payment.getOrder());
 }
 
   private void postPaymentProcessing(Payment payment) {
     if (payment.getPaymentStatus() != PaymentStatus.SUCCESS) {
       return;
     }
-    notificationService.sendPaymentReceipt(payment);
-//    paymentReceiptService.sendReceipt(payment);
-//    orderConfirmationService.send(payment.getOrder());
+//    eventPublisher.publishEvent(new PaymentReceiptEvent(payment));
+//    eventPublisher.publishEvent(new OrderConfirmationEvent(payment.getOrder()));
+//    notificationService.sendPaymentReceipt(payment);
+//    sleepForMailtrap();
+    notificationService.sendOrderConfirmation(payment.getOrder());
   }
+//  private void sleepForMailtrap() {
+//    try {
+//      Thread.sleep(2000);
+//    } catch (InterruptedException e) {
+//      Thread.currentThread().interrupt();
+//    }
+//  }
 
   private void saveFinalPaymentEvent(Payment payment, PaymentWebhookEvent event, VerifyPaymentResponse response) {
     PaymentEventType type = payment.getPaymentStatus() == PaymentStatus.SUCCESS

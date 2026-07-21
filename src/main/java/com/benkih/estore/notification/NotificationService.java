@@ -1,9 +1,6 @@
 package com.benkih.estore.notification;
 
-import com.benkih.estore.email.builder.LoginEmailBuilder;
-import com.benkih.estore.email.builder.PaymentReceiptEmailBuilder;
-import com.benkih.estore.email.builder.VerificationEmailBuilder;
-import com.benkih.estore.email.builder.WelcomeEmailBuilder;
+import com.benkih.estore.email.builder.*;
 import com.benkih.estore.email.dto.EmailRequest;
 import com.benkih.estore.email.service.EmailService;
 import com.benkih.estore.order.entity.Order;
@@ -23,7 +20,7 @@ public class NotificationService implements INotificationService {
   private final VerificationEmailBuilder verificationEmailBuilder;
   private final LoginEmailBuilder loginEmailBuilder;
   private final PaymentReceiptEmailBuilder paymentReceiptEmailBuilder;
-  //  private final OrderConfirmationEmailBuilder orderConfirmationEmailBuilder;
+    private final OrderConfirmationEmailBuilder orderConfirmationEmailBuilder;
 
 //  private final SmsService smsService;
 
@@ -52,7 +49,7 @@ public class NotificationService implements INotificationService {
 
   @Override
   public void sendOrderConfirmation(Order order) {
-//    sendEmail(orderConfirmationEmailBuilder.build(order));
+    sendEmail(orderConfirmationEmailBuilder.build(order));
 //    sendSms(orderConfirmationSmsBuilder.build(order));
 //    sendPush(orderConfirmationPushBuilder.build(order));
   }

@@ -150,11 +150,29 @@ public class OrderService implements IOrderService{
   }
 
   @Transactional
-  public void markAsPaid(Order order) {
-    log.info("Before: {}", order.getPaymentStatus());
-    if (order.getPaymentStatus() != PaymentStatus.PAID) {
-      order.setPaymentStatus(PaymentStatus.PAID);
+  public void confirmPaidOrder(Order order) {
+    if (order.getPaymentStatus() == PaymentStatus.PAID) {
+      return;
     }
-    log.info("After: {}", order.getPaymentStatus());
+
+    order.setPaymentStatus(PaymentStatus.PAID);
+    order.setOrderStatus(OrderStatus.CONFIRMED);
   }
+//  @Transactional
+//  public void markAsPaid(Order order) {
+//    log.info("Before: {}", order.getPaymentStatus());
+//    if (order.getPaymentStatus() != PaymentStatus.PAID) {
+//      order.setPaymentStatus(PaymentStatus.PAID);
+//    }
+//    log.info("After: {}", order.getPaymentStatus());
+//  }
+//
+//  @Transactional
+//  public void setOrderConfirmed(Order order) {
+//    log.info("Before: {}", order.getOrderStatus());
+//    if (order.getPaymentStatus() == PaymentStatus.PAID) {
+//      order.setOrderStatus(OrderStatus.CONFIRMED);
+//    }
+//    log.info("After: {}", order.getOrderStatus());
+//  }
 }
