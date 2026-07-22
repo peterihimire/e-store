@@ -71,7 +71,7 @@ public class PaymentService implements IPaymentService {
     }
 
     //  Check if order can be paid
-    validateOrderCanBePaid(order);
+    orderService.validateOrderCanBePaid(order);
 
     Optional<InitializePaymentResponse> existingPaymentResponse = handleExistingPayment(order);
 
@@ -362,35 +362,6 @@ public class PaymentService implements IPaymentService {
 
   private String generateReference() {
     return "PAY-" + UUID.randomUUID().toString().replace("-", "").substring(0, 12).toUpperCase();
-  }
-
-  private void validateOrderCanBePaid(Order order) {
-//    if (order.getOrderStatus() == OrderStatus.PAID) {
-    if (order.getPaymentStatus() == PaymentStatus.PAID) {
-      log.info("Order validate...={}", order.getSlug());
-      throw new DuplicatePaymentException(String.format("Order %s has already been paid for.", order.getSlug())
-      );
-    }
-
-    if (order.getOrderStatus() == OrderStatus.PROCESSING ||
-        order.getOrderStatus() == OrderStatus.SHIPPED ||
-        order.getOrderStatus() == OrderStatus.DELIVERED) {
-      throw new PaymentException(
-          String.format("Order %s is already being processed and cannot be paid for.", order.getSlug())
-      );
-    }
-
-    if (order.getOrderStatus() == OrderStatus.CANCELLED) {
-      throw new PaymentException(
-          String.format("Order %s has been cancelled.", order.getSlug())
-      );
-    }
-
-    if (order.getOrderStatus() == OrderStatus.EXPIRED) {
-      throw new PaymentException(
-          String.format("Order %s has expired.", order.getSlug())
-      );
-    }
   }
 
   //  Save webhook event

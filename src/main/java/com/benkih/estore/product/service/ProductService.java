@@ -56,7 +56,7 @@ public class ProductService implements IProductService{
         request.getBrand(),
         request.getDescription(),
         request.getPrice(),
-        request.getInventory(),
+//        request.getInventory(),
         category
     );
   }
@@ -105,7 +105,7 @@ public Page<ProductResponseDto> getAllProducts(int page, int limit) {
         product.getBrand(),
         product.getDescription(),
         product.getPrice(),
-        product.getInventory(),
+//        product.getInventory(),
         product.getCategory() != null ? product.getCategory().getName() : null,
         // product.getCategory().getName(),
         imageDtos
@@ -181,9 +181,9 @@ public Page<ProductResponseDto> getAllProducts(int page, int limit) {
     if (request.getPrice() != null) {
       existingProduct.setPrice(request.getPrice());
     }
-    if (request.getInventory() != null) {
-      existingProduct.setInventory(request.getInventory());
-    }
+//    if (request.getInventory() != null) {
+//      existingProduct.setInventory(request.getInventory());
+//    }
 
     if (request.getCategoryName() != null) {
       Category category = categoryRepository.findByName(request.getCategoryName());

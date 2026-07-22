@@ -4,6 +4,8 @@ import com.benkih.estore.cart.entity.Cart;
 import com.benkih.estore.cart.service.CartService;
 import com.benkih.estore.common.enums.OrderStatus;
 import com.benkih.estore.common.enums.PaymentStatus;
+import com.benkih.estore.common.exceptions.DuplicatePaymentException;
+import com.benkih.estore.common.exceptions.PaymentException;
 import com.benkih.estore.common.exceptions.ResourceNotFoundException;
 import com.benkih.estore.order.dto.response.OrderItemResponseDto;
 import com.benkih.estore.order.dto.response.OrderResponseDto;
@@ -83,7 +85,7 @@ public class OrderService implements IOrderService{
   private List<OrderItem> createOrderItems(Order order, Cart cart){
     return cart.getItems().stream().map(cartItem -> {
       Product product = cartItem.getProduct();
-      product.setInventory(product.getInventory() - cartItem.getQuantity());
+//      product.setInventory(product.getInventory() - cartItem.getQuantity());
       productRepository.save(product);
 
       return new OrderItem(
@@ -157,6 +159,36 @@ public class OrderService implements IOrderService{
 
     order.setPaymentStatus(PaymentStatus.PAID);
     order.setOrderStatus(OrderStatus.CONFIRMED);
+  }
+
+  @Transactional
+  public void validateOrderCanBePaid(Order order) {
+//    if (order.getOrderStatus() == OrderStatus.PAID) {
+    if (order.getPaymentStatus() == PaymentStatus.PAID) {
+      log.info("Order validate...={}", order.getSlug());
+      throw new DuplicatePaymentException(String.format("Order %s has already been paid for.", order.getSlug())
+      );
+    }
+
+    if (order.getOrderStatus() == OrderStatus.PROCESSING ||
+        order.getOrderStatus() == OrderStatus.SHIPPED ||
+        order.getOrderStatus() == OrderStatus.DELIVERED) {
+      throw new PaymentException(
+          String.format("Order %s is already being processed and cannot be paid for.", order.getSlug())
+      );
+    }
+
+    if (order.getOrderStatus() == OrderStatus.CANCELLED) {
+      throw new PaymentException(
+          String.format("Order %s has been cancelled.", order.getSlug())
+      );
+    }
+
+    if (order.getOrderStatus() == OrderStatus.EXPIRED) {
+      throw new PaymentException(
+          String.format("Order %s has expired.", order.getSlug())
+      );
+    }
   }
 //  @Transactional
 //  public void markAsPaid(Order order) {

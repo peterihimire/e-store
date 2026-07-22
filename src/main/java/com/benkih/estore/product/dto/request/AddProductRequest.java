@@ -1,6 +1,8 @@
 package com.benkih.estore.product.dto.request;
 
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -14,7 +16,10 @@ public class AddProductRequest {
   @NotBlank(message = "Product description is required")
   private String description;
 
+  @NotNull(message = "Product price is required")
+  @DecimalMin(value = "0.01", message = "Price must be greater than zero")
   private BigDecimal price;
-  private int inventory;
+
+  @NotBlank(message = "Product category is required")
   private String category;
 }
