@@ -1,5 +1,8 @@
 package com.benkih.estore.product.service;
 
+import com.benkih.estore.inventory.entity.Inventory;
+import com.benkih.estore.inventory.repository.InventoryRepository;
+import com.benkih.estore.inventory.service.IInventoryService;
 import com.benkih.estore.product.entity.Category;
 import com.benkih.estore.product.repository.CategoryRepository;
 import com.benkih.estore.common.exceptions.AlreadyExistsException;
@@ -10,6 +13,7 @@ import com.benkih.estore.product.dto.request.UpdateProductRequest;
 import com.benkih.estore.product.dto.response.ProductResponseDto;
 import com.benkih.estore.product.entity.Product;
 import com.benkih.estore.product.repository.ProductRepository;
+import com.benkih.estore.product.repository.SkuSequenceRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -27,12 +31,18 @@ import java.util.Optional;
 public class ProductService implements IProductService{
   private final ProductRepository productRepository; // final keyword inject the ProductRepository properly
   private final CategoryRepository categoryRepository;
+  private final InventoryRepository inventoryRepository;
+  private final IInventoryService inventoryService;
+  private final SkuSequenceRepository skuSequenceRepository;
 
+
+  @Transactional
   @Override
   public Product addProduct(AddProductRequest request) {
 
     if(productExists(request.getName(), request.getBrand())){
-      throw new AlreadyExistsException(request.getBrand() + " " + request.getName() + " already exists, you may update this product instead." );
+      throw new AlreadyExistsException(
+          request.getBrand() + " " + request.getName() + " already exists, you may update this product instead." );
     }
 
     Category category = Optional.ofNullable(categoryRepository.findByName(request.getCategory()))
@@ -40,9 +50,26 @@ public class ProductService implements IProductService{
             Category newCategory = new Category(request.getCategory());// Remember this place had issues
             return categoryRepository.save(newCategory);
     });
-//    request.setCategory(category);
-    return productRepository.save(createProduct(request, category));
+
+//    product.setSku(generateSku(product));
+//    Product product = productRepository.save(createProduct(request, category));
+//
+//    inventoryService.createInventory(product);
+
+    Product product = createProduct(request, category);
+    product.setSku(generateSku(product));
+    product = productRepository.save(product);
+    inventoryService.createInventory(product);
+
+    return product;
   }
+
+//  private Inventory createInventory(Product product) {
+//    Inventory inventory = new Inventory();
+//    inventory.setProduct(product);
+//
+//    return inventory;
+//  }
 
 
 
@@ -99,15 +126,20 @@ public Page<ProductResponseDto> getAllProducts(int page, int limit) {
         ))
         .toList();
 
+    Inventory inventory = inventoryRepository
+        .findByProductSlug(product.getSlug())
+        .orElseThrow(() -> new ResourceNotFoundException("Inventory not found"));
+
     return new ProductResponseDto(
         product.getSlug(),
+        product.getSku(),
         product.getName(),
         product.getBrand(),
         product.getDescription(),
         product.getPrice(),
-//        product.getInventory(),
+        inventory.getAvailableStock(),
+        inventory.getAvailableStock() > 0,
         product.getCategory() != null ? product.getCategory().getName() : null,
-        // product.getCategory().getName(),
         imageDtos
     );
   }
@@ -166,6 +198,26 @@ public Page<ProductResponseDto> getAllProducts(int page, int limit) {
 
     return updatedProduct;
 
+  }
+
+  private String generateSku(Product product) {
+    long sequence = skuSequenceRepository.nextSkuNumber();
+    String brandCode = abbreviate(product.getBrand());
+    String productCode = abbreviate(product.getName());
+
+    return String.format(
+        "%s-%s-%06d",
+        brandCode,
+        productCode,
+        sequence
+    );
+  }
+  private String abbreviate(String value) {
+    String cleaned = value
+        .replaceAll("[^A-Za-z]", "")
+        .toUpperCase();
+
+    return cleaned.substring(0, Math.min(3, cleaned.length()));
   }
 
   private Product updateExistingProduct(Product existingProduct, UpdateProductRequest request) {

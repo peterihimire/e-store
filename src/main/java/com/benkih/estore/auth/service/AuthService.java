@@ -187,7 +187,7 @@ public LoginResponse login(LoginRequest request) {
       .orElseThrow(() ->
           new UsernameNotFoundException("User not found"));
 
-  notificationService.sendLoginEmail(user);
+//  notificationService.sendLoginEmail(user);
 //  try {
 //    EmailRequest email = loginEmailBuilder.build(user);
 //    emailService.send(email);
