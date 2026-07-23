@@ -7,6 +7,8 @@ import com.benkih.estore.common.enums.PaymentStatus;
 import com.benkih.estore.common.exceptions.DuplicatePaymentException;
 import com.benkih.estore.common.exceptions.PaymentException;
 import com.benkih.estore.common.exceptions.ResourceNotFoundException;
+import com.benkih.estore.inventory.entity.Inventory;
+import com.benkih.estore.inventory.service.IInventoryService;
 import com.benkih.estore.order.dto.response.OrderItemResponseDto;
 import com.benkih.estore.order.dto.response.OrderResponseDto;
 import com.benkih.estore.order.entity.Order;
@@ -24,6 +26,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -32,6 +36,7 @@ public class OrderService implements IOrderService{
   private final ProductRepository productRepository;
   private final CartService cartService;
   private final ProductService productService;
+  private final IInventoryService inventoryService;
 
   @Override
   @Transactional
@@ -131,16 +136,54 @@ public class OrderService implements IOrderService{
     return orders.stream().map(this::convertToDto).toList();
   }
 
+//  @Transactional(readOnly = true)
+//  @Override
+//  public OrderResponseDto convertToDto(Order order){
+//    List<OrderItemResponseDto> items = order.getOrderItems()
+//        .stream()
+//        .map(item -> new OrderItemResponseDto( // make sure to follow the arrangement from the DTO
+//            productService.convertToDto(item.getProduct()),
+//            item.getQuantity(),
+//            item.getPrice()
+//        )).toList();
+//    return new OrderResponseDto(
+//        order.getSlug(),
+//        order.getUser().getSlug(),
+//        order.getOrderDate(),
+//        order.getTotalAmount(),
+//        order.getOrderStatus().name(),
+//        items
+//    );
+//  }
+
   @Transactional(readOnly = true)
   @Override
-  public OrderResponseDto convertToDto(Order order){
+  public OrderResponseDto convertToDto(Order order) {
+
+    List<String> productSlugs = order.getOrderItems()
+        .stream()
+        .map(item -> item.getProduct().getSlug())
+        .toList();
+
+    Map<String, Inventory> inventoryMap = inventoryService.getInventoriesByProductSlugs(productSlugs);
+
     List<OrderItemResponseDto> items = order.getOrderItems()
         .stream()
-        .map(item -> new OrderItemResponseDto( // make sure to follow the arrangement from the DTO
-            productService.convertToDto(item.getProduct()),
-            item.getQuantity(),
-            item.getPrice()
-        )).toList();
+        .map(item -> {
+
+          Product product = item.getProduct();
+
+          return new OrderItemResponseDto(
+              productService.convertToDto(
+                  product,
+                  inventoryMap.get(product.getSlug())
+              ),
+              item.getQuantity(),
+              item.getPrice()
+          );
+        })
+        .toList();
+
     return new OrderResponseDto(
         order.getSlug(),
         order.getUser().getSlug(),

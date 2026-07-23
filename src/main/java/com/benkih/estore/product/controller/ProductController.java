@@ -5,6 +5,8 @@ import com.benkih.estore.common.dto.PaginatedResponse;
 import com.benkih.estore.common.exceptions.AlreadyExistsException;
 import com.benkih.estore.common.exceptions.ResourceNotFoundException;
 import com.benkih.estore.common.response.ApiResponse;
+import com.benkih.estore.inventory.entity.Inventory;
+import com.benkih.estore.inventory.service.IInventoryService;
 import com.benkih.estore.product.dto.request.AddProductRequest;
 import com.benkih.estore.product.dto.request.UpdateProductRequest;
 import com.benkih.estore.product.dto.response.ProductPageResponseDto;
@@ -29,6 +31,7 @@ import static org.springframework.http.HttpStatus.*;
 @RequiredArgsConstructor
 public class ProductController {
   private final IProductService productService;
+  private final IInventoryService inventoryService;
 
 
 
@@ -53,18 +56,34 @@ public class ProductController {
 //    List<ProductResponseDto> products = productService.getConvertedProducts(productsData);
 //    return ResponseEntity.ok(new ApiResponse("success","Product returned", products));
 //  }
+@GetMapping("/{slug}")
+public ResponseEntity<ApiResponse> getProductBySlug(@PathVariable String slug) {
+  try {
+    Product product = productService.getProductBySlug(slug);
+    Inventory inventory = inventoryService.getByProductSlug(slug);
+    ProductResponseDto productDto = productService.convertToDto(product, inventory);
 
+    return ResponseEntity.ok(
+        new ApiResponse("success", "success", productDto)
+    );
 
-  @GetMapping("/{slug}")
-  public ResponseEntity<ApiResponse> getProductBySlug(@PathVariable String slug){
-    try {
-      Product product = productService.getProductBySlug(slug);
-      ProductResponseDto productDto = productService.convertToDto(product);
-      return ResponseEntity.ok(new ApiResponse("success","success", productDto));
-    } catch (ResourceNotFoundException e) {
-      return ResponseEntity.status(NOT_FOUND).body(new ApiResponse("fail",e.getMessage(), null));
-    }
+  } catch (ResourceNotFoundException e) {
+    return ResponseEntity.status(NOT_FOUND)
+        .body(new ApiResponse("fail", e.getMessage(), null));
   }
+}
+
+
+//  @GetMapping("/{slug}")
+//  public ResponseEntity<ApiResponse> getProductBySlug(@PathVariable String slug){
+//    try {
+//      Product product = productService.getProductBySlug(slug);
+//      ProductResponseDto productDto = productService.convertToDto(product);
+//      return ResponseEntity.ok(new ApiResponse("success","success", productDto));
+//    } catch (ResourceNotFoundException e) {
+//      return ResponseEntity.status(NOT_FOUND).body(new ApiResponse("fail",e.getMessage(), null));
+//    }
+//  }
 
   @GetMapping("/by/brand-and-name")
   public ResponseEntity<ApiResponse> getProductByBrandAndName(
@@ -150,16 +169,20 @@ public class ProductController {
   @PostMapping("/addProduct")
   public ResponseEntity<ApiResponse> addProduct(@RequestBody AddProductRequest product){ // uses general exception to throw error
       Product productData = productService.addProduct(product);
-      ProductResponseDto productDto = productService.convertToDto(productData);
+      Inventory inventory = inventoryService.getByProductSlug(productData.getSlug());
+      ProductResponseDto productDto = productService.convertToDto(productData
+          , inventory);
       return ResponseEntity.ok(new ApiResponse("success","Product added", productDto));
   }
 
   @PreAuthorize("hasRole('ADMIN')")
-  @PutMapping("/{productId}/update")
-  public ResponseEntity<ApiResponse> updateProduct(@RequestBody UpdateProductRequest product, @PathVariable String productId){
+  @PutMapping("/{productSlug}/update")
+  public ResponseEntity<ApiResponse> updateProduct(@RequestBody UpdateProductRequest product, @PathVariable String productSlug){
     try {
-      Product productData = productService.updateProduct(product, productId);
-      ProductResponseDto productDto = productService.convertToDto(productData);
+      Product productData = productService.updateProduct(product, productSlug);
+      Inventory inventory = inventoryService.getByProductSlug(productSlug);
+      ProductResponseDto productDto = productService.convertToDto(productData
+          , inventory);
       return ResponseEntity.ok(new ApiResponse("success","Product updated", productDto));
     } catch (ResourceNotFoundException e) {
       return ResponseEntity.status(NOT_FOUND).body(new ApiResponse("fail",e.getMessage(), null));

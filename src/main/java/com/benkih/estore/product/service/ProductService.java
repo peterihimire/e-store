@@ -1,5 +1,6 @@
 package com.benkih.estore.product.service;
 
+import com.benkih.estore.common.enums.ProductStatus;
 import com.benkih.estore.inventory.entity.Inventory;
 import com.benkih.estore.inventory.repository.InventoryRepository;
 import com.benkih.estore.inventory.service.IInventoryService;
@@ -17,6 +18,7 @@ import com.benkih.estore.product.repository.SkuSequenceRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -24,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 //import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 @Slf4j
 @Service
@@ -58,6 +61,7 @@ public class ProductService implements IProductService{
 
     Product product = createProduct(request, category);
     product.setSku(generateSku(product));
+//    product.setStatus(ProductStatus.DRAFT);
     product = productRepository.save(product);
     inventoryService.createInventory(product);
 
@@ -95,26 +99,48 @@ public class ProductService implements IProductService{
     return productRepository.findAll();
   }
 
-@Transactional(readOnly = true)
-@Override
-public Page<ProductResponseDto> getAllProducts(int page, int limit) {
+//@Transactional(readOnly = true)
+//@Override
+//public Page<ProductResponseDto> getAllProducts(int page, int limit) {
+//
+//  Pageable pageable = PageRequest.of(page, limit);
+//
+//  return productRepository
+//      .findAll(pageable)
+//      .map(this::convertToDto);
+//}
 
-  Pageable pageable = PageRequest.of(page, limit);
+  @Transactional(readOnly = true)
+  @Override
+  public Page<ProductResponseDto> getAllProducts(int page, int limit) {
 
-  return productRepository
-      .findAll(pageable)
-      .map(this::convertToDto);
-}
+    Pageable pageable = PageRequest.of(page, limit);
+
+    Page<Product> productPage = productRepository.findAll(pageable);
+
+    List<ProductResponseDto> dtos = convertProducts(productPage.getContent());
+
+    return new PageImpl<>(
+        dtos,
+        pageable,
+        productPage.getTotalElements()
+    );
+  }
 
 //  @Transactional(readOnly = true)
+//  @Override
+//  public List<ProductResponseDto> getConvertedProducts(List<Product> products) {
+//    return products.stream().map(this::convertToDto).toList();
+//  }
+
   @Override
   public List<ProductResponseDto> getConvertedProducts(List<Product> products) {
-    return products.stream().map(this::convertToDto).toList();
+    return convertProducts(products);
   }
 
   @Transactional(readOnly = true)
   @Override
-  public ProductResponseDto convertToDto(Product product) {
+  public ProductResponseDto convertToDto(Product product, Inventory inventory) {
 
     List<ImageDto> imageDtos = Optional.ofNullable(product.getImages())
         .orElse(List.of())
@@ -126,19 +152,22 @@ public Page<ProductResponseDto> getAllProducts(int page, int limit) {
         ))
         .toList();
 
-    Inventory inventory = inventoryRepository
-        .findByProductSlug(product.getSlug())
-        .orElseThrow(() -> new ResourceNotFoundException("Inventory not found"));
+    int availableStock = inventory != null
+        ? inventory.getAvailableStock()
+        : 0;
+
+    boolean inStock = availableStock > 0;
 
     return new ProductResponseDto(
         product.getSlug(),
         product.getSku(),
+        product.getStatus(),
         product.getName(),
         product.getBrand(),
         product.getDescription(),
         product.getPrice(),
-        inventory.getAvailableStock(),
-        inventory.getAvailableStock() > 0,
+        availableStock,
+        inStock,
         product.getCategory() != null ? product.getCategory().getName() : null,
         imageDtos
     );
@@ -206,7 +235,7 @@ public Page<ProductResponseDto> getAllProducts(int page, int limit) {
     String productCode = abbreviate(product.getName());
 
     return String.format(
-        "%s-%s-%06d",
+        "%s-%s-%04d",
         brandCode,
         productCode,
         sequence
@@ -274,7 +303,14 @@ public Page<ProductResponseDto> getAllProducts(int page, int limit) {
         return Page.empty(pageable);
       }
 
-      return productPage.map(this::convertToDto);
+//      return productPage.map(this::convertToDto);
+    List<ProductResponseDto> dtos =
+        convertProducts(productPage.getContent());
+
+    return new PageImpl<>(
+        dtos,
+        pageable,
+        productPage.getTotalElements());
 
   }
 
@@ -293,7 +329,32 @@ public Page<ProductResponseDto> getAllProducts(int page, int limit) {
         return Page.empty(pageable);
       }
 
-      return productPage.map(this::convertToDto);
+//      return productPage.map(this::convertToDto);
+    List<ProductResponseDto> dtos =
+        convertProducts(productPage.getContent());
 
+    return new PageImpl<>(
+        dtos,
+        pageable,
+        productPage.getTotalElements());
+  }
+
+  private List<ProductResponseDto> convertProducts(List<Product> products) {
+
+    List<String> slugs = products.stream()
+        .map(Product::getSlug)
+        .toList();
+
+    Map<String, Inventory> inventories = inventoryService.getInventoriesByProductSlugs(slugs);
+
+    return products.stream()
+        .map(product ->
+            convertToDto(
+                product,
+                inventories.get(product.getSlug())
+            )
+        )
+        .toList();
   }
 }
+

@@ -20,7 +20,7 @@ public class NotificationService implements INotificationService {
   private final VerificationEmailBuilder verificationEmailBuilder;
   private final LoginEmailBuilder loginEmailBuilder;
   private final PaymentReceiptEmailBuilder paymentReceiptEmailBuilder;
-    private final OrderConfirmationEmailBuilder orderConfirmationEmailBuilder;
+  private final OrderConfirmationEmailBuilder orderConfirmationEmailBuilder;
 
 //  private final SmsService smsService;
 

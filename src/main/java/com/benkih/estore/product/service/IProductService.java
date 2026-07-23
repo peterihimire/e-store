@@ -1,4 +1,5 @@
 package com.benkih.estore.product.service;
+import com.benkih.estore.inventory.entity.Inventory;
 import com.benkih.estore.product.dto.request.AddProductRequest;
 import com.benkih.estore.product.dto.request.UpdateProductRequest;
 import com.benkih.estore.product.dto.response.ProductResponseDto;
@@ -26,7 +27,7 @@ public interface IProductService {
   @Transactional(readOnly = true)
   List<ProductResponseDto> getConvertedProducts(List<Product> products);
 
-  ProductResponseDto convertToDto(Product product);
+  ProductResponseDto convertToDto(Product product, Inventory inventory);
 
   List<Product> getProductsByCategory(String category);
   List<Product> getProductsByBrand(String brand);

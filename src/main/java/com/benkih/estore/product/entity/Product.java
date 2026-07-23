@@ -1,5 +1,6 @@
 package com.benkih.estore.product.entity;
 
+import com.benkih.estore.common.enums.ProductStatus;
 import com.benkih.estore.inventory.entity.Inventory;
 import jakarta.persistence.*;
 import lombok.*;
@@ -25,6 +26,10 @@ public class Product {
 
     @Column(nullable = false, unique = true)
     private String sku;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ProductStatus status = ProductStatus.DRAFT;
 
     private String brand;
     private String name;
@@ -65,9 +70,19 @@ public class Product {
 //    private Inventory inventory;
 
     // Below is Product constructor
-    public Product(String name, String brand, String description, BigDecimal price, Category category) {
+    public Product(
+        String name,
+        String brand,
+//        String sku,
+//        ProductStatus status,
+        String description,
+        BigDecimal price,
+        Category category
+    ) {
         this.name = name;
         this.brand = brand;
+//        this.sku = sku;
+//        this.status = status;
         this.description = description;
         this.price = price;
         this.category = category;
