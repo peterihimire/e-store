@@ -165,7 +165,7 @@ public class OrderService implements IOrderService{
         .map(item -> item.getProduct().getSlug())
         .toList();
 
-    Map<String, Inventory> inventoryMap = inventoryService.getInventoriesByProductSlugs(productSlugs);
+
 
     List<OrderItemResponseDto> items = order.getOrderItems()
         .stream()
@@ -174,10 +174,7 @@ public class OrderService implements IOrderService{
           Product product = item.getProduct();
 
           return new OrderItemResponseDto(
-              productService.convertToDto(
-                  product,
-                  inventoryMap.get(product.getSlug())
-              ),
+              productService.convertToDto(product),
               item.getQuantity(),
               item.getPrice()
           );

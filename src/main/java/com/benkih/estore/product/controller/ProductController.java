@@ -31,7 +31,6 @@ import static org.springframework.http.HttpStatus.*;
 @RequiredArgsConstructor
 public class ProductController {
   private final IProductService productService;
-  private final IInventoryService inventoryService;
 
 
 
@@ -60,11 +59,10 @@ public class ProductController {
 public ResponseEntity<ApiResponse> getProductBySlug(@PathVariable String slug) {
   try {
     Product product = productService.getProductBySlug(slug);
-    Inventory inventory = inventoryService.getByProductSlug(slug);
-    ProductResponseDto productDto = productService.convertToDto(product, inventory);
+    ProductResponseDto productDto = productService.convertToDto(product);
 
     return ResponseEntity.ok(
-        new ApiResponse("success", "success", productDto)
+        new ApiResponse("success", "product returned", productDto)
     );
 
   } catch (ResourceNotFoundException e) {
@@ -169,9 +167,7 @@ public ResponseEntity<ApiResponse> getProductBySlug(@PathVariable String slug) {
   @PostMapping("/addProduct")
   public ResponseEntity<ApiResponse> addProduct(@RequestBody AddProductRequest product){ // uses general exception to throw error
       Product productData = productService.addProduct(product);
-      Inventory inventory = inventoryService.getByProductSlug(productData.getSlug());
-      ProductResponseDto productDto = productService.convertToDto(productData
-          , inventory);
+      ProductResponseDto productDto = productService.convertToDto(productData);
       return ResponseEntity.ok(new ApiResponse("success","Product added", productDto));
   }
 
@@ -180,9 +176,7 @@ public ResponseEntity<ApiResponse> getProductBySlug(@PathVariable String slug) {
   public ResponseEntity<ApiResponse> updateProduct(@RequestBody UpdateProductRequest product, @PathVariable String productSlug){
     try {
       Product productData = productService.updateProduct(product, productSlug);
-      Inventory inventory = inventoryService.getByProductSlug(productSlug);
-      ProductResponseDto productDto = productService.convertToDto(productData
-          , inventory);
+      ProductResponseDto productDto = productService.convertToDto(productData);
       return ResponseEntity.ok(new ApiResponse("success","Product updated", productDto));
     } catch (ResourceNotFoundException e) {
       return ResponseEntity.status(NOT_FOUND).body(new ApiResponse("fail",e.getMessage(), null));

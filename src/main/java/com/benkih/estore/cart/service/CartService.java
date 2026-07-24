@@ -83,12 +83,6 @@ public class CartService  implements ICartService{
         .map(CartItem::getProduct)
         .toList();
 
-    Map<String, Inventory> inventoryMap = inventoryService.getInventoriesByProductSlugs(
-            products.stream()
-                .map(Product::getSlug)
-                .toList()
-        );
-
     List<CartItemResponseDto> items = cart.getItems()
         .stream()
         .map(item -> {
@@ -99,10 +93,7 @@ public class CartService  implements ICartService{
               item.getQuantity(),
               item.getUnitPrice(),
               item.getTotalPrice(),
-              productService.convertToDto(
-                  product,
-                  inventoryMap.get(product.getSlug())
-              )
+              productService.convertToDto(product)
           );
         })
         .toList();

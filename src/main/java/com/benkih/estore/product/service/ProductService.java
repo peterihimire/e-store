@@ -54,11 +54,6 @@ public class ProductService implements IProductService{
             return categoryRepository.save(newCategory);
     });
 
-//    product.setSku(generateSku(product));
-//    Product product = productRepository.save(createProduct(request, category));
-//
-//    inventoryService.createInventory(product);
-
     Product product = createProduct(request, category);
     product.setSku(generateSku(product));
 //    product.setStatus(ProductStatus.DRAFT);
@@ -67,15 +62,6 @@ public class ProductService implements IProductService{
 
     return product;
   }
-
-//  private Inventory createInventory(Product product) {
-//    Inventory inventory = new Inventory();
-//    inventory.setProduct(product);
-//
-//    return inventory;
-//  }
-
-
 
   private boolean productExists(String name, String brand ){
     return productRepository.existsByNameAndBrand(name, brand);
@@ -113,11 +99,8 @@ public class ProductService implements IProductService{
   @Transactional(readOnly = true)
   @Override
   public Page<ProductResponseDto> getAllProducts(int page, int limit) {
-
     Pageable pageable = PageRequest.of(page, limit);
-
     Page<Product> productPage = productRepository.findAll(pageable);
-
     List<ProductResponseDto> dtos = convertProducts(productPage.getContent());
 
     return new PageImpl<>(
@@ -140,8 +123,9 @@ public class ProductService implements IProductService{
 
   @Transactional(readOnly = true)
   @Override
-  public ProductResponseDto convertToDto(Product product, Inventory inventory) {
-
+  public ProductResponseDto convertToDto(Product product
+//                                         Inventory inventory
+  ) {
     List<ImageDto> imageDtos = Optional.ofNullable(product.getImages())
         .orElse(List.of())
         .stream()
@@ -152,12 +136,6 @@ public class ProductService implements IProductService{
         ))
         .toList();
 
-    int availableStock = inventory != null
-        ? inventory.getAvailableStock()
-        : 0;
-
-    boolean inStock = availableStock > 0;
-
     return new ProductResponseDto(
         product.getSlug(),
         product.getSku(),
@@ -166,8 +144,8 @@ public class ProductService implements IProductService{
         product.getBrand(),
         product.getDescription(),
         product.getPrice(),
-        availableStock,
-        inStock,
+        product.getInventory().getAvailableStock(),
+        product.getInventory().getAvailableStock() > 0,
         product.getCategory() != null ? product.getCategory().getName() : null,
         imageDtos
     );
@@ -292,9 +270,7 @@ public class ProductService implements IProductService{
   @Override
   @Transactional(readOnly = true)
   public Page<ProductResponseDto> getAllProducts(Pageable pageable) {
-    log.info("Fetching products with page: {}, size: {}",
-        pageable.getPageNumber(), pageable.getPageSize());
-
+    log.info("Fetching products with page: {}, size: {}", pageable.getPageNumber(), pageable.getPageSize());
 
       Page<Product> productPage = productRepository.findAll(pageable);
 
@@ -304,8 +280,7 @@ public class ProductService implements IProductService{
       }
 
 //      return productPage.map(this::convertToDto);
-    List<ProductResponseDto> dtos =
-        convertProducts(productPage.getContent());
+    List<ProductResponseDto> dtos = convertProducts(productPage.getContent());
 
     return new PageImpl<>(
         dtos,
@@ -340,20 +315,12 @@ public class ProductService implements IProductService{
   }
 
   private List<ProductResponseDto> convertProducts(List<Product> products) {
-
     List<String> slugs = products.stream()
         .map(Product::getSlug)
-        .toList();
-
-    Map<String, Inventory> inventories = inventoryService.getInventoriesByProductSlugs(slugs);
+        .toList(); // Extract all the slugs from the product
 
     return products.stream()
-        .map(product ->
-            convertToDto(
-                product,
-                inventories.get(product.getSlug())
-            )
-        )
+        .map(product -> convertToDto(product))
         .toList();
   }
 }

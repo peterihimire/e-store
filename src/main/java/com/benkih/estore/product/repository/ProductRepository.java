@@ -11,28 +11,28 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
-  @EntityGraph(attributePaths = {"images", "category"})
+  @EntityGraph(attributePaths = {"images", "category", "inventory"})
   Optional<Product> findBySlug(String slug);
 
-  @EntityGraph(attributePaths = {"images", "category"})
+  @EntityGraph(attributePaths = {"images", "category", "inventory"})
   List<Product> findByCategoryName(String category);
 
-  @EntityGraph(attributePaths = {"images", "category"})
+  @EntityGraph(attributePaths = {"images", "category", "inventory"})
   List<Product> findByBrand(String brand);
 
-  @EntityGraph(attributePaths = {"images", "category"})
+  @EntityGraph(attributePaths = {"images", "category", "inventory"})
   List<Product> findByCategoryNameAndBrand(String category, String brand);
 
-  @EntityGraph(attributePaths = {"images", "category"})
+  @EntityGraph(attributePaths = {"images", "category", "inventory"})
   List<Product> findByName(String name);
 
-  @EntityGraph(attributePaths = {"images", "category"})
+  @EntityGraph(attributePaths = {"images", "category", "inventory"})
   Page<Product> findByBrandAndName(String brand, String name,
                                    Pageable pageable);
 
   Long countByBrandAndName(String brand, String name);
 
-  @EntityGraph(attributePaths = {"images", "category"})
+  @EntityGraph(attributePaths = {"images", "category", "inventory"})
   List<Product> findAll();
 
   boolean existsByNameAndBrand(String name, String brand);

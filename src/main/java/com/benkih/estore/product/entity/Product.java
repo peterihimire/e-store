@@ -56,18 +56,18 @@ public class Product {
     private List<Image> images = new ArrayList<>();
     //    private List<Image> images;
 
-//    @OneToOne(
-//        mappedBy = "product", //  Inverse side of the relationship
-//        cascade = CascadeType.ALL,
-//        orphanRemoval = true,
-//        fetch = FetchType.LAZY
-//        // JPA default is EAGER for @OneToOne.
-//        // However, on the inverse (mappedBy) side,
-//        // Hibernate cannot lazily load this association
-//        // without bytecode enhancement, so it may still
-//        // behave as EAGER.that's why we have the warning
-//    )
-//    private Inventory inventory;
+    @OneToOne(
+        mappedBy = "product", //  Inverse side of the relationship
+        cascade = CascadeType.ALL,
+        orphanRemoval = true,
+        fetch = FetchType.LAZY
+        // JPA default is EAGER for @OneToOne.
+        // However, on the inverse (mappedBy) side,
+        // Hibernate cannot lazily load this association
+        // without bytecode enhancement, so it may still
+        // behave as EAGER.that's why we have the warning
+    )
+    private Inventory inventory;
 
     // Below is Product constructor
     public Product(

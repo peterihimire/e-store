@@ -27,7 +27,9 @@ public interface IProductService {
   @Transactional(readOnly = true)
   List<ProductResponseDto> getConvertedProducts(List<Product> products);
 
-  ProductResponseDto convertToDto(Product product, Inventory inventory);
+  ProductResponseDto convertToDto(Product product
+//                                  Inventory inventory
+  );
 
   List<Product> getProductsByCategory(String category);
   List<Product> getProductsByBrand(String brand);
