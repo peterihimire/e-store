@@ -2,6 +2,7 @@ package com.benkih.estore.inventory.controller;
 
 import com.benkih.estore.common.dto.PaginatedResponse;
 import com.benkih.estore.common.response.ApiResponse;
+import com.benkih.estore.inventory.dto.request.InventoryAdjustmentRequest;
 import com.benkih.estore.inventory.dto.response.InventoryResponseDto;
 import com.benkih.estore.inventory.entity.Inventory;
 import com.benkih.estore.inventory.service.IInventoryService;
@@ -40,6 +41,30 @@ public class InventoryController {
 
     return ResponseEntity.ok(
         new ApiResponse("success", "inventory returned", inventoryDto)
+    );
+  }
+
+  @PreAuthorize("hasRole('ADMIN')")
+  @PostMapping("/inventory/{slug}/add")
+  public ResponseEntity<ApiResponse> addStock(@PathVariable String slug,
+                                                  @RequestBody InventoryAdjustmentRequest qty) {
+    Inventory inventory = inventoryService.addStock(slug, qty.getQuantity());
+    InventoryResponseDto inventoryDto = inventoryService.convertToDto(inventory);
+
+    return ResponseEntity.ok(
+        new ApiResponse("success", "add inventory success", inventoryDto)
+    );
+  }
+
+  @PreAuthorize("hasRole('ADMIN')")
+  @PostMapping("/inventory/{slug}/damage")
+  public ResponseEntity<ApiResponse> markDamage(@PathVariable String slug,
+                                                  @RequestBody InventoryAdjustmentRequest qty) {
+    Inventory inventory = inventoryService.markDamage(slug, qty.getQuantity());
+    InventoryResponseDto inventoryDto = inventoryService.convertToDto(inventory);
+
+    return ResponseEntity.ok(
+        new ApiResponse("success", "mark damage success", inventoryDto)
     );
   }
 

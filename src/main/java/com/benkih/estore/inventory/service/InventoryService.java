@@ -58,39 +58,49 @@ public class InventoryService implements IInventoryService{
         .collect(Collectors.toMap(inventory -> inventory.getProduct().getSlug(), Function.identity()));
   }
 
+  @Transactional
   @Override
   public void reserve(String productSlug, int quantity) {
-    Inventory inventory = getByProductSlug(productSlug);
+   Inventory inventory =  inventoryRepository.findByProductSlug(productSlug)
+            .orElseThrow(() -> new ResourceNotFoundException("Inventory not found"));
     inventory.reserve(quantity);
-    inventoryRepository.save(inventory);
+     inventoryRepository.save(inventory);
   }
 
+  @Transactional
   @Override
   public void release(String productSlug, int quantity) {
-    Inventory inventory = getByProductSlug(productSlug);
+    Inventory inventory =  inventoryRepository.findByProductSlug(productSlug)
+        .orElseThrow(() -> new ResourceNotFoundException("Inventory not found"));
     inventory.release(quantity);
-    inventoryRepository.save(inventory);
+     inventoryRepository.save(inventory);
   }
 
+  @Transactional
   @Override
-  public void fufillReservation(String productSlug, int quantity) {
-    Inventory inventory = getByProductSlug(productSlug);
+  public void fulfillReservation(String productSlug, int quantity) {
+    Inventory inventory =  inventoryRepository.findByProductSlug(productSlug)
+        .orElseThrow(() -> new ResourceNotFoundException("Inventory not found"));
     inventory.fulfillReservation(quantity);
-    inventoryRepository.save(inventory);
+   inventoryRepository.save(inventory);
   }
 
+  @Transactional
   @Override
-  public void addStock(String productSlug, int quantity) {
-    Inventory inventory = getByProductSlug(productSlug);
+  public Inventory addStock(String slug, int quantity) {
+    Inventory inventory =  inventoryRepository.findBySlug(slug)
+        .orElseThrow(() -> new ResourceNotFoundException("Inventory not found"));
     inventory.addStock(quantity);
-    inventoryRepository.save(inventory);
+   return  inventoryRepository.save(inventory);
   }
 
+  @Transactional
   @Override
-  public void markDamage(String productSlug, int quantity) {
-    Inventory inventory = getByProductSlug(productSlug);
+  public Inventory markDamage(String slug, int quantity) {
+    Inventory inventory =  inventoryRepository.findBySlug(slug)
+        .orElseThrow(() -> new ResourceNotFoundException("Inventory not found"));
     inventory.markDamage(quantity);
-    inventoryRepository.save(inventory);
+   return inventoryRepository.save(inventory);
   }
 
   @Override

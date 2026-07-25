@@ -444,9 +444,7 @@ private void processOrder(Payment payment) {
   if (payment.getPaymentStatus() != PaymentStatus.SUCCESS) {
     return;
   }
-  orderService.confirmPaidOrder(payment.getOrder());
-//  orderService.markAsPaid(payment.getOrder());
-//  orderService.setOrderConfirmed(payment.getOrder());
+  orderService.processPaidOrder(payment.getOrder());
 }
 
   private void postPaymentProcessing(Payment payment) {

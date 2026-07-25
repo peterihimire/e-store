@@ -24,11 +24,11 @@ public interface IInventoryService {
 
   void release(String productSlug, int quantity);
 
-  void fufillReservation(String productSlug, int quantity);
+  void fulfillReservation(String productSlug, int quantity);
 
-  void addStock(String productSlug, int quantity);
+  Inventory addStock(String slug, int quantity);
 
-  void markDamage(String productSlug, int quantity);
+  Inventory markDamage(String slug, int quantity);
 
   Inventory createInventory(Product product);
 

@@ -1,6 +1,7 @@
 package com.benkih.estore.order.service;
 
 import com.benkih.estore.cart.entity.Cart;
+import com.benkih.estore.cart.entity.CartItem;
 import com.benkih.estore.cart.service.CartService;
 import com.benkih.estore.common.enums.OrderStatus;
 import com.benkih.estore.common.enums.PaymentStatus;
@@ -24,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -87,19 +89,65 @@ public class OrderService implements IOrderService{
     return order;
   }
 
-  private List<OrderItem> createOrderItems(Order order, Cart cart){
-    return cart.getItems().stream().map(cartItem -> {
-      Product product = cartItem.getProduct();
-//      product.setInventory(product.getInventory() - cartItem.getQuantity());
-      productRepository.save(product);
+  private List<OrderItem> createOrderItems(Order order, Cart cart) {
 
-      return new OrderItem(
-        cartItem.getQuantity(),
-        cartItem.getUnitPrice(),
-        order,
-        product);
-    }).toList();
+    List<OrderItem> items = new ArrayList<>();
+
+    for (CartItem cartItem : cart.getItems()) {
+
+      inventoryService.reserve(
+          cartItem.getProduct().getSlug(),
+          cartItem.getQuantity()
+      );
+
+      OrderItem item = new OrderItem(
+          cartItem.getQuantity(),
+          cartItem.getUnitPrice(),
+          order,
+          cartItem.getProduct()
+      );
+
+      items.add(item);
+    }
+
+    return items;
   }
+
+//  private List<OrderItem> createOrderItems(Order order, Cart cart) {
+//    return cart.getItems()
+//        .stream()
+//        .map(cartItem -> {
+//
+//          Product product = cartItem.getProduct();
+//
+//          inventoryService.reserve(
+//              product.getSlug(),
+//              cartItem.getQuantity()
+//          );
+//
+//          return new OrderItem(
+//              cartItem.getQuantity(),
+//              cartItem.getUnitPrice(),
+//              order,
+//              product
+//          );
+//        })
+//        .toList();
+//  }
+
+//  private List<OrderItem> createOrderItems(Order order, Cart cart){
+//    return cart.getItems().stream().map(cartItem -> {
+//      Product product = cartItem.getProduct();
+////      product.setInventory(product.getInventory() - cartItem.getQuantity());
+//      productRepository.save(product);
+//
+//      return new OrderItem(
+//        cartItem.getQuantity(),
+//        cartItem.getUnitPrice(),
+//        order,
+//        product);
+//    }).toList();
+//  }
 
   private BigDecimal calculateTotalAmount(List<OrderItem> orderItemList){
     return orderItemList.stream()
@@ -192,13 +240,20 @@ public class OrderService implements IOrderService{
   }
 
   @Transactional
-  public void confirmPaidOrder(Order order) {
+  public void processPaidOrder(Order order) {
     if (order.getPaymentStatus() == PaymentStatus.PAID) {
       return;
     }
 
     order.setPaymentStatus(PaymentStatus.PAID);
     order.setOrderStatus(OrderStatus.CONFIRMED);
+
+    for (OrderItem item : order.getOrderItems()) {
+      inventoryService.fulfillReservation(
+          item.getProduct().getSlug(),
+          item.getQuantity()
+      );
+    }
   }
 
   @Transactional
@@ -229,6 +284,25 @@ public class OrderService implements IOrderService{
           String.format("Order %s has expired.", order.getSlug())
       );
     }
+  }
+
+  @Transactional
+  public void cancelOrder(Order order) {
+
+    if (order.getOrderStatus() == OrderStatus.CANCELLED) {
+      return;
+    }
+
+    for (OrderItem item : order.getOrderItems()) {
+      inventoryService.release(
+          item.getProduct().getSlug(),
+          item.getQuantity()
+      );
+    }
+
+    order.setOrderStatus(OrderStatus.CANCELLED);
+
+    orderRepository.save(order);
   }
 //  @Transactional
 //  public void markAsPaid(Order order) {
