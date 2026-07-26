@@ -317,6 +317,30 @@ public class GlobalExceptionHandler {
     return buildError(HttpStatus.REQUEST_TIMEOUT, message, request);
   }
 
+  @ExceptionHandler(InsufficientStockException.class)
+  public ResponseEntity<ApiError> handleInsufficientStockException(
+      InsufficientStockException ex,
+      HttpServletRequest request) {
+
+    log.error("Insufficient stock: {}", ex.getMessage(), ex);
+
+    String message = "Insufficient stock: " + ex.getMessage();
+
+    return buildError(HttpStatus.CONFLICT, message, request);
+  }
+
+  @ExceptionHandler(InvalidInventoryQuantityException.class)
+  public ResponseEntity<ApiError> handleInvalidInventoryQuantityException(
+      InvalidInventoryQuantityException ex,
+      HttpServletRequest request) {
+
+    log.error("Invalid inventory quantity: {}", ex.getMessage(), ex);
+
+    String message = "Invalid inventory quantity: " + ex.getMessage();
+
+    return buildError(HttpStatus.BAD_REQUEST, message, request);
+  }
+
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ApiError> handleException(
       Exception ex,

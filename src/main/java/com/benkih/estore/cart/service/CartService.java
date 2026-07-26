@@ -3,9 +3,12 @@ package com.benkih.estore.cart.service;
 import com.benkih.estore.cart.dto.response.CartItemResponseDto;
 import com.benkih.estore.cart.dto.response.CartResponseDto;
 import com.benkih.estore.cart.entity.Cart;
+import com.benkih.estore.cart.entity.CartItem;
 import com.benkih.estore.cart.repository.CartRepository;
 import com.benkih.estore.cart.repository.CartItemRepository;
 import com.benkih.estore.common.exceptions.ResourceNotFoundException;
+import com.benkih.estore.inventory.entity.Inventory;
+import com.benkih.estore.inventory.service.IInventoryService;
 import com.benkih.estore.product.entity.Product;
 import com.benkih.estore.product.service.IProductService;
 import com.benkih.estore.security.user.StoreUserDetails;
@@ -23,6 +26,7 @@ import java.math.BigDecimal;
 import static java.util.Arrays.stream;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 //String cartSlug = UUID.randomUUID().toString();
@@ -34,6 +38,7 @@ public class CartService  implements ICartService{
   private final CartItemRepository cartItemRepository;
   private final IProductService productService;
   private final UserRepository userRepository;
+  private final IInventoryService inventoryService;
 
 
 
@@ -71,19 +76,24 @@ public class CartService  implements ICartService{
 
   @Transactional(readOnly = true)
   @Override
-  public CartResponseDto getConvertedCart(Cart cart){
+  public CartResponseDto getConvertedCart(Cart cart) {
+
+    List<Product> products = cart.getItems()
+        .stream()
+        .map(CartItem::getProduct)
+        .toList();
+
     List<CartItemResponseDto> items = cart.getItems()
         .stream()
         .map(item -> {
+
           Product product = item.getProduct();
-          // Fetch product with images in a new query
-          Product productWithImages = productService.getProductBySlug(product.getSlug());
 
           return new CartItemResponseDto(
               item.getQuantity(),
               item.getUnitPrice(),
               item.getTotalPrice(),
-              productService.convertToDto(productWithImages) // This will have images
+              productService.convertToDto(product)
           );
         })
         .toList();
@@ -94,6 +104,32 @@ public class CartService  implements ICartService{
         items
     );
   }
+
+//  @Transactional(readOnly = true)
+//  @Override
+//  public CartResponseDto getConvertedCart(Cart cart){
+//    List<CartItemResponseDto> items = cart.getItems()
+//        .stream()
+//        .map(item -> {
+//          Product product = item.getProduct();
+//          // Fetch product with images in a new query
+//          Product productWithImages = productService.getProductBySlug(product.getSlug());
+//
+//          return new CartItemResponseDto(
+//              item.getQuantity(),
+//              item.getUnitPrice(),
+//              item.getTotalPrice(),
+//              productService.convertToDto(productWithImages) // This will have images
+//          );
+//        })
+//        .toList();
+//
+//    return new CartResponseDto(
+//        cart.getSlug(),
+//        cart.getTotalAmount(),
+//        items
+//    );
+//  }
 
 //  @Transactional(readOnly = true)
 //  @Override

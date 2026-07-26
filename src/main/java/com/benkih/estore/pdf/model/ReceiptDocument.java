@@ -8,9 +8,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
-
 @Builder
-
 public class ReceiptDocument {
 
   private String receiptNumber;

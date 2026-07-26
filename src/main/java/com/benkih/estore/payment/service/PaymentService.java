@@ -71,7 +71,7 @@ public class PaymentService implements IPaymentService {
     }
 
     //  Check if order can be paid
-    validateOrderCanBePaid(order);
+    orderService.validateOrderCanBePaid(order);
 
     Optional<InitializePaymentResponse> existingPaymentResponse = handleExistingPayment(order);
 
@@ -364,34 +364,6 @@ public class PaymentService implements IPaymentService {
     return "PAY-" + UUID.randomUUID().toString().replace("-", "").substring(0, 12).toUpperCase();
   }
 
-  private void validateOrderCanBePaid(Order order) {
-    if (order.getOrderStatus() == OrderStatus.PAID) {
-      log.info("Order validate...={}", order.getSlug());
-      throw new DuplicatePaymentException(String.format("Order %s has already been paid for.", order.getSlug())
-      );
-    }
-
-    if (order.getOrderStatus() == OrderStatus.PROCESSING ||
-        order.getOrderStatus() == OrderStatus.SHIPPED ||
-        order.getOrderStatus() == OrderStatus.DELIVERED) {
-      throw new PaymentException(
-          String.format("Order %s is already being processed and cannot be paid for.", order.getSlug())
-      );
-    }
-
-    if (order.getOrderStatus() == OrderStatus.CANCELLED) {
-      throw new PaymentException(
-          String.format("Order %s has been cancelled.", order.getSlug())
-      );
-    }
-
-    if (order.getOrderStatus() == OrderStatus.EXPIRED) {
-      throw new PaymentException(
-          String.format("Order %s has expired.", order.getSlug())
-      );
-    }
-  }
-
   //  Save webhook event
   private void saveWebhookEvent(Payment payment, String eventType, String payload, String signature) {
     PaymentEvent event = new PaymentEvent();
@@ -472,17 +444,26 @@ private void processOrder(Payment payment) {
   if (payment.getPaymentStatus() != PaymentStatus.SUCCESS) {
     return;
   }
-  orderService.markAsPaid(payment.getOrder());
+  orderService.processPaidOrder(payment.getOrder());
 }
 
   private void postPaymentProcessing(Payment payment) {
     if (payment.getPaymentStatus() != PaymentStatus.SUCCESS) {
       return;
     }
-    notificationService.sendPaymentReceipt(payment);
-//    paymentReceiptService.sendReceipt(payment);
-//    orderConfirmationService.send(payment.getOrder());
+//    eventPublisher.publishEvent(new PaymentReceiptEvent(payment));
+//    eventPublisher.publishEvent(new OrderConfirmationEvent(payment.getOrder()));
+//    notificationService.sendPaymentReceipt(payment);
+//    sleepForMailtrap();
+    notificationService.sendOrderConfirmation(payment.getOrder());
   }
+//  private void sleepForMailtrap() {
+//    try {
+//      Thread.sleep(2000);
+//    } catch (InterruptedException e) {
+//      Thread.currentThread().interrupt();
+//    }
+//  }
 
   private void saveFinalPaymentEvent(Payment payment, PaymentWebhookEvent event, VerifyPaymentResponse response) {
     PaymentEventType type = payment.getPaymentStatus() == PaymentStatus.SUCCESS
