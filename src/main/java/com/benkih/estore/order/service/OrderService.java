@@ -10,6 +10,8 @@ import com.benkih.estore.common.exceptions.PaymentException;
 import com.benkih.estore.common.exceptions.ResourceNotFoundException;
 import com.benkih.estore.inventory.entity.Inventory;
 import com.benkih.estore.inventory.service.IInventoryService;
+import com.benkih.estore.notification.INotificationService;
+import com.benkih.estore.notification.NotificationService;
 import com.benkih.estore.order.dto.response.OrderItemResponseDto;
 import com.benkih.estore.order.dto.response.OrderResponseDto;
 import com.benkih.estore.order.entity.Order;
@@ -39,6 +41,7 @@ public class OrderService implements IOrderService{
   private final CartService cartService;
   private final ProductService productService;
   private final IInventoryService inventoryService;
+  private final INotificationService notificationService;
 
   @Override
   @Transactional
@@ -68,18 +71,7 @@ public class OrderService implements IOrderService{
     System.out.println("Fetched order = " + fetched.getOrderItems().size());
     return convertToDto(fetched);
   }
-  //  public Order placeOrder(String userSlug) {
-  //    Cart cart = cartService.getCartByUserSlug(userSlug);
-  //    Order order = createOrder(cart);
-  //    List<OrderItem> orderItemList = createOrderItems(order, cart);
-  ////    order.setOrderItems(new HashSet<>(orderItemList));
-  //    order.setItems(orderItemList);
-  //    order.setTotalAmount(calculateTotalAmount(orderItemList));
-  //    Order savedOrder = orderRepository.save(order);
-  //    cartService.clearCart(cart.getSlug());
-  //
-  //    return savedOrder;
-  //  }
+
 
   private Order createOrder(Cart cart){
     Order order = new Order();
@@ -90,11 +82,9 @@ public class OrderService implements IOrderService{
   }
 
   private List<OrderItem> createOrderItems(Order order, Cart cart) {
-
     List<OrderItem> items = new ArrayList<>();
 
     for (CartItem cartItem : cart.getItems()) {
-
       inventoryService.reserve(
           cartItem.getProduct().getSlug(),
           cartItem.getQuantity()
@@ -112,42 +102,6 @@ public class OrderService implements IOrderService{
 
     return items;
   }
-
-//  private List<OrderItem> createOrderItems(Order order, Cart cart) {
-//    return cart.getItems()
-//        .stream()
-//        .map(cartItem -> {
-//
-//          Product product = cartItem.getProduct();
-//
-//          inventoryService.reserve(
-//              product.getSlug(),
-//              cartItem.getQuantity()
-//          );
-//
-//          return new OrderItem(
-//              cartItem.getQuantity(),
-//              cartItem.getUnitPrice(),
-//              order,
-//              product
-//          );
-//        })
-//        .toList();
-//  }
-
-//  private List<OrderItem> createOrderItems(Order order, Cart cart){
-//    return cart.getItems().stream().map(cartItem -> {
-//      Product product = cartItem.getProduct();
-////      product.setInventory(product.getInventory() - cartItem.getQuantity());
-//      productRepository.save(product);
-//
-//      return new OrderItem(
-//        cartItem.getQuantity(),
-//        cartItem.getUnitPrice(),
-//        order,
-//        product);
-//    }).toList();
-//  }
 
   private BigDecimal calculateTotalAmount(List<OrderItem> orderItemList){
     return orderItemList.stream()
@@ -184,26 +138,6 @@ public class OrderService implements IOrderService{
     return orders.stream().map(this::convertToDto).toList();
   }
 
-//  @Transactional(readOnly = true)
-//  @Override
-//  public OrderResponseDto convertToDto(Order order){
-//    List<OrderItemResponseDto> items = order.getOrderItems()
-//        .stream()
-//        .map(item -> new OrderItemResponseDto( // make sure to follow the arrangement from the DTO
-//            productService.convertToDto(item.getProduct()),
-//            item.getQuantity(),
-//            item.getPrice()
-//        )).toList();
-//    return new OrderResponseDto(
-//        order.getSlug(),
-//        order.getUser().getSlug(),
-//        order.getOrderDate(),
-//        order.getTotalAmount(),
-//        order.getOrderStatus().name(),
-//        items
-//    );
-//  }
-
   @Transactional(readOnly = true)
   @Override
   public OrderResponseDto convertToDto(Order order) {
@@ -212,8 +146,6 @@ public class OrderService implements IOrderService{
         .stream()
         .map(item -> item.getProduct().getSlug())
         .toList();
-
-
 
     List<OrderItemResponseDto> items = order.getOrderItems()
         .stream()
@@ -258,7 +190,6 @@ public class OrderService implements IOrderService{
 
   @Transactional
   public void validateOrderCanBePaid(Order order) {
-//    if (order.getOrderStatus() == OrderStatus.PAID) {
     if (order.getPaymentStatus() == PaymentStatus.PAID) {
       log.info("Order validate...={}", order.getSlug());
       throw new DuplicatePaymentException(String.format("Order %s has already been paid for.", order.getSlug())
@@ -286,11 +217,38 @@ public class OrderService implements IOrderService{
     }
   }
 
+
+  @Transactional
+  public OrderResponseDto changeOrderStatus(String slug, OrderStatus status) {
+    Order order = orderRepository.findBySlug(slug)
+            .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+
+    switch (status) {
+      case CONFIRMED -> confirmOrder(order);
+      case PROCESSING -> startProcessing(order);
+      case SHIPPED -> shipOrder(order);
+      case DELIVERED -> deliverOrder(order);
+      case RETURN_REQUESTED -> requestReturn(order);
+      case RETURNED -> completeReturn(order);
+      case CANCELLED -> cancelOrder(order);
+      default -> throw new IllegalArgumentException("Unsupported status: " + status);
+    }
+    return convertToDto(order);
+  }
+
+
   @Transactional
   public void cancelOrder(Order order) {
-
     if (order.getOrderStatus() == OrderStatus.CANCELLED) {
       return;
+    }
+
+    if (order.getOrderStatus() != OrderStatus.PENDING &&
+        order.getOrderStatus() != OrderStatus.CONFIRMED) {
+
+      throw new IllegalStateException(
+          "Order cannot be cancelled."
+      );
     }
 
     for (OrderItem item : order.getOrderItems()) {
@@ -301,9 +259,89 @@ public class OrderService implements IOrderService{
     }
 
     order.setOrderStatus(OrderStatus.CANCELLED);
+    orderRepository.save(order);
+    notificationService.sendOrderCancelled(order);
+  }
+
+  @Transactional
+  public void confirmOrder(Order order) {
+    updateOrderStatus(order, OrderStatus.CONFIRMED);
+    orderRepository.save(order);
+  }
+
+  @Transactional
+  public void startProcessing(Order order) {
+    updateOrderStatus(order, OrderStatus.PROCESSING);
+    orderRepository.save(order);
+    notificationService.sendOrderProcessing(order);
+  }
+
+  @Transactional
+  public void shipOrder(Order order) {
+    updateOrderStatus(order, OrderStatus.SHIPPED);
+    orderRepository.save(order);
+    notificationService.sendOrderShipped(order);
+    //    trackingService.createTrackingNumber();
+    //    notificationService.sendShipmentEmail();
+    //    eventPublisher.publish(...);
+  }
+
+  @Transactional
+  public void deliverOrder(Order order) {
+    updateOrderStatus(order, OrderStatus.DELIVERED);
+    orderRepository.save(order);
+    notificationService.sendOrderDelivered(order);
+  }
+
+  @Transactional
+  public void requestReturn(Order order) {
+    updateOrderStatus(order, OrderStatus.RETURN_REQUESTED);
+    orderRepository.save(order);
+  }
+
+  @Transactional
+  public void completeReturn(Order order) {
+    updateOrderStatus(order, OrderStatus.RETURNED);
+
+    for (OrderItem item : order.getOrderItems()) {
+      inventoryService.addStock(
+          item.getProduct().getSlug(),
+          item.getQuantity()
+      );
+    }
 
     orderRepository.save(order);
   }
+
+  private void updateOrderStatus(Order order, OrderStatus newStatus) {
+    if (!isValidTransition(order.getOrderStatus(), newStatus)) {
+      throw new IllegalStateException(
+          "Cannot change order status from "
+              + order.getOrderStatus()
+              + " to "
+              + newStatus
+      );
+    }
+
+    order.setOrderStatus(newStatus);
+  }
+
+  private boolean isValidTransition(OrderStatus current, OrderStatus next) {
+    return switch (current) {
+      case PENDING -> next == OrderStatus.CONFIRMED
+          || next == OrderStatus.CANCELLED;
+      case CONFIRMED -> next == OrderStatus.PROCESSING
+          || next == OrderStatus.CANCELLED;
+      case PROCESSING -> next == OrderStatus.SHIPPED;
+      case SHIPPED -> next == OrderStatus.DELIVERED;
+      case DELIVERED -> next == OrderStatus.RETURN_REQUESTED;
+      case RETURN_REQUESTED -> next == OrderStatus.RETURNED;
+      case RETURNED,
+           CANCELLED,
+           EXPIRED -> false;
+    };
+  }
+
 //  @Transactional
 //  public void markAsPaid(Order order) {
 //    log.info("Before: {}", order.getPaymentStatus());
@@ -322,3 +360,97 @@ public class OrderService implements IOrderService{
 //    log.info("After: {}", order.getOrderStatus());
 //  }
 }
+//NEXT PHASE
+// things to work on : order status update by admin - PROCESSING - SHIPPED - DELIVERED - with EMAILS
+// Work on order cancellation, refunds, failed payments
+// work on AUTH, Logout, refresh token, forgot password, reset password
+// Advanced Roles Based Access Control
+// Invite users and assign roles
+// AUDIT LOGS
+// use AI to ask questions about product in question, compare product, what it can do and more - AI powered e-commerce platform
+
+
+//  private List<OrderItem> createOrderItems(Order order, Cart cart) {
+//    return cart.getItems()
+//        .stream()
+//        .map(cartItem -> {
+//
+//          Product product = cartItem.getProduct();
+//
+//          inventoryService.reserve(
+//              product.getSlug(),
+//              cartItem.getQuantity()
+//          );
+//
+//          return new OrderItem(
+//              cartItem.getQuantity(),
+//              cartItem.getUnitPrice(),
+//              order,
+//              product
+//          );
+//        })
+//        .toList();
+//  }
+
+//  private List<OrderItem> createOrderItems(Order order, Cart cart){
+//    return cart.getItems().stream().map(cartItem -> {
+//      Product product = cartItem.getProduct();
+////      product.setInventory(product.getInventory() - cartItem.getQuantity());
+//      productRepository.save(product);
+//
+//      return new OrderItem(
+//        cartItem.getQuantity(),
+//        cartItem.getUnitPrice(),
+//        order,
+//        product);
+//    }).toList();
+//  }
+
+
+//  public Order placeOrder(String userSlug) {
+//    Cart cart = cartService.getCartByUserSlug(userSlug);
+//    Order order = createOrder(cart);
+//    List<OrderItem> orderItemList = createOrderItems(order, cart);
+////    order.setOrderItems(new HashSet<>(orderItemList));
+//    order.setItems(orderItemList);
+//    order.setTotalAmount(calculateTotalAmount(orderItemList));
+//    Order savedOrder = orderRepository.save(order);
+//    cartService.clearCart(cart.getSlug());
+//
+//    return savedOrder;
+//  }
+
+
+//  @Transactional(readOnly = true)
+//  @Override
+//  public OrderResponseDto convertToDto(Order order){
+//    List<OrderItemResponseDto> items = order.getOrderItems()
+//        .stream()
+//        .map(item -> new OrderItemResponseDto( // make sure to follow the arrangement from the DTO
+//            productService.convertToDto(item.getProduct()),
+//            item.getQuantity(),
+//            item.getPrice()
+//        )).toList();
+//    return new OrderResponseDto(
+//        order.getSlug(),
+//        order.getUser().getSlug(),
+//        order.getOrderDate(),
+//        order.getTotalAmount(),
+//        order.getOrderStatus().name(),
+//        items
+//    );
+//  }
+
+//  @Transactional
+//  public void changeOrderStatus(Order order, OrderStatus newStatus) {
+//
+//    OrderStatus currentStatus = order.getOrderStatus();
+//
+//    if (!isValidTransition(currentStatus, newStatus)) {
+//      throw new IllegalStateException(
+//          "Cannot change order status from " + currentStatus + " to " + newStatus
+//      );
+//    }
+//
+//    order.setOrderStatus(newStatus);
+//  }

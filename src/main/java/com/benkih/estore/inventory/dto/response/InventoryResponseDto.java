@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class InventoryResponseDto {
-
   private String slug;
 
   private Integer totalStock;

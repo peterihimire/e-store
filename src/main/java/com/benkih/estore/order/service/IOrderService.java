@@ -1,5 +1,6 @@
 package com.benkih.estore.order.service;
 
+import com.benkih.estore.common.enums.OrderStatus;
 import com.benkih.estore.order.dto.response.OrderResponseDto;
 import com.benkih.estore.order.entity.Order;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,4 +22,7 @@ public interface IOrderService {
   List<OrderResponseDto> getConvertedOrders(List<Order> orders);
 
   OrderResponseDto convertToDto(Order order);
+
+  @Transactional
+  OrderResponseDto changeOrderStatus(String slug, OrderStatus status);
 }

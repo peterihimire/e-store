@@ -18,7 +18,13 @@ public interface INotificationService {
 
   void sendOrderConfirmation(Order order);
 
+  void sendOrderProcessing(Order order);
+
+  void sendOrderCancelled(Order order);
+
   void sendOrderShipped(Order order);
+
+  void sendOrderDelivered(Order order);
 
   void sendRefundNotification(Payment payment);
 }

@@ -21,6 +21,10 @@ public class NotificationService implements INotificationService {
   private final LoginEmailBuilder loginEmailBuilder;
   private final PaymentReceiptEmailBuilder paymentReceiptEmailBuilder;
   private final OrderConfirmationEmailBuilder orderConfirmationEmailBuilder;
+  private final OrderProcessingEmailBuilder orderProcessingEmailBuilder;
+  private final OrderShippedEmailBuilder orderShippedEmailBuilder;
+  private final OrderCancelledEmailBuilder orderCancelledEmailBuilder;
+  private final OrderDeliveredEmailBuilder orderDeliveredEmailBuilder;
 
 //  private final SmsService smsService;
 
@@ -55,8 +59,23 @@ public class NotificationService implements INotificationService {
   }
 
   @Override
+  public void sendOrderProcessing(Order order) {
+    sendEmail(orderProcessingEmailBuilder.build(order));
+  }
+
+  @Override
+  public void sendOrderCancelled(Order order) {
+    sendEmail(orderCancelledEmailBuilder.build(order));
+  }
+
+  @Override
   public void sendOrderShipped(Order order) {
-    // later
+    sendEmail(orderShippedEmailBuilder.build(order));
+  }
+
+  @Override
+  public void sendOrderDelivered(Order order) {
+    sendEmail(orderDeliveredEmailBuilder.build(order));
   }
 
   @Override

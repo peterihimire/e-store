@@ -1,6 +1,7 @@
 package com.benkih.estore.order.controller;
 
 import com.benkih.estore.common.response.ApiResponse;
+import com.benkih.estore.order.dto.request.UpdateOrderStatusRequest;
 import com.benkih.estore.order.dto.response.OrderResponseDto;
 import com.benkih.estore.order.entity.Order;
 import com.benkih.estore.order.service.IOrderService;
@@ -8,6 +9,7 @@ import com.benkih.estore.security.user.StoreUserDetails;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -47,5 +49,18 @@ public class OrderController {
     List<Order> orders = orderService.getUserOrders(userSlug);
     List<OrderResponseDto> orderData = orderService.getConvertedOrders(orders);
     return ResponseEntity.ok(new ApiResponse("success","User orders returned success", orderData));
+  }
+
+  @PreAuthorize("hasRole('ADMIN')")
+  @PatchMapping("/{slug}/status")
+  public ResponseEntity<ApiResponse> changeStatus(
+      @PathVariable String slug,
+      @RequestBody UpdateOrderStatusRequest request) {
+
+    OrderResponseDto order = orderService.changeOrderStatus(slug, request.getStatus());
+
+    return ResponseEntity.ok(
+        new ApiResponse("success", "Order updated successfully", order)
+    );
   }
 }
