@@ -114,6 +114,8 @@ public class InventoryService implements IInventoryService{
     Inventory inventory = new Inventory();
     inventory.setProduct(product);
 
+    product.setInventory(inventory);
+
    return  inventoryRepository.save(inventory);
 //    log.info("Inventory created for product {}", product.getSlug());
   }

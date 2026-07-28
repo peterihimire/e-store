@@ -25,6 +25,7 @@ public class NotificationService implements INotificationService {
   private final OrderShippedEmailBuilder orderShippedEmailBuilder;
   private final OrderCancelledEmailBuilder orderCancelledEmailBuilder;
   private final OrderDeliveredEmailBuilder orderDeliveredEmailBuilder;
+  private final PasswordResetEmailBuilder passwordResetEmailBuilder;
 
 //  private final SmsService smsService;
 
@@ -81,6 +82,11 @@ public class NotificationService implements INotificationService {
   @Override
   public void sendRefundNotification(Payment payment) {
     // later
+  }
+
+  @Override
+  public void sendPasswordReset(User user, String token) {
+    sendEmail(passwordResetEmailBuilder.build(user, token));
   }
 
   private void sendEmail(EmailRequest request) {

@@ -1,11 +1,14 @@
 package com.benkih.estore.auth.service;
 
-import com.benkih.estore.auth.dto.request.LoginRequest;
-import com.benkih.estore.auth.dto.request.VerifyEmailRequest;
+import com.benkih.estore.auth.dto.request.*;
 import com.benkih.estore.auth.dto.response.LoginResponse;
+import com.benkih.estore.auth.dto.response.PasswordResetTokenResponse;
 import com.benkih.estore.auth.dto.response.VerificationTokenResponse;
 import com.benkih.estore.auth.entity.EmailVerification;
+import com.benkih.estore.auth.entity.PasswordResetToken;
+import com.benkih.estore.auth.entity.RefreshToken;
 import com.benkih.estore.auth.repository.EmailVerificationRepository;
+import com.benkih.estore.auth.repository.PasswordResetTokenRepository;
 import com.benkih.estore.common.enums.RoleName;
 import com.benkih.estore.common.enums.UserStatus;
 import com.benkih.estore.common.exceptions.AlreadyExistsException;
@@ -17,6 +20,7 @@ import com.benkih.estore.email.builder.WelcomeEmailBuilder;
 import com.benkih.estore.email.dto.EmailRequest;
 import com.benkih.estore.email.service.EmailService;
 import com.benkih.estore.notification.INotificationService;
+import com.benkih.estore.security.user.CurrentUserService;
 import com.benkih.estore.user.entity.Role;
 import com.benkih.estore.user.repository.RoleRepository;
 import com.benkih.estore.security.jwt.JwtUtils;
@@ -26,6 +30,7 @@ import com.benkih.estore.user.dto.response.UserResponseDto;
 import com.benkih.estore.user.entity.User;
 import com.benkih.estore.user.repository.UserRepository;
 import com.benkih.estore.user.service.IUserService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -60,14 +65,16 @@ public class AuthService implements IAuthService {
   private final EmailVerificationRepository verificationRepository;
   private final IUserService userService;
   private final INotificationService notificationService;
+  private final RefreshTokenService refreshTokenService;
+  private final IPasswordResetTokenService passwordResetTokenService;
+  private final PasswordResetTokenRepository passwordResetTokenRepository;
+  private final CurrentUserService currentUserService;
 
 
 
   @Transactional
   @Override
   public User register(CreateUserRequest request) {
-
-
     Optional<User> existingUser = userRepository.findByEmail(request.getEmail());
     if (existingUser.isPresent()) {
       User user = existingUser.get();
@@ -78,11 +85,9 @@ public class AuthService implements IAuthService {
         );
       }
 
-      VerificationTokenResponse token =
-          verificationService.createVerificationToken(user);
-
-      EmailRequest email =
-          verificationEmailBuilder.build(user, token.getPlainToken());
+      VerificationTokenResponse token = verificationService.createVerificationToken(user);
+      // wrap in try-catch or use the notification service
+      EmailRequest email = verificationEmailBuilder.build(user, token.getPlainToken());
       emailService.send(email);
 
       return user;
@@ -118,7 +123,7 @@ public class AuthService implements IAuthService {
 
   @Transactional
   @Override
-  public LoginResponse verifyEmail(VerifyEmailRequest request) {
+  public LoginResponse verifyEmail(VerifyEmailRequest request, HttpServletRequest httpRequest) {
 
     User user = userRepository.findByEmail(request.getEmail())
         .orElseThrow(() ->
@@ -128,10 +133,8 @@ public class AuthService implements IAuthService {
       throw new BadRequestException("Email already verified.");
     }
 
-    EmailVerification verification =
-        verificationRepository.findTopByUserOrderByCreatedAtDesc(user)
-            .orElseThrow(() ->
-                new BadRequestException("Verification code not found."));
+    EmailVerification verification = verificationRepository.findTopByUserOrderByCreatedAtDesc(user)
+            .orElseThrow(() -> new BadRequestException("Verification code not found."));
 
     if (verification.isExpired()) {
       throw new BadRequestException("Verification code expired.");
@@ -141,10 +144,7 @@ public class AuthService implements IAuthService {
       throw new BadRequestException("Verification code has already been used.");
     }
 
-    if (!passwordEncoder.matches(
-        request.getCode(),
-        verification.getToken())) {
-
+    if (!passwordEncoder.matches(request.getCode(), verification.getToken())) {
       throw new BadRequestException("Invalid verification code.");
     }
 
@@ -156,23 +156,19 @@ public class AuthService implements IAuthService {
 
     verificationRepository.save(verification);
     userRepository.save(user);
+
+    String device = httpRequest.getHeader("User-Agent");
+    String ipAddress = httpRequest.getRemoteAddr();
     notificationService.sendWelcomeEmail(user);
 
-//    try {
-//      EmailRequest email = welcomeEmailBuilder.build(user);
-//      emailService.send(email);
-//    } catch (Exception ex) {
-//      log.error("Unable to send welcome email", ex);
-//    }
-
-    return createLoginResponse(user);
+    return createLoginResponse(user, device, ipAddress);
   }
 
 
 
-@Transactional(readOnly = true)
+@Transactional
 @Override
-public LoginResponse login(LoginRequest request) {
+public LoginResponse login(LoginRequest request, HttpServletRequest httpRequest) {
 
   Authentication authentication = authenticationManager.authenticate(
       new UsernamePasswordAuthenticationToken(
@@ -187,57 +183,190 @@ public LoginResponse login(LoginRequest request) {
       .orElseThrow(() ->
           new UsernameNotFoundException("User not found"));
 
-//  notificationService.sendLoginEmail(user);
-//  try {
-//    EmailRequest email = loginEmailBuilder.build(user);
-//    emailService.send(email);
-//  } catch (Exception ex) {
-//    log.error("Unable to send login email", ex);
-//  }
+  if (!user.isEmailVerified()) {
+    throw new BadRequestException("Please verify your email before logging in.");
+  }
 
-  return createLoginResponse(authentication, user);
+  if (user.getStatus() != UserStatus.ACTIVE) {
+    throw new BadRequestException("Your account is not active.");
+  }
+
+  String device = httpRequest.getHeader("User-Agent");
+  String ipAddress = httpRequest.getRemoteAddr();
+//  notificationService.sendLoginEmail(user);
+
+  refreshTokenService.revokeAllUserTokens(user);
+//  String refreshToken = refreshTokenService.createRefreshToken(user, device, ipAddress);
+
+  return createLoginResponse(authentication, user, device, ipAddress);
 }
 
 
+  @Override
+  @Transactional
+  public void logout(String refreshToken) {
+    if (refreshToken == null || refreshToken.isBlank()) {
+      SecurityContextHolder.clearContext();
+      return;
+    }
 
-private LoginResponse createLoginResponse(Authentication authentication, User user) {
+    refreshTokenService.revokeRefreshToken(refreshToken);
+    SecurityContextHolder.clearContext();
+  }
 
-  String jwt = jwtUtils.generateTokenForUser(authentication);
+  @Override
+  @Transactional
+  public LoginResponse refreshToken(
+      String refreshToken,
+      HttpServletRequest request) {
 
-  StoreUserDetails userDetails =
-      (StoreUserDetails) authentication.getPrincipal();
+    RefreshToken storedToken = refreshTokenService.validateRefreshToken(refreshToken);
 
+    User user = storedToken.getUser();
+
+    StoreUserDetails userDetails = StoreUserDetails.buildUserDetails(user);
+
+    Authentication authentication = new UsernamePasswordAuthenticationToken(
+            userDetails,
+            null,
+            userDetails.getAuthorities());
+
+    SecurityContextHolder.getContext().setAuthentication(authentication);
+
+    String device = request.getHeader("User-Agent");
+    String ip = request.getRemoteAddr();
+    String newRefreshToken = refreshTokenService.rotateRefreshToken(refreshToken, device, ip);
+    String accessToken = jwtUtils.generateAccessToken(authentication);
+
+    UserResponseDto dto = userService.convertToDto(user);
+
+    return new LoginResponse(accessToken, newRefreshToken, dto);
+  }
+
+  @Transactional
+  @Override
+  public void forgotPassword(ForgotPasswordRequest request){
+  Optional<User> optionalUser = userRepository.findByEmail(request.getEmail());
+
+  if (optionalUser.isEmpty()) {
+    return;
+  }
+
+  User user = optionalUser.get();
+
+  if (!user.isEmailVerified()) {
+    return;
+  }
+
+  PasswordResetTokenResponse token = passwordResetTokenService.createPasswordResetToken(user);
+  notificationService.sendPasswordReset(user, token.getPlainToken());
+}
+
+  @Transactional
+  @Override
+  public void resetPassword(ResetPasswordRequest request) {
+
+    User user = userRepository.findByEmail(request.getEmail())
+        .orElseThrow(() ->
+            new ResourceNotFoundException("User not found"));
+
+    PasswordResetToken resetToken = passwordResetTokenRepository
+        .findTopByUserAndUsedAtIsNullOrderByCreatedAtDesc(user)
+        .orElseThrow(() -> new BadRequestException("Password reset code not found."));
+
+    if (resetToken.isExpired()) {
+      throw new BadRequestException("Password reset code has expired.");
+    }
+
+    if (resetToken.isUsed()) {
+      throw new BadRequestException("Password reset code has already been used.");
+    }
+
+    if (!passwordEncoder.matches(request.getToken(), resetToken.getTokenHash())) {
+      throw new BadRequestException("Invalid password reset code.");
+    }
+
+//    if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+//      throw new BadRequestException("Passwords do not match.");
+//    }
+
+    user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+    userRepository.save(user);
+
+    resetToken.setUsedAt(LocalDateTime.now());
+    passwordResetTokenRepository.save(resetToken);
+
+    refreshTokenService.revokeAllUserTokens(user);
+  }
+
+  @Transactional
+  @Override
+  public void changePassword(ChangePasswordRequest request) {
+    User user = currentUserService.getCurrentUser();
+
+    if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+      throw new BadRequestException("Current password is incorrect.");
+    }
+
+//    if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+//      throw new BadRequestException("Passwords do not match.");
+//    }
+
+    if (passwordEncoder.matches(request.getNewPassword(), user.getPassword())) {
+      throw new BadRequestException("New password must be different from your current password.");
+    }
+
+    user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+    userRepository.save(user);
+
+    refreshTokenService.revokeAllUserTokens(user);
+  }
+
+
+private LoginResponse createLoginResponse(
+    Authentication authentication,
+    User user,
+    String device,
+    String ipAddress) {
+
+//  String jwt = jwtUtils.generateAccessToken(authentication);
+  String accessToken = jwtUtils.generateAccessToken(authentication);
+
+  String refreshToken = refreshTokenService.createRefreshToken(user, device, ipAddress);
+  StoreUserDetails userDetails = (StoreUserDetails) authentication.getPrincipal();
   UserResponseDto userDto = userService.convertToDto(user);
 
-  return new LoginResponse(
-      jwt,
-      "",
-      userDto
-  );
+  return new LoginResponse(accessToken,refreshToken, userDto);
 }
 
-  private LoginResponse createLoginResponse(User user) {
+  private LoginResponse createLoginResponse(
+      User user,
+      String device,
+      String ipAddress) {
+    StoreUserDetails userDetails = StoreUserDetails.buildUserDetails(user);
 
-    StoreUserDetails userDetails =
-        StoreUserDetails.buildUserDetails(user);
-
-    Authentication authentication =
-        new UsernamePasswordAuthenticationToken(
+    Authentication authentication = new UsernamePasswordAuthenticationToken(
             userDetails,
             null,
             userDetails.getAuthorities()
         );
 
     SecurityContextHolder.getContext().setAuthentication(authentication);
-
-    String jwt = jwtUtils.generateTokenForUser(authentication);
-    UserResponseDto userDto = userService.convertToDto(user);
-
-    return new LoginResponse(
-        jwt,
-        "",
-        userDto
+    return createLoginResponse(
+        authentication,
+        user,
+        device,
+        ipAddress
     );
+
+//    String jwt = jwtUtils.generateAccessToken(authentication);
+//    UserResponseDto userDto = userService.convertToDto(user);
+//
+//    return new LoginResponse(
+//        jwt,
+//        "",
+//        userDto
+//    );
   }
 }
 

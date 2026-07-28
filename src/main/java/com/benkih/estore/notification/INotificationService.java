@@ -27,4 +27,6 @@ public interface INotificationService {
   void sendOrderDelivered(Order order);
 
   void sendRefundNotification(Payment payment);
+
+  void sendPasswordReset(User user, String token);
 }
