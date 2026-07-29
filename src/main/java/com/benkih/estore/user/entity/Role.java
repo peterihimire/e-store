@@ -1,5 +1,6 @@
 package com.benkih.estore.user.entity;
 
+import com.benkih.estore.permission.entity.Permission;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,7 +13,13 @@ import java.util.*;
 @Setter
 @NoArgsConstructor // use this when you create your own arg constructor manually
 @Entity
-@Table(name = "roles")
+@Table(
+    name = "roles",
+    indexes = {
+        @Index(name = "idx_roles_slug", columnList = "slug"),
+        @Index(name = "idx_roles_name", columnList = "name")
+    }
+)
 public class Role {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,6 +31,12 @@ public class Role {
   @Column(nullable = false, unique = true)
   private String name;
 
+  @Column(nullable = false)
+  private boolean systemRole = false;
+
+  @Column(nullable = false)
+  private boolean active = true;
+
   private String createdBy;
   private String updatedBy;
 
@@ -33,6 +46,14 @@ public class Role {
 
   @ManyToMany(mappedBy = "roles")
   private Collection<User> users = new HashSet<>(); //using collection here allows the user to switch between Set and ArrayList
+
+  @ManyToMany(fetch = FetchType.EAGER)
+  @JoinTable(
+      name = "role_permissions",
+      joinColumns = @JoinColumn(name = "role_id"),
+      inverseJoinColumns = @JoinColumn(name = "permission_id")
+  )
+  private Set<Permission> permissions = new HashSet<>();
 
   public Role(String name) { //manual arg constructor
     this.name = name;
