@@ -3,13 +3,17 @@ package com.benkih.estore.department.entity;
 import com.benkih.estore.common.entity.BaseEntity;
 import com.benkih.estore.user.entity.User;
 import jakarta.persistence.*;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+@Getter
+@Setter
 @Entity
 @NoArgsConstructor
 @Table(

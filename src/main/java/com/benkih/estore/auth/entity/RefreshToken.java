@@ -47,8 +47,6 @@ public class RefreshToken {
 
   private LocalDateTime revokedAt;
 
-
-
   @Enumerated(EnumType.STRING)
   @Column(name = "revoked_reason")
   private RevocationReason revokedReason;

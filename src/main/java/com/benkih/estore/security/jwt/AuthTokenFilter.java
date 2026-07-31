@@ -49,14 +49,6 @@ public class AuthTokenFilter extends OncePerRequestFilter {
       log.error("Authentication error: {}", e.getMessage());
       SecurityContextHolder.clearContext();
     }
-//    } catch (JwtException e) {
-//      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-//      response.getWriter().write(e.getMessage() + ": Invalid or expired token, you may login and try again");
-//
-//    } catch(Exception e){
-//      response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-//      response.getWriter().write(e.getMessage());
-//    }
     filterChain.doFilter(request, response);
   }
 
@@ -67,6 +59,4 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     }
     return null;
   }
-
-
 }

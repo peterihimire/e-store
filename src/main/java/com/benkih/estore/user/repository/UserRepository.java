@@ -16,9 +16,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
   ////      "cart.items.product.images",
   //      "orders"
   //  })
+  @EntityGraph(attributePaths = {"roles", "roles.permissions"})
   Optional<User> findBySlug(String slug);
 
   boolean existsByEmail(String email);
 
+  @EntityGraph(attributePaths = {"roles", "roles.permissions"})
   Optional<User> findByEmail(String email);
 }

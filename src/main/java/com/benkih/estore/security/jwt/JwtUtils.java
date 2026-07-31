@@ -39,20 +39,19 @@ public class JwtUtils {
 
   public String generateAccessToken(Authentication authentication) {
 
-    StoreUserDetails principal =
-        (StoreUserDetails) authentication.getPrincipal();
+    StoreUserDetails principal = (StoreUserDetails) authentication.getPrincipal();
 
-    List<String> roles = principal.getAuthorities()
-        .stream()
-        .map(GrantedAuthority::getAuthority)
-        .toList();
+//    List<String> roles = principal.getAuthorities()
+//        .stream()
+//        .map(GrantedAuthority::getAuthority)
+//        .toList();
 
     Date now = new Date();
 
     return Jwts.builder()
         .setSubject(principal.getEmail())
         .claim("slug", principal.getSlug())
-        .claim("roles", roles)
+//        .claim("roles", roles)
         .setIssuedAt(now)
         .setExpiration(new Date(now.getTime() + accessExpiration))
         .signWith(accessKey(), SignatureAlgorithm.HS256)

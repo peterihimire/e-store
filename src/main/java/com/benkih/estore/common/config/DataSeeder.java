@@ -1,5 +1,8 @@
 package com.benkih.estore.common.config;
 
+import com.benkih.estore.common.enums.UserStatus;
+import com.benkih.estore.permission.entity.Permission;
+import com.benkih.estore.permission.repository.PermissionRepository;
 import com.benkih.estore.user.entity.Role;
 import com.benkih.estore.user.repository.RoleRepository;
 import com.benkih.estore.user.entity.User;
@@ -22,27 +25,31 @@ import java.util.Set;
 @RequiredArgsConstructor
 @Transactional
 public class DataSeeder implements CommandLineRunner {
-
+  private static final Logger log = LoggerFactory.getLogger(DataSeeder.class);
   private final UserRepository userRepository;
   private final RoleRepository roleRepository;
   private final PasswordEncoder passwordEncoder;
-  private static final Logger log = LoggerFactory.getLogger(DataSeeder.class);
+  private final PermissionRepository permissionRepository;
+
 
   @Override
   public void run(String... args) {
     try {
-      log.info("Starting data seeding...");
-
-      //       // Always create roles if they don't exist
-//             createDefaultRoles();
-
-      //      // Only create users if none exist
-      //      if (userRepository.count() == 0) {
-      //        createUsers();
-      //        log.info("Data seeding completed successfully!");
-      //      } else {
-      //        log.info("Users already exist. Skipping user creation.");
-      //      }
+//      log.info("Starting data seeding...");
+//
+//      // Always create roles if they don't exist
+//      createDefaultRoles();
+//
+//      // Only create users if none exist
+//      if (userRepository.count() == 0) {
+//        createUsers();
+//        log.info("Data seeding completed successfully!");
+//      } else {
+//        log.info("Users already exist. Skipping user creation.");
+//      }
+//      seedPermissions();
+//      seedSystemRoles();
+//      createSuperAdmin();
 
     } catch (Exception e) {
       log.error(" Error during data seeding: {}", e.getMessage(), e);
@@ -115,5 +122,103 @@ public class DataSeeder implements CommandLineRunner {
     } catch (Exception e) {
       log.error(" Failed to create user {}: {}", email, e.getMessage());
     }
+  }
+
+  private void seedPermissions() {
+
+    createPermission("USER_CREATE", "USER", "CREATE");
+    createPermission("USER_READ", "USER", "READ");
+    createPermission("USER_UPDATE", "USER", "UPDATE");
+    createPermission("USER_DELETE", "USER", "DELETE");
+
+    createPermission("ROLE_CREATE", "ROLE", "CREATE");
+    createPermission("ROLE_READ", "ROLE", "READ");
+    createPermission("ROLE_UPDATE", "ROLE", "UPDATE");
+    createPermission("ROLE_DELETE", "ROLE", "DELETE");
+
+    createPermission("DEPARTMENT_CREATE", "DEPARTMENT", "CREATE");
+    createPermission("DEPARTMENT_READ", "DEPARTMENT", "READ");
+    createPermission("DEPARTMENT_UPDATE", "DEPARTMENT", "UPDATE");
+    createPermission("DEPARTMENT_DELETE", "DEPARTMENT", "DELETE");
+
+    createPermission("PRODUCT_CREATE", "PRODUCT", "CREATE");
+    createPermission("PRODUCT_READ", "PRODUCT", "READ");
+    createPermission("PRODUCT_UPDATE", "PRODUCT", "UPDATE");
+    createPermission("PRODUCT_DELETE", "PRODUCT", "DELETE");
+
+    createPermission("ORDER_CREATE", "ORDER", "CREATE");
+    createPermission("ORDER_READ", "ORDER", "READ");
+    createPermission("ORDER_UPDATE", "ORDER", "UPDATE");
+    createPermission("ORDER_DELETE", "ORDER", "DELETE");
+
+    createPermission("PAYMENT_READ", "PAYMENT", "READ");
+    createPermission("PAYMENT_UPDATE", "PAYMENT", "UPDATE");
+
+    log.info("Permissions seeded.");
+  }
+
+  private void createPermission(String name, String resource, String action) {
+    if (permissionRepository.findByName(name).isPresent()) {
+      return;
+    }
+
+    Permission permission = new Permission();
+
+    permission.setName(name);
+    permission.setResource(resource);
+    permission.setAction(action);
+    permission.setDescription(name.replace("_", " "));
+    permission.setCreatedAt(LocalDateTime.now());
+
+    permissionRepository.save(permission);
+
+    log.info("Created permission {}", name);
+  }
+
+  private void seedSystemRoles() {
+    if (roleRepository.findByName("SUPER_ADMIN").isPresent()) {
+      return;
+    }
+
+    Role role = new Role();
+
+    role.setName("SUPER_ADMIN");
+    role.setSystemRole(true);
+    role.setActive(true);
+    role.setCreatedAt(LocalDateTime.now());
+
+    Set<Permission> permissions = new HashSet<>(permissionRepository.findAll());
+
+    role.setPermissions(permissions);
+
+    roleRepository.save(role);
+
+    log.info("Created SUPER_ADMIN role.");
+  }
+
+  private void createSuperAdmin() {
+    if (userRepository.findByEmail("admin@estore.com").isPresent()) {
+      return;
+    }
+
+    User user = new User();
+
+    user.setFirstName("Super");
+    user.setLastName("Admin");
+    user.setEmail("admin@estore.com");
+    user.setPassword(passwordEncoder.encode("Company22_"));
+    user.setEmailVerified(true);
+    user.setStatus(UserStatus.ACTIVE);
+
+    user.setCreatedAt(LocalDateTime.now());
+
+    Role superAdmin = roleRepository.findByName("SUPER_ADMIN")
+        .orElseThrow();
+
+    user.setRoles(Set.of(superAdmin));
+
+    userRepository.save(user);
+
+    log.info("Super Admin created.");
   }
 }

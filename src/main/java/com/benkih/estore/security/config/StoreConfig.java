@@ -108,8 +108,8 @@ public class StoreConfig {
             .requestMatchers("/h2-console/**").permitAll()  // If using H2 (development only)
 
             // Protected endpoints - authentication required
-            .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
-            .requestMatchers("/api/v1/manager/**").hasAnyRole("ADMIN", "MANAGER")
+            .requestMatchers("/api/v1/admin/**").authenticated()
+            .requestMatchers("/api/v1/manager/**").authenticated()
 
             // 3. Protected endpoints (authenticated)
             // .requestMatchers("/api/v1/users/**", "/api/v1/profile/**").authenticated()
