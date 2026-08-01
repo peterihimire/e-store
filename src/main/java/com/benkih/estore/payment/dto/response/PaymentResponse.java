@@ -15,7 +15,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PaymentResponse {
-
   private String slug;
 
   private String reference;
@@ -37,5 +36,4 @@ public class PaymentResponse {
   private String gatewayResponse;
 
   private LocalDateTime paidAt;
-
 }

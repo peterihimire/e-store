@@ -1,6 +1,7 @@
-package com.benkih.estore.user.entity;
+package com.benkih.estore.role.entity;
 
 import com.benkih.estore.permission.entity.Permission;
+import com.benkih.estore.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

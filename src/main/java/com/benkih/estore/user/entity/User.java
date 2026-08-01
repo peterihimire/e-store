@@ -7,6 +7,7 @@ import com.benkih.estore.order.entity.Order;
 import com.benkih.estore.payment.entity.Payment;
 import com.benkih.estore.auth.entity.RefreshToken;
 import com.benkih.estore.review.entity.Review;
+import com.benkih.estore.role.entity.Role;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.NaturalId;

@@ -1,16 +1,14 @@
 package com.benkih.estore.permission.entity;
 
 import com.benkih.estore.common.entity.BaseEntity;
-import com.benkih.estore.user.entity.Role;
+import com.benkih.estore.role.entity.Role;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
 
 @Getter
 @Setter

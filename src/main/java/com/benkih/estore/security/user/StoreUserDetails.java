@@ -1,5 +1,6 @@
 package com.benkih.estore.security.user;
 
+import com.benkih.estore.role.entity.Role;
 import com.benkih.estore.user.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,7 +12,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.stream.Collectors;
 
 @Getter
@@ -30,6 +30,7 @@ public class StoreUserDetails implements UserDetails {
     Collection<GrantedAuthority> authorities =
         user.getRoles()
             .stream()
+            .filter(Role::isActive)
             .flatMap(role -> role.getPermissions().stream())
             .map(permission -> new SimpleGrantedAuthority(permission.getName()))
             .collect(Collectors.toSet());

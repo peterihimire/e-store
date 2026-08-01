@@ -163,7 +163,7 @@ public ResponseEntity<ApiResponse> getProductBySlug(@PathVariable String slug) {
     }
   }
 
-  @PreAuthorize("hasRole('ADMIN')")
+  @PreAuthorize("hasAuthority('PRODUCT_CREATE')")
   @PostMapping("/addProduct")
   public ResponseEntity<ApiResponse> addProduct(@RequestBody AddProductRequest product){ // uses general exception to throw error
       Product productData = productService.addProduct(product);
@@ -171,7 +171,7 @@ public ResponseEntity<ApiResponse> getProductBySlug(@PathVariable String slug) {
       return ResponseEntity.ok(new ApiResponse("success","Product added", productDto));
   }
 
-  @PreAuthorize("hasRole('ADMIN')")
+  @PreAuthorize("hasAuthority('PRODUCT_UPDATE')")
   @PutMapping("/{productSlug}/update")
   public ResponseEntity<ApiResponse> updateProduct(@RequestBody UpdateProductRequest product, @PathVariable String productSlug){
     try {
@@ -183,7 +183,7 @@ public ResponseEntity<ApiResponse> getProductBySlug(@PathVariable String slug) {
     }
   }
 
-  @PreAuthorize("hasRole('ADMIN')")
+  @PreAuthorize("hasAuthority('PRODUCT_DELETE')")
   @DeleteMapping("/product/{productId}/delete")
   public ResponseEntity<ApiResponse> deleteProduct(@PathVariable String productId){
     try {

@@ -1,13 +1,10 @@
 package com.benkih.estore.role.dto.response;
 
-import com.benkih.estore.common.enums.RoleName;
-import com.benkih.estore.user.entity.Role;
+import com.benkih.estore.role.entity.Role;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.List;
 
 @Getter
 @Setter

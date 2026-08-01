@@ -3,7 +3,7 @@ package com.benkih.estore.auth.entity;
 import com.benkih.estore.common.entity.BaseEntity;
 import com.benkih.estore.common.enums.InvitationStatus;
 import com.benkih.estore.department.entity.Department;
-import com.benkih.estore.user.entity.Role;
+import com.benkih.estore.role.entity.Role;
 import com.benkih.estore.user.entity.User;
 import jakarta.persistence.*;
 import lombok.NoArgsConstructor;
@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
 
 @Entity
 @NoArgsConstructor
