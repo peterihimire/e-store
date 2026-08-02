@@ -16,11 +16,11 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/permissions")
+@RequestMapping("${api.prefix}/permissions")
 public class PermissionController {
   private final PermissionService permissionService;
 
-  @GetMapping
+  @GetMapping("/all")
   @PreAuthorize("hasAuthority('ROLE_READ')")
   public ResponseEntity<ApiResponse> getPermissions() {
     List<Permission> permissions =  permissionService.getPermissions();

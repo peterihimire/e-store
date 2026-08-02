@@ -1,10 +1,13 @@
 package com.benkih.estore.role.dto.response;
 
+import com.benkih.estore.permission.dto.response.PermissionResponseDto;
 import com.benkih.estore.role.entity.Role;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -13,16 +16,23 @@ import lombok.Setter;
 public class RoleResponseDto {
 
   private String slug;
+
   private String name;
+
   private boolean systemRole;
+
   private boolean active;
 
-  public static RoleResponseDto fromEntity(Role role) {
-    return new RoleResponseDto(
-        role.getSlug(),
-        role.getName(),
-        role.isSystemRole(),
-        role.isActive()
-    );
-  }
+  private String description;
+
+  private List<PermissionResponseDto> permissions;
+
+//  public static RoleResponseDto fromEntity(Role role) {
+//    return new RoleResponseDto(
+//        role.getSlug(),
+//        role.getName(),
+//        role.isSystemRole(),
+//        role.isActive()
+//    );
+//  }
 }

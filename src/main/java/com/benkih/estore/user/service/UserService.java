@@ -12,6 +12,7 @@ import com.benkih.estore.order.dto.response.OrderResponseDto;
 import com.benkih.estore.order.service.IOrderService;
 import com.benkih.estore.product.service.IProductService;
 import com.benkih.estore.role.dto.response.RoleResponseDto;
+import com.benkih.estore.role.service.RoleService;
 import com.benkih.estore.security.user.CurrentUserService;
 import com.benkih.estore.user.dto.response.AddressResponseDto;
 import com.benkih.estore.role.entity.Role;
@@ -48,6 +49,7 @@ public class UserService implements IUserService {
   private final WelcomeEmailBuilder welcomeEmailBuilder;
   private final CurrentUserService currentUserService;
   private final AddressService addressService;
+  private final RoleService roleService;
 
   @Override
   @Transactional(readOnly = true)
@@ -169,7 +171,7 @@ public class UserService implements IUserService {
     List<RoleResponseDto> roleDtos = Optional.ofNullable(user.getRoles())
         .orElse(Set.of())
         .stream()
-        .map(RoleResponseDto::fromEntity)
+        .map(roleService::convertToDto)
         .toList();
     log.info("User cart dto data={}", cartDto);
 
@@ -200,3 +202,5 @@ public class UserService implements IUserService {
     return convertToDto(user);
   }
 }
+
+//        .map(RoleResponseDto::fromEntity)

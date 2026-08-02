@@ -9,13 +9,6 @@ import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 
-  //  @EntityGraph(attributePaths = {
-  //      "cart",
-  //      "cart.items",
-  ////      "cart.items.product",
-  ////      "cart.items.product.images",
-  //      "orders"
-  //  })
   @EntityGraph(attributePaths = {"roles", "roles.permissions"})
   Optional<User> findBySlug(String slug);
 

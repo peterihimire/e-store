@@ -6,7 +6,9 @@ import com.benkih.estore.department.entity.Department;
 import com.benkih.estore.role.entity.Role;
 import com.benkih.estore.user.entity.User;
 import jakarta.persistence.*;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -14,6 +16,8 @@ import java.util.Set;
 
 @Entity
 @NoArgsConstructor
+@Getter
+@Setter
 @Table(
     name = "user_invitations",
     indexes = {
@@ -25,10 +29,10 @@ import java.util.Set;
 )
 public class UserInvitation extends BaseEntity {
 
-  @Column(nullable = false)
+  @Column(nullable = false, unique = true)
   private String email;
 
-  @Column(nullable = false)
+  @Column(nullable = false, unique = true)
   private String tokenHash;
 
   @ManyToMany
@@ -65,5 +69,22 @@ public class UserInvitation extends BaseEntity {
 
   public boolean isExpired() {
     return !expiresAt.isAfter(LocalDateTime.now());
+  }
+
+  public boolean isPending() {
+    return status == InvitationStatus.PENDING;
+  }
+
+  public boolean isAccepted() {
+    return status == InvitationStatus.ACCEPTED;
+  }
+
+  public void accept() {
+    this.status = InvitationStatus.ACCEPTED;
+    this.acceptedAt = LocalDateTime.now();
+  }
+
+  public void revoke() {
+    this.status = InvitationStatus.CANCELLED;
   }
 }

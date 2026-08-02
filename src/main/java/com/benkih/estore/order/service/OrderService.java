@@ -150,9 +150,7 @@ public class OrderService implements IOrderService{
     List<OrderItemResponseDto> items = order.getOrderItems()
         .stream()
         .map(item -> {
-
           Product product = item.getProduct();
-
           return new OrderItemResponseDto(
               productService.convertToDto(product),
               item.getQuantity(),
