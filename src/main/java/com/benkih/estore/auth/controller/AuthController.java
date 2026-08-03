@@ -3,6 +3,7 @@ package com.benkih.estore.auth.controller;
 import com.benkih.estore.auth.dto.request.*;
 import com.benkih.estore.auth.dto.response.LoginResponse;
 import com.benkih.estore.auth.service.AuthService;
+import com.benkih.estore.auth.service.IUserInvitationService;
 import com.benkih.estore.common.exceptions.AlreadyExistsException;
 import com.benkih.estore.common.response.ApiResponse;
 
@@ -17,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -31,6 +33,7 @@ import static org.springframework.http.HttpStatus.CONFLICT;
 public class AuthController {
   private final AuthService authService;
   private final IUserService userService;
+  private final IUserInvitationService userInvitationService;
 //  private final AuthenticationManager authenticationManager;
 //  private final JwtUtils jwtUtils;
 
@@ -126,6 +129,37 @@ public class AuthController {
         new ApiResponse(
             "success",
             "Change password successful.",
+            null
+        )
+    );
+  }
+
+  @PreAuthorize("hasAuthority('USER_CREATE')")
+  @PostMapping("/user-invitation")
+  public ResponseEntity<ApiResponse> userInvitation(@Valid @RequestBody UserInvitationRequest request) {
+
+    userInvitationService.inviteUser(request);
+
+    return ResponseEntity.ok(
+        new ApiResponse(
+            "success",
+            "User invitation sent successful.",
+            null
+        )
+    );
+  }
+
+  @PostMapping("/accept-invitation/{token}")
+  public ResponseEntity<ApiResponse> acceptInvitation(
+      @PathVariable String token,
+      @Valid @RequestBody AcceptInvitationRequest request) {
+
+    userInvitationService.acceptInvitation(token, request);
+
+    return ResponseEntity.ok(
+        new ApiResponse(
+            "success",
+            "User invitation accept successful.",
             null
         )
     );

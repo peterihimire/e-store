@@ -14,6 +14,7 @@ import com.benkih.estore.product.service.IProductService;
 import com.benkih.estore.role.dto.response.RoleResponseDto;
 import com.benkih.estore.role.service.RoleService;
 import com.benkih.estore.security.user.CurrentUserService;
+import com.benkih.estore.user.dto.request.CreateUserCommand;
 import com.benkih.estore.user.dto.response.AddressResponseDto;
 import com.benkih.estore.role.entity.Role;
 import com.benkih.estore.role.repository.RoleRepository;
@@ -200,6 +201,24 @@ public class UserService implements IUserService {
   public UserResponseDto getUserInfo(){
     User user = currentUserService.getCurrentUser();
     return convertToDto(user);
+  }
+
+  public User createUserCommand(CreateUserCommand command) {
+    User user = new User();
+
+    user.setEmail(command.getEmail());
+    user.setFirstName(command.getFirstName());
+    user.setLastName(command.getLastName());
+    user.setPhoneNumber(command.getPhoneNumber());
+    if (command.getPassword() != null) {
+      user.setPassword(passwordEncoder.encode(command.getPassword()));
+    }
+    user.setRoles(command.getRoles());
+    user.setDepartments(command.getDepartments());
+    user.setStatus(command.getStatus());
+    user.setEmailVerified(command.isEmailVerified());
+
+    return userRepository.save(user);
   }
 }
 

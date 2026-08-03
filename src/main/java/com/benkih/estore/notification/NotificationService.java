@@ -1,5 +1,6 @@
 package com.benkih.estore.notification;
 
+import com.benkih.estore.auth.entity.UserInvitation;
 import com.benkih.estore.email.builder.*;
 import com.benkih.estore.email.dto.EmailRequest;
 import com.benkih.estore.email.service.EmailService;
@@ -26,6 +27,7 @@ public class NotificationService implements INotificationService {
   private final OrderCancelledEmailBuilder orderCancelledEmailBuilder;
   private final OrderDeliveredEmailBuilder orderDeliveredEmailBuilder;
   private final PasswordResetEmailBuilder passwordResetEmailBuilder;
+  private final InvitationEmailBuilder invitationEmailBuilder;
 
 //  private final SmsService smsService;
 
@@ -87,6 +89,11 @@ public class NotificationService implements INotificationService {
   @Override
   public void sendPasswordReset(User user, String token) {
     sendEmail(passwordResetEmailBuilder.build(user, token));
+  }
+
+  @Override
+  public void sendInvitationEmail(UserInvitation user, String token) {
+    sendEmail(invitationEmailBuilder.build(user, token));
   }
 
   private void sendEmail(EmailRequest request) {

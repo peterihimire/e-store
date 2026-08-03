@@ -29,13 +29,19 @@ import java.util.Set;
 )
 public class UserInvitation extends BaseEntity {
 
-  @Column(nullable = false, unique = true)
+  @Column(nullable = false)
   private String email;
+
+  private String firstName;
+
+  private String lastName;
+
+  private String phoneNumber;
 
   @Column(nullable = false, unique = true)
   private String tokenHash;
 
-  @ManyToMany
+  @ManyToMany(fetch = FetchType.LAZY)
   @JoinTable(
       name = "user_invitation_departments",
       joinColumns = @JoinColumn(name = "invitation_id"),
@@ -43,7 +49,7 @@ public class UserInvitation extends BaseEntity {
   )
   private Set<Department> departments = new HashSet<>();
 
-  @ManyToMany
+  @ManyToMany(fetch = FetchType.LAZY)
   @JoinTable(
       name = "user_invitation_roles",
       joinColumns = @JoinColumn(name = "invitation_id"),
@@ -80,11 +86,23 @@ public class UserInvitation extends BaseEntity {
   }
 
   public void accept() {
-    this.status = InvitationStatus.ACCEPTED;
-    this.acceptedAt = LocalDateTime.now();
+    if (isExpired()) {
+      throw new IllegalStateException("Invitation has expired.");
+    }
+
+    if (isAccepted()) {
+      throw new IllegalStateException("Invitation already accepted.");
+    }
+
+    status = InvitationStatus.ACCEPTED;
+    acceptedAt = LocalDateTime.now();
   }
 
   public void revoke() {
-    this.status = InvitationStatus.CANCELLED;
+    if (isAccepted()) {
+      throw new IllegalStateException("Accepted invitation cannot be revoked.");
+    }
+
+    status = InvitationStatus.CANCELLED;
   }
 }
