@@ -2,71 +2,227 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <head>
+
   <meta charset="UTF-8">
+
   <title>Payment Receipt</title>
+
+  <th:block th:replace="~{email/fragments/styles :: styles}" />
+
 </head>
 
-<body style="font-family: Arial, sans-serif; line-height:1.6; color:#333333;">
+<body>
 
-<h2>
-  Hello <span th:text="${name}">Customer</span>,
-</h2>
-
-<p>
-  Thank you for shopping with <strong>E-Store</strong>.
-</p>
-
-<p>
-  We have successfully received your payment.
-</p>
-
-<hr>
-
-<h3>Payment Details</h3>
-
-<table style="border-collapse: collapse;">
-  <tr>
-    <td style="padding:6px 12px 6px 0;"><strong>Order Number</strong></td>
-    <td th:text="${orderNumber}">ORD-123456</td>
-  </tr>
+<table class="wrapper" role="presentation" cellspacing="0" cellpadding="0">
 
   <tr>
-    <td style="padding:6px 12px 6px 0;"><strong>Payment Reference</strong></td>
-    <td th:text="${reference}">PAY-123456789</td>
+
+    <td align="center">
+
+      <table class="container" role="presentation" cellspacing="0" cellpadding="0">
+
+        <th:block th:replace="~{email/fragments/header :: header}" />
+
+        <tr>
+
+          <td class="content">
+
+            <h2>
+
+              Hello
+              <span th:text="${name}">
+                                Customer
+                            </span>,
+
+            </h2>
+
+            <p>
+
+              Thank you for shopping with
+              <strong>E-Store</strong>.
+
+            </p>
+
+            <p>
+
+              We have successfully received your payment.
+
+            </p>
+
+            <div class="info-box">
+
+              <h3 style="margin-top:0;">
+                Payment Details
+              </h3>
+
+              <table class="info-table">
+
+                <tr>
+
+                  <td><strong>Order Number</strong></td>
+
+                  <td th:text="${orderNumber}">
+                    ORD-123456
+                  </td>
+
+                </tr>
+
+                <tr>
+
+                  <td><strong>Payment Reference</strong></td>
+
+                  <td th:text="${reference}">
+                    PAY-123456789
+                  </td>
+
+                </tr>
+
+                <tr>
+
+                  <td><strong>Amount Paid</strong></td>
+
+                  <td th:text="${amount}">
+                    ₦50,000
+                  </td>
+
+                </tr>
+
+                <tr>
+
+                  <td><strong>Payment Date</strong></td>
+
+                  <td th:text="${paymentDate}">
+                    14 Jul 2026 10:35 AM
+                  </td>
+
+                </tr>
+
+              </table>
+
+            </div>
+
+            <p>
+
+              Your official payment receipt has been attached to this email as a PDF for your records.
+
+            </p>
+
+            <p>
+
+              If you have any questions about your order,
+              simply reply to this email and we'll be happy to help.
+
+            </p>
+
+            <br>
+
+            <p>
+
+              Thank you for choosing
+              <strong>E-Store</strong>.
+
+            </p>
+
+            <p>
+
+              Regards,
+
+              <br>
+
+              <strong>
+                The E-Store Team
+              </strong>
+
+            </p>
+
+          </td>
+
+        </tr>
+
+        <th:block th:replace="~{email/fragments/footer :: footer}" />
+
+      </table>
+
+    </td>
+
   </tr>
 
-  <tr>
-    <td style="padding:6px 12px 6px 0;"><strong>Amount Paid</strong></td>
-    <td th:text="${amount}">₦50,000</td>
-  </tr>
-
-  <tr>
-    <td style="padding:6px 12px 6px 0;"><strong>Payment Date</strong></td>
-    <td th:text="${paymentDate}">14 Jul 2026 10:35 AM</td>
-  </tr>
 </table>
-
-<hr>
-
-<p>
-  Your official payment receipt has been attached to this email as a PDF for your records.
-</p>
-
-<p>
-  If you have any questions about your order, simply reply to this email and we'll be happy to help.
-</p>
-
-<br>
-
-<p>
-  Thank you for choosing <strong>E-Store</strong>.
-</p>
-
-<p>
-  Regards,<br>
-  <strong>The E-Store Team</strong>
-</p>
 
 </body>
 
 </html>
+
+
+<!--<!DOCTYPE html>-->
+<!--<html xmlns:th="http://www.thymeleaf.org">-->
+
+<!--<head>-->
+<!--  <meta charset="UTF-8">-->
+<!--  <title>Payment Receipt</title>-->
+<!--</head>-->
+
+<!--<body style="font-family: Arial, sans-serif; line-height:1.6; color:#333333;">-->
+
+<!--<h2>-->
+<!--  Hello <span th:text="${name}">Customer</span>,-->
+<!--</h2>-->
+
+<!--<p>-->
+<!--  Thank you for shopping with <strong>E-Store</strong>.-->
+<!--</p>-->
+
+<!--<p>-->
+<!--  We have successfully received your payment.-->
+<!--</p>-->
+
+<!--<hr>-->
+
+<!--<h3>Payment Details</h3>-->
+
+<!--<table style="border-collapse: collapse;">-->
+<!--  <tr>-->
+<!--    <td style="padding:6px 12px 6px 0;"><strong>Order Number</strong></td>-->
+<!--    <td th:text="${orderNumber}">ORD-123456</td>-->
+<!--  </tr>-->
+
+<!--  <tr>-->
+<!--    <td style="padding:6px 12px 6px 0;"><strong>Payment Reference</strong></td>-->
+<!--    <td th:text="${reference}">PAY-123456789</td>-->
+<!--  </tr>-->
+
+<!--  <tr>-->
+<!--    <td style="padding:6px 12px 6px 0;"><strong>Amount Paid</strong></td>-->
+<!--    <td th:text="${amount}">₦50,000</td>-->
+<!--  </tr>-->
+
+<!--  <tr>-->
+<!--    <td style="padding:6px 12px 6px 0;"><strong>Payment Date</strong></td>-->
+<!--    <td th:text="${paymentDate}">14 Jul 2026 10:35 AM</td>-->
+<!--  </tr>-->
+<!--</table>-->
+
+<!--<hr>-->
+
+<!--<p>-->
+<!--  Your official payment receipt has been attached to this email as a PDF for your records.-->
+<!--</p>-->
+
+<!--<p>-->
+<!--  If you have any questions about your order, simply reply to this email and we'll be happy to help.-->
+<!--</p>-->
+
+<!--<br>-->
+
+<!--<p>-->
+<!--  Thank you for choosing <strong>E-Store</strong>.-->
+<!--</p>-->
+
+<!--<p>-->
+<!--  Regards,<br>-->
+<!--  <strong>The E-Store Team</strong>-->
+<!--</p>-->
+
+<!--</body>-->
+
+<!--</html>-->
