@@ -5,24 +5,23 @@
 
     <meta charset="UTF-8">
 
-    <th:block th:replace="~{email/fragments/styles :: styles}"/>
-
     <title>Welcome</title>
+
+    <th:block th:replace="~{email/fragments/styles :: styles}"/>
 
 </head>
 
 <body>
 
-<table class="wrapper">
+<table class="wrapper" role="presentation" cellspacing="0" cellpadding="0">
 
     <tr>
 
         <td align="center">
 
-            <table class="container">
+            <table class="container" role="presentation" cellspacing="0" cellpadding="0">
 
-                <th:block
-                        th:replace="~{email/fragments/header :: header}"/>
+                <th:block th:replace="~{email/fragments/header :: header}"/>
 
                 <tr>
 
@@ -100,8 +99,7 @@ Customer
 
                 </tr>
 
-                <th:block
-                        th:replace="~{email/fragments/footer :: footer}"/>
+                <th:block th:replace="~{email/fragments/footer :: footer}"/>
 
             </table>
 

@@ -1,0 +1,17 @@
+version: "3.9"
+
+services:
+  estore:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: estore
+
+    env_file:
+      - .env
+
+    ports:
+      - "8080:8080"
+
+    restart: unless-stopped
