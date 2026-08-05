@@ -35,7 +35,6 @@ public class CurrentUserService {
 
   public User getCurrentUser() {
     return userRepository.findBySlug(getCurrentUserSlug())
-        .orElseThrow(() ->
-            new ResourceNotFoundException("User not found"));
+        .orElseThrow(() -> new ResourceNotFoundException("User not found"));
   }
 }

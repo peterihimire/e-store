@@ -2,96 +2,255 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <head>
+
     <meta charset="UTF-8">
+
     <title>Order Cancelled</title>
+
+    <th:block th:replace="~{email/fragments/styles :: styles}" />
+
 </head>
 
-<body style="font-family:Arial,sans-serif;line-height:1.6;color:#333;">
+<body>
 
-<h2>
-    Hello <span th:text="${name}">Customer</span>,
-</h2>
-
-<p>
-    Your order has been cancelled.
-</p>
-
-<p th:if="${reason != null}">
-    <strong>Reason:</strong>
-    <span th:text="${reason}">
-        Customer requested cancellation.
-    </span>
-</p>
-
-<hr>
-
-<h3>Order Summary</h3>
-
-<table style="border-collapse:collapse">
+<table class="wrapper" role="presentation" cellspacing="0" cellpadding="0">
 
     <tr>
-        <td style="padding:6px 20px 6px 0;">
-            <strong>Order Number</strong>
+
+        <td align="center">
+
+            <table class="container" role="presentation" cellspacing="0" cellpadding="0">
+
+                <th:block th:replace="~{email/fragments/header :: header}" />
+
+                <tr>
+
+                    <td class="content">
+
+                        <h2 class="mt-0">
+
+                            Hello
+                            <span th:text="${name}">
+                                Customer
+                            </span>,
+
+                        </h2>
+
+                        <p>
+
+                            Your order has been cancelled.
+
+                        </p>
+
+                        <div
+                                class="info-box warning"
+                                th:if="${reason != null}">
+
+                            <strong>Reason:</strong>
+
+                            <span th:text="${reason}">
+                                Customer requested cancellation.
+                            </span>
+
+                        </div>
+
+                        <div class="divider"></div>
+
+                        <h3>
+
+                            Order Summary
+
+                        </h3>
+
+                        <table class="info-table">
+
+                            <tr>
+
+                                <td>Order Number</td>
+
+                                <td th:text="${orderNumber}">
+                                    ORD-10001
+                                </td>
+
+                            </tr>
+
+                            <tr>
+
+                                <td>Order Date</td>
+
+                                <td th:text="${orderDate}">
+                                    25 Jul 2026
+                                </td>
+
+                            </tr>
+
+                            <tr>
+
+                                <td>Status</td>
+
+                                <td class="warning">
+                                    Cancelled
+                                </td>
+
+                            </tr>
+
+                            <tr>
+
+                                <td>Total</td>
+
+                                <td th:text="${total}">
+                                    ₦20,000
+                                </td>
+
+                            </tr>
+
+                        </table>
+
+                        <div class="divider"></div>
+
+                        <p th:if="${refundRequired}">
+
+                            If payment has already been processed, your refund will be initiated shortly.
+
+                        </p>
+
+                        <p>
+
+                            If you have any questions, please contact our support team.
+
+                        </p>
+
+                        <br>
+
+                        <p>
+
+                            Thank you for choosing
+                            <strong>E-Store</strong>.
+
+                        </p>
+
+                        <p>
+
+                            Regards,
+
+                            <br>
+
+                            <strong>The E-Store Team</strong>
+
+                        </p>
+
+                    </td>
+
+                </tr>
+
+                <th:block th:replace="~{email/fragments/footer :: footer}" />
+
+            </table>
+
         </td>
 
-        <td th:text="${orderNumber}">
-            ORD-10001
-        </td>
-    </tr>
-
-    <tr>
-        <td style="padding:6px 20px 6px 0;">
-            <strong>Order Date</strong>
-        </td>
-
-        <td th:text="${orderDate}">
-            25 Jul 2026
-        </td>
-    </tr>
-
-    <tr>
-        <td style="padding:6px 20px 6px 0;">
-            <strong>Status</strong>
-        </td>
-
-        <td>
-            Cancelled
-        </td>
-    </tr>
-
-    <tr>
-        <td style="padding:6px 20px 6px 0;">
-            <strong>Total</strong>
-        </td>
-
-        <td th:text="${total}">
-            ₦20,000
-        </td>
     </tr>
 
 </table>
 
-<hr>
-
-<p th:if="${refundRequired}">
-    If payment has already been processed, your refund will be initiated shortly.
-</p>
-
-<p>
-    If you have any questions, please contact our support team.
-</p>
-
-<br>
-
-<p>
-    Thank you for choosing
-    <strong>E-Store</strong>.
-</p>
-
-<p>
-    Regards,<br>
-    <strong>The E-Store Team</strong>
-</p>
-
 </body>
+
 </html>
+
+<!--<!DOCTYPE html>-->
+<!--<html xmlns:th="http://www.thymeleaf.org">-->
+
+<!--<head>-->
+<!--    <meta charset="UTF-8">-->
+<!--    <title>Order Cancelled</title>-->
+<!--</head>-->
+
+<!--<body style="font-family:Arial,sans-serif;line-height:1.6;color:#333;">-->
+
+<!--<h2>-->
+<!--    Hello <span th:text="${name}">Customer</span>,-->
+<!--</h2>-->
+
+<!--<p>-->
+<!--    Your order has been cancelled.-->
+<!--</p>-->
+
+<!--<p th:if="${reason != null}">-->
+<!--    <strong>Reason:</strong>-->
+<!--    <span th:text="${reason}">-->
+<!--        Customer requested cancellation.-->
+<!--    </span>-->
+<!--</p>-->
+
+<!--<hr>-->
+
+<!--<h3>Order Summary</h3>-->
+
+<!--<table style="border-collapse:collapse">-->
+
+<!--    <tr>-->
+<!--        <td style="padding:6px 20px 6px 0;">-->
+<!--            <strong>Order Number</strong>-->
+<!--        </td>-->
+
+<!--        <td th:text="${orderNumber}">-->
+<!--            ORD-10001-->
+<!--        </td>-->
+<!--    </tr>-->
+
+<!--    <tr>-->
+<!--        <td style="padding:6px 20px 6px 0;">-->
+<!--            <strong>Order Date</strong>-->
+<!--        </td>-->
+
+<!--        <td th:text="${orderDate}">-->
+<!--            25 Jul 2026-->
+<!--        </td>-->
+<!--    </tr>-->
+
+<!--    <tr>-->
+<!--        <td style="padding:6px 20px 6px 0;">-->
+<!--            <strong>Status</strong>-->
+<!--        </td>-->
+
+<!--        <td>-->
+<!--            Cancelled-->
+<!--        </td>-->
+<!--    </tr>-->
+
+<!--    <tr>-->
+<!--        <td style="padding:6px 20px 6px 0;">-->
+<!--            <strong>Total</strong>-->
+<!--        </td>-->
+
+<!--        <td th:text="${total}">-->
+<!--            ₦20,000-->
+<!--        </td>-->
+<!--    </tr>-->
+
+<!--</table>-->
+
+<!--<hr>-->
+
+<!--<p th:if="${refundRequired}">-->
+<!--    If payment has already been processed, your refund will be initiated shortly.-->
+<!--</p>-->
+
+<!--<p>-->
+<!--    If you have any questions, please contact our support team.-->
+<!--</p>-->
+
+<!--<br>-->
+
+<!--<p>-->
+<!--    Thank you for choosing-->
+<!--    <strong>E-Store</strong>.-->
+<!--</p>-->
+
+<!--<p>-->
+<!--    Regards,<br>-->
+<!--    <strong>The E-Store Team</strong>-->
+<!--</p>-->
+
+<!--</body>-->
+<!--</html>-->

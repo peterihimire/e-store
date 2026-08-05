@@ -21,40 +21,34 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 @Slf4j
-@Component  // ✅ Add this to make it a Spring bean
-@RequiredArgsConstructor  // ✅ Add this for constructor injection
+@Component  // Add this to make it a Spring bean
+@RequiredArgsConstructor  // Add this for constructor injection
 public class AuthTokenFilter extends OncePerRequestFilter {
   private final JwtUtils jwtUtils;
   private final StoreUserDetailsService storeUserDetailsService;
 
   @Override
-  protected void doFilterInternal(@NonNull HttpServletRequest request,
-                                  @NonNull HttpServletResponse response,
-                                  @NonNull FilterChain filterChain) throws ServletException, IOException {
+  protected void doFilterInternal(
+      @NonNull HttpServletRequest request,
+      @NonNull HttpServletResponse response,
+      @NonNull FilterChain filterChain
+  ) throws ServletException, IOException {
     try {
       String jwt = parseJwt(request);
-      if(StringUtils.hasText(jwt) && jwtUtils.validateToken(jwt)){
-        String username = jwtUtils.getUserNameFromToken(jwt);
+      if(StringUtils.hasText(jwt) && jwtUtils.validateAccessToken(jwt)){
+        String username = jwtUtils.getUsernameFromAccessToken(jwt);
         UserDetails userDetails = storeUserDetailsService.loadUserByUsername(username);
         Authentication auth = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(auth);
       }
     } catch (JwtException e) {
-      // ✅ LOG ONLY - DO NOT WRITE RESPONSE
+      // LOG ONLY - DO NOT WRITE RESPONSE
       log.warn("JWT validation failed: {}", e.getMessage());
       SecurityContextHolder.clearContext();
     } catch (Exception e) {
       log.error("Authentication error: {}", e.getMessage());
       SecurityContextHolder.clearContext();
     }
-//    } catch (JwtException e) {
-//      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-//      response.getWriter().write(e.getMessage() + ": Invalid or expired token, you may login and try again");
-//
-//    } catch(Exception e){
-//      response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-//      response.getWriter().write(e.getMessage());
-//    }
     filterChain.doFilter(request, response);
   }
 
@@ -65,6 +59,4 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     }
     return null;
   }
-
-
 }

@@ -8,6 +8,7 @@ import com.benkih.estore.order.service.IOrderService;
 import com.benkih.estore.security.user.StoreUserDetails;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -27,7 +28,8 @@ public class OrderController {
       OrderResponseDto order = orderService.placeOrder(userDetails.getSlug()); // if error, this will throw error, now global error handler will process it
       log.info("Here is the order data:{}", order);
   //      OrderResponseDto dto = orderService.convertToDto(order);
-      return ResponseEntity.ok(new ApiResponse("success","Order created success", order));
+      return ResponseEntity.status(HttpStatus.CREATED)
+          .body(new ApiResponse("success","Order created success", order));
   }
 
   @GetMapping("/order/{orderSlug}")

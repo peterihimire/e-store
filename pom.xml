@@ -8,6 +8,7 @@
 		<version>3.5.14</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
+
 	<groupId>com.benkih</groupId>
 	<artifactId>e-store</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
@@ -26,13 +27,12 @@
 		<tag/>
 		<url/>
 	</scm>
+
 	<properties>
 		<java.version>17</java.version>
 		<jjwt.version>0.11.5</jjwt.version>
-<!--		<jjwt-api.version>0.11.5</jjwt-api.version>-->
-<!--		<jjwt-impl.version>0.11.5</jjwt-impl.version>-->
-<!--		<jjwt-jackson.version>0.11.5</jjwt-jackson.version>-->
 	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -186,5 +186,16 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<profiles>
+		<profile>
+			<id>generate-schema</id>
+			<properties>
+				<spring-boot.run.jvmArguments>
+					-Dspring.config.additional-location=file:schema-generation.properties
+				</spring-boot.run.jvmArguments>
+			</properties>
+		</profile>
+	</profiles>
 
 </project>

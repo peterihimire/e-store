@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <th:block th:replace="~{email/fragments/styles :: styles}" />
+
+    <title>You're Invited</title>
+
+</head>
+
+<body>
+
+
+
+<table class="wrapper" role="presentation" cellspacing="0" cellpadding="0">
+
+    <tr>
+
+        <td align="center">
+
+            <table class="container" role="presentation" cellspacing="0" cellpadding="0">
+
+                <!-- Header -->
+
+                <th:block
+
+                        th:replace="~{email/fragments/header :: header}" />
+
+                <!-- Body -->
+
+                <tr>
+
+                    <td style="padding:40px;">
+
+                        <h2 style="margin-top:0;">
+
+                            Hello
+                            <span th:text="${firstName}">
+                                John
+                            </span>,
+
+                        </h2>
+
+                        <p>
+
+                            You have been invited to join
+                            <strong>E-Store</strong>.
+
+                        </p>
+
+                        <p>
+
+                            <strong>
+                                Invited by:
+                            </strong>
+
+                            <span th:text="${invitedBy}">
+                                Administrator
+                            </span>
+
+                        </p>
+
+                        <p>
+
+                            <strong>Email:</strong>
+
+                            <span th:text="${email}"></span>
+
+                        </p>
+
+                        <!-- Assignment -->
+
+                        <div
+                                style="
+                                background:#f4f8ff;
+                                border:1px solid #d7e5ff;
+                                border-radius:6px;
+                                padding:18px;
+                                margin:30px 0;
+">
+
+                            <h3 style="margin-top:0;">
+                                Your Access
+                            </h3>
+
+                            <p>
+
+                                <strong>Role(s)</strong>
+
+                            </p>
+
+                            <ul>
+
+                                <li
+                                        th:each="role : ${roles}"
+                                        th:text="${role}">
+                                </li>
+
+                            </ul>
+
+                            <div
+                                    th:if="${!departments.isEmpty()}">
+
+                                <p>
+
+                                    <strong>Department(s)</strong>
+
+                                </p>
+
+                                <ul>
+
+                                    <li
+                                            th:each="department : ${departments}"
+                                            th:text="${department}">
+                                    </li>
+
+                                </ul>
+
+                            </div>
+
+                        </div>
+
+                        <!-- Personal message -->
+
+                        <div
+                                th:if="${message != null and !message.isEmpty()}"
+                                style="
+                                background:#fafafa;
+                                border-left:4px solid #0d6efd;
+                                padding:18px;
+                                margin-bottom:30px;
+">
+
+                            <strong>
+                                Personal Message
+                            </strong>
+
+                            <p
+                                    th:text="${message}"
+                                    style="margin-bottom:0;">
+                            </p>
+
+                        </div>
+
+                        <p>
+
+                            Click the button below to activate your account and create your password.
+
+                        </p>
+
+                        <table
+                                align="center"
+                                cellpadding="0"
+                                cellspacing="0"
+                                style="margin:30px auto;">
+
+                            <tr>
+
+                                <td
+                                        bgcolor="#0d6efd"
+                                        style="border-radius:6px;">
+
+                                    <a
+                                            th:href="${invitationUrl}"
+                                            style="
+                                            display:inline-block;
+                                            padding:14px 34px;
+                                            color:#ffffff;
+                                            text-decoration:none;
+                                            font-weight:bold;
+">
+
+                                        Accept Invitation
+
+                                    </a>
+
+                                </td>
+
+                            </tr>
+
+                        </table>
+
+                        <p>
+
+                            If the button above doesn't work,
+                            copy and paste this link into your browser.
+
+                        </p>
+
+                        <p
+                                style="word-break:break-word;">
+
+                            <a
+                                    th:href="${invitationUrl}"
+                                    th:text="${invitationUrl}">
+                            </a>
+
+                        </p>
+
+                        <div
+                                style="
+                                background:#fff8e5;
+                                border:1px solid #ffe08a;
+                                border-radius:6px;
+                                padding:18px;
+                                margin-top:30px;
+">
+
+                            <strong>
+                                Important
+                            </strong>
+
+                            <p>
+
+                                This invitation can only be used once and expires on
+
+                                <strong
+                                        th:text="${expiresAt}">
+                                </strong>.
+
+                            </p>
+
+                        </div>
+
+                        <br>
+
+                        <p>
+
+                            Regards,
+
+                            <br>
+
+                            <strong>
+                                The E-Store Team
+                            </strong>
+
+                        </p>
+
+                    </td>
+
+                </tr>
+
+                <!-- Footer -->
+                <th:block
+
+                        th:replace="~{email/fragments/footer :: footer}" />
+
+
+            </table>
+
+        </td>
+
+    </tr>
+
+</table>
+
+</body>
+
+</html>
+<!--<!DOCTYPE html>-->
+<!--<html xmlns:th="http://www.thymeleaf.org">-->
+
+<!--<head>-->
+<!--    <meta charset="UTF-8">-->
+<!--    <title>You're Invited</title>-->
+<!--</head>-->
+
+<!--<body style="-->
+<!--    margin:0;-->
+<!--    padding:40px 20px;-->
+<!--    background:#f5f6fa;-->
+<!--    font-family:Arial,Helvetica,sans-serif;-->
+<!--    color:#333;">-->
+
+<!--<table width="100%" cellspacing="0" cellpadding="0">-->
+
+<!--    <tr>-->
+<!--        <td align="center">-->
+
+<!--            <table width="600"-->
+<!--                   cellspacing="0"-->
+<!--                   cellpadding="0"-->
+<!--                   style="-->
+<!--       background:#fff;-->
+<!--       border-radius:8px;-->
+<!--       overflow:hidden;-->
+<!--       border:1px solid #e5e5e5;">-->
+
+<!--                &lt;!&ndash; Header &ndash;&gt;-->
+
+<!--                <tr>-->
+<!--                    <td align="center"-->
+<!--                        style="-->
+<!--    background:#0d6efd;-->
+<!--    color:#fff;-->
+<!--    padding:24px;">-->
+
+<!--                        <h1>E-Store</h1>-->
+
+<!--                    </td>-->
+<!--                </tr>-->
+
+<!--                &lt;!&ndash; Body &ndash;&gt;-->
+
+<!--                <tr>-->
+<!--                    <td style="padding:40px;">-->
+
+<!--                        <h2>-->
+<!--                            Hello-->
+<!--                            <span th:text="${firstName}">John</span>,-->
+<!--                        </h2>-->
+
+<!--                        <p>-->
+<!--                            You have been invited to join-->
+<!--                            <strong>E-Store</strong>.-->
+<!--                        </p>-->
+
+<!--                        <p>-->
+
+<!--                            <strong>Email:</strong>-->
+
+<!--                            <span th:text="${email}"></span>-->
+
+<!--                        </p>-->
+
+<!--                        <p>-->
+
+<!--                            Your administrator has assigned you the following roles:-->
+
+<!--                        </p>-->
+
+<!--                        <ul>-->
+
+<!--                            <li th:each="role : ${roles}"-->
+<!--                                th:text="${role}">-->
+<!--                            </li>-->
+
+<!--                        </ul>-->
+
+<!--                        <p th:if="${!departments.isEmpty()}">-->
+
+<!--                            Department(s):-->
+
+<!--                        </p>-->
+
+<!--                        <ul th:if="${!departments.isEmpty()}">-->
+
+<!--                            <li th:each="dept : ${departments}"-->
+<!--                                th:text="${dept}">-->
+<!--                            </li>-->
+
+<!--                        </ul>-->
+
+<!--                        <p>-->
+
+<!--                            Click the button below to complete your registration.-->
+
+<!--                        </p>-->
+
+<!--                        <table align="center" cellpadding="0" cellspacing="0">-->
+
+<!--                            <tr>-->
+
+<!--                                <td bgcolor="#0d6efd"-->
+<!--                                    style="border-radius:5px;">-->
+
+<!--                                    <a th:href="${invitationUrl}"-->
+<!--                                       style="-->
+<!--   display:inline-block;-->
+<!--   padding:14px 28px;-->
+<!--   color:white;-->
+<!--   text-decoration:none;-->
+<!--   font-weight:bold;">-->
+
+<!--                                        Accept Invitation-->
+
+<!--                                    </a>-->
+
+<!--                                </td>-->
+
+<!--                            </tr>-->
+
+<!--                        </table>-->
+
+<!--                        <br>-->
+
+<!--                        <p>-->
+
+<!--                            If the button doesn't work, copy and paste this link into your browser:-->
+
+<!--                        </p>-->
+
+<!--                        <p>-->
+
+<!--                            <a th:href="${invitationUrl}"-->
+<!--                               th:text="${invitationUrl}">-->
+<!--                            </a>-->
+
+<!--                        </p>-->
+
+<!--                        <p>-->
+
+<!--                            This invitation expires on-->
+
+<!--                            <strong th:text="${expiresAt}">-->
+<!--                            </strong>-->
+
+<!--                        </p>-->
+
+<!--                        <br>-->
+
+<!--                        Regards,-->
+
+<!--                        <br>-->
+
+<!--                        <strong>The E-Store Team</strong>-->
+
+<!--                    </td>-->
+
+<!--                </tr>-->
+
+<!--                &lt;!&ndash; Footer &ndash;&gt;-->
+
+<!--                <tr>-->
+
+<!--                    <td align="center"-->
+<!--                        style="-->
+<!--    padding:20px;-->
+<!--    background:#fafafa;-->
+<!--    color:#777;-->
+<!--    font-size:12px;">-->
+
+<!--                        © 2026 E-Store-->
+
+<!--                    </td>-->
+
+<!--                </tr>-->
+
+<!--            </table>-->
+
+<!--        </td>-->
+
+<!--    </tr>-->
+
+<!--</table>-->
+
+<!--</body>-->
+<!--</html>-->

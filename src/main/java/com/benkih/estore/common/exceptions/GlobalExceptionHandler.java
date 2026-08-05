@@ -238,13 +238,12 @@ public class GlobalExceptionHandler {
     }
 
     String message = String.format(
-        "Access Denied: User '%s' does not have the required permissions to access this resource. " +
-            "Current roles: [%s]. Required roles: ADMIN or MANAGER",
+        "Access Denied: User '%s' does not have the required permissions to access this resource. ",
         userEmail,
         userRoles.isEmpty() ? "None" : userRoles
     );
 
-    log.warn("Access denied for user {} to endpoint {}. Required roles: ADMIN or MANAGER",
+    log.warn("Access denied for user {} to endpoint {}. Required permissions...",
         userEmail, request.getRequestURI());
 
     return buildError(HttpStatus.FORBIDDEN, message, request);

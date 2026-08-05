@@ -1,38 +1,197 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
-  <meta charset="UTF-8">
-  <title>Login Notification</title>
+
+    <meta charset="UTF-8">
+
+    <title>Login Notification</title>
+
+    <th:block th:replace="~{email/fragments/styles :: styles}" />
+
 </head>
-<body style="font-family: Arial, Helvetica, sans-serif; line-height: 1.6; color: #333;">
-    <h2>Hello <span th:text="${name}">Customer</span>,</h2>
 
-    <p>
-      We noticed a successful sign-in to your <strong>E-Store</strong> account.
-    </p>
+<body>
 
-    <p>
-      <strong>Login Details</strong>
-    </p>
+<table class="wrapper" role="presentation" cellspacing="0" cellpadding="0">
 
-    <ul>
-      <li><strong>Email:</strong> <span th:text="${email}"></span></li>
-      <li><strong>Date &amp; Time:</strong> <span th:text="${loginTime}"></span></li>
-      <li><strong>IP Address:</strong> <span th:text="${ipAddress}"></span></li>
-      <li><strong>Device:</strong> <span th:text="${device}"></span></li>
-    </ul>
+    <tr>
 
-    <p>
-      If this was you, no further action is required.
-    </p>
+        <td align="center">
 
-    <p>
-      <strong>If you do not recognize this login, please change your password immediately and contact our support team.</strong>
-    </p>
+            <table class="container" role="presentation" cellspacing="0" cellpadding="0">
 
-    <p>
-      Thank you,<br>
-      <strong>The E-Store Team</strong>
-    </p>
+                <th:block th:replace="~{email/fragments/header :: header}" />
+
+                <tr>
+
+                    <td class="content">
+
+                        <h2>
+
+                            Hello
+                            <span th:text="${name}">
+                                Customer
+                            </span>,
+
+                        </h2>
+
+                        <p>
+
+                            We noticed a successful sign-in to your
+                            <strong>E-Store</strong>
+                            account.
+
+                        </p>
+
+                        <div class="info-box">
+
+                            <h3 style="margin-top:0;">
+                                Login Details
+                            </h3>
+
+                            <table class="info-table">
+
+                                <tr>
+
+                                    <td><strong>Email</strong></td>
+
+                                    <td th:text="${email}">
+                                        johndoe@email.com
+                                    </td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <td><strong>Date &amp; Time</strong></td>
+
+                                    <td th:text="${loginTime}">
+                                        03 Aug 2026 10:30 AM
+                                    </td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <td><strong>IP Address</strong></td>
+
+                                    <td th:text="${ipAddress}">
+                                        102.89.45.22
+                                    </td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <td><strong>Device</strong></td>
+
+                                    <td th:text="${device}">
+                                        Chrome on macOS
+                                    </td>
+
+                                </tr>
+
+                            </table>
+
+                        </div>
+
+                        <p class="success">
+
+                            ✓ If this was you, no further action is required.
+
+                        </p>
+
+                        <div
+                                style="
+                                    background:#fff4f4;
+                                    border:1px solid #f5c2c2;
+                                    border-radius:6px;
+                                    padding:18px;
+                                    margin:30px 0;
+                                ">
+
+                            <strong class="warning">
+
+                                Didn't recognize this login?
+
+                            </strong>
+
+                            <p style="margin-bottom:0;">
+
+                                If you did not sign in to your account,
+                                please change your password immediately
+                                and contact our support team.
+
+                            </p>
+
+                        </div>
+
+                        <p>
+
+                            Thank you,
+
+                            <br>
+
+                            <strong>
+                                The E-Store Team
+                            </strong>
+
+                        </p>
+
+                    </td>
+
+                </tr>
+
+                <th:block th:replace="~{email/fragments/footer :: footer}" />
+
+            </table>
+
+        </td>
+
+    </tr>
+
+</table>
+
 </body>
+
 </html>
+
+<!--<!DOCTYPE html>-->
+<!--<html xmlns:th="http://www.thymeleaf.org">-->
+<!--<head>-->
+<!--  <meta charset="UTF-8">-->
+<!--  <title>Login Notification</title>-->
+<!--</head>-->
+<!--<body style="font-family: Arial, Helvetica, sans-serif; line-height: 1.6; color: #333;">-->
+<!--    <h2>Hello <span th:text="${name}">Customer</span>,</h2>-->
+
+<!--    <p>-->
+<!--      We noticed a successful sign-in to your <strong>E-Store</strong> account.-->
+<!--    </p>-->
+
+<!--    <p>-->
+<!--      <strong>Login Details</strong>-->
+<!--    </p>-->
+
+<!--    <ul>-->
+<!--      <li><strong>Email:</strong> <span th:text="${email}"></span></li>-->
+<!--      <li><strong>Date &amp; Time:</strong> <span th:text="${loginTime}"></span></li>-->
+<!--      <li><strong>IP Address:</strong> <span th:text="${ipAddress}"></span></li>-->
+<!--      <li><strong>Device:</strong> <span th:text="${device}"></span></li>-->
+<!--    </ul>-->
+
+<!--    <p>-->
+<!--      If this was you, no further action is required.-->
+<!--    </p>-->
+
+<!--    <p>-->
+<!--      <strong>If you do not recognize this login, please change your password immediately and contact our support team.</strong>-->
+<!--    </p>-->
+
+<!--    <p>-->
+<!--      Thank you,<br>-->
+<!--      <strong>The E-Store Team</strong>-->
+<!--    </p>-->
+<!--</body>-->
+<!--</html>-->

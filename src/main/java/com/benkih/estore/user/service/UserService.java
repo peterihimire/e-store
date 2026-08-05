@@ -11,10 +11,13 @@ import com.benkih.estore.email.service.EmailService;
 import com.benkih.estore.order.dto.response.OrderResponseDto;
 import com.benkih.estore.order.service.IOrderService;
 import com.benkih.estore.product.service.IProductService;
+import com.benkih.estore.role.dto.response.RoleResponseDto;
+import com.benkih.estore.role.service.RoleService;
 import com.benkih.estore.security.user.CurrentUserService;
+import com.benkih.estore.user.dto.request.CreateUserCommand;
 import com.benkih.estore.user.dto.response.AddressResponseDto;
-import com.benkih.estore.user.entity.Role;
-import com.benkih.estore.user.repository.RoleRepository;
+import com.benkih.estore.role.entity.Role;
+import com.benkih.estore.role.repository.RoleRepository;
 import com.benkih.estore.user.dto.request.CreateUserRequest;
 import com.benkih.estore.user.dto.request.UserUpdateRequest;
 import com.benkih.estore.user.dto.response.UserResponseDto;
@@ -47,6 +50,7 @@ public class UserService implements IUserService {
   private final WelcomeEmailBuilder welcomeEmailBuilder;
   private final CurrentUserService currentUserService;
   private final AddressService addressService;
+  private final RoleService roleService;
 
   @Override
   @Transactional(readOnly = true)
@@ -164,12 +168,20 @@ public class UserService implements IUserService {
         .stream()
         .map(addressService::convertToDto)
         .toList();
+
+    List<RoleResponseDto> roleDtos = Optional.ofNullable(user.getRoles())
+        .orElse(Set.of())
+        .stream()
+        .map(roleService::convertToDto)
+        .toList();
     log.info("User cart dto data={}", cartDto);
+
     return new UserResponseDto(
         user.getSlug(),
         user.getFirstName(),
         user.getLastName(),
         user.getEmail(),
+        roleDtos,
         orderDtos,
         cartDto,
         addressDtos
@@ -190,4 +202,24 @@ public class UserService implements IUserService {
     User user = currentUserService.getCurrentUser();
     return convertToDto(user);
   }
+
+  public User createUserCommand(CreateUserCommand command) {
+    User user = new User();
+
+    user.setEmail(command.getEmail());
+    user.setFirstName(command.getFirstName());
+    user.setLastName(command.getLastName());
+    user.setPhoneNumber(command.getPhoneNumber());
+    if (command.getPassword() != null) {
+      user.setPassword(passwordEncoder.encode(command.getPassword()));
+    }
+    user.setRoles(command.getRoles());
+    user.setDepartments(command.getDepartments());
+    user.setStatus(command.getStatus());
+    user.setEmailVerified(command.isEmailVerified());
+
+    return userRepository.save(user);
+  }
 }
+
+//        .map(RoleResponseDto::fromEntity)
