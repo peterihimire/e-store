@@ -2,111 +2,73 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <head>
-
     <meta charset="UTF-8">
-
     <title>Welcome</title>
-
     <th:block th:replace="~{email/fragments/styles :: styles}"/>
-
 </head>
 
 <body>
 
 <table class="wrapper" role="presentation" cellspacing="0" cellpadding="0">
-
     <tr>
-
         <td align="center">
-
             <table class="container" role="presentation" cellspacing="0" cellpadding="0">
-
                 <th:block th:replace="~{email/fragments/header :: header}"/>
 
                 <tr>
-
                     <td class="content">
-
                         <h2>
-
                             Hello
                             <span th:text="${name}">
-Customer
-</span>,
-
+                                Customer
+                            </span>,
                         </h2>
 
                         <p>
-
                             Welcome to
                             <strong>E-Store.</strong>
-
                         </p>
 
                         <div class="info-box">
-
                             <p>
-
                                 <strong>Email</strong>
-
                                 <br>
-
                                 <span th:text="${email}"></span>
-
                             </p>
-
                         </div>
 
                         <p>
-
                             Your account has been successfully created.
-
                         </p>
 
                         <p>
-
                             We're excited to have you with us.
-
                         </p>
 
                         <p>
-
                             <a
                                     href="https://estore.com"
                                     class="button">
-
                                 Start Shopping
-
                             </a>
-
                         </p>
 
                         <br>
-
                         <p>
-
                             Thank you,
-
                             <br>
-
                             <strong>
                                 The E-Store Team
                             </strong>
-
                         </p>
-
                     </td>
-
                 </tr>
 
                 <th:block th:replace="~{email/fragments/footer :: footer}"/>
 
             </table>
-
         </td>
-
     </tr>
-
 </table>
 
 </body>
