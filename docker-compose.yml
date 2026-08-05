@@ -6,6 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile
 
+    image: estore:latest
     container_name: estore
 
     env_file:

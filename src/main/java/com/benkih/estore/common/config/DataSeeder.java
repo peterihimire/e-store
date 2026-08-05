@@ -35,7 +35,7 @@ public class DataSeeder implements CommandLineRunner {
   @Override
   public void run(String... args) {
     try {
-//      log.info("Starting data seeding...");
+      log.info("Starting data seeding...");
 //
 //      // Always create roles if they don't exist
 //      createDefaultRoles();

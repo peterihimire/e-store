@@ -7,7 +7,6 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -17,6 +16,10 @@ jobs:
         with:
           distribution: temurin
           java-version: 21
+          cache: maven
+
+      - name: Make Maven Wrapper Executable
+        run: chmod +x mvnw
 
       - name: Build
         run: ./mvnw clean verify
