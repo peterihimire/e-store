@@ -49,6 +49,7 @@ public class UserInvitationService implements IUserInvitationService{
   private final UserService userService;
   private final CurrentUserService currentUserService;
 
+
   @Override
   @Transactional
   public UserInvitationResponseDto inviteUser(UserInvitationRequest request) {

@@ -20,6 +20,7 @@ public class CartItemService implements ICartItemService {
   private final IProductService productService;
   private final ICartService cartService;
 
+
   @Override
   public void addItemToCart(String cartSlug, String productSlug, int quantity) {
     Cart cart = cartService.getCart(cartSlug);
@@ -34,17 +35,16 @@ public class CartItemService implements ICartItemService {
       cartItem.setProduct(product);
       cartItem.setQuantity(quantity);
       cartItem.setUnitPrice(product.getPrice());
-
-//      cart.addItem(cartItem);
     } else {
       cartItem.setQuantity(cartItem.getQuantity() + quantity);
     }
     cartItem.setTotalPrice();
-//    cart.updateTotalAmount(); // added after removing the add-item
     cart.addItem(cartItem);
+
     cartItemRepository.save(cartItem);
     cartRepository.save(cart);
   }
+
 
   @Transactional
   @Override
@@ -54,6 +54,7 @@ public class CartItemService implements ICartItemService {
     cart.removeItem(itemToRemove);
     cartRepository.save(cart);
   }
+
 
   @Override
   public void updateItemQuantity(String cartSlug, String productSlug, int quantity) {
@@ -67,10 +68,10 @@ public class CartItemService implements ICartItemService {
           item.setTotalPrice();
         });
     cart.updateTotalAmount();
-    //  BigDecimal totalAmount = cart.getTotalAmount();
-    //  cart.setTotalAmount(totalAmount);
+
     cartRepository.save(cart);
   }
+
 
   @Override
   public CartItem getCartItem(String cartSlug, String productSlug){

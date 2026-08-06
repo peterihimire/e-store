@@ -71,7 +71,6 @@ public class AuthService implements IAuthService {
   private final CurrentUserService currentUserService;
 
 
-
   @Transactional
   @Override
   public User register(CreateUserRequest request) {
@@ -111,15 +110,10 @@ public class AuthService implements IAuthService {
 
     VerificationTokenResponse token = verificationService.createVerificationToken(user);
     notificationService.sendVerificationEmail(user, token.getPlainToken());
-//    try {
-//      EmailRequest email =
-//          verificationEmailBuilder.build(user, token.getPlainToken());
-//      emailService.send(email);
-//    } catch (Exception ex) {
-//      log.error("Unable to send verification email", ex);
-//    }
+
     return user;
   }
+
 
   @Transactional
   @Override
@@ -163,7 +157,6 @@ public class AuthService implements IAuthService {
 
     return createLoginResponse(user, device, ipAddress);
   }
-
 
 
 @Transactional
@@ -214,6 +207,7 @@ public LoginResponse login(LoginRequest request, HttpServletRequest httpRequest)
     SecurityContextHolder.clearContext();
   }
 
+
   @Override
   @Transactional
   public LoginResponse refreshToken(
@@ -243,6 +237,7 @@ public LoginResponse login(LoginRequest request, HttpServletRequest httpRequest)
     return new LoginResponse(accessToken, newRefreshToken, dto);
   }
 
+
   @Transactional
   @Override
   public void forgotPassword(ForgotPasswordRequest request){
@@ -261,6 +256,7 @@ public LoginResponse login(LoginRequest request, HttpServletRequest httpRequest)
   PasswordResetTokenResponse token = passwordResetTokenService.createPasswordResetToken(user);
   notificationService.sendPasswordReset(user, token.getPlainToken());
 }
+
 
   @Transactional
   @Override
@@ -286,10 +282,6 @@ public LoginResponse login(LoginRequest request, HttpServletRequest httpRequest)
       throw new BadRequestException("Invalid password reset code.");
     }
 
-//    if (!request.getNewPassword().equals(request.getConfirmPassword())) {
-//      throw new BadRequestException("Passwords do not match.");
-//    }
-
     user.setPassword(passwordEncoder.encode(request.getNewPassword()));
     userRepository.save(user);
 
@@ -299,6 +291,7 @@ public LoginResponse login(LoginRequest request, HttpServletRequest httpRequest)
     refreshTokenService.revokeAllUserTokens(user);
   }
 
+
   @Transactional
   @Override
   public void changePassword(ChangePasswordRequest request) {
@@ -307,10 +300,6 @@ public LoginResponse login(LoginRequest request, HttpServletRequest httpRequest)
     if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
       throw new BadRequestException("Current password is incorrect.");
     }
-
-//    if (!request.getNewPassword().equals(request.getConfirmPassword())) {
-//      throw new BadRequestException("Passwords do not match.");
-//    }
 
     if (passwordEncoder.matches(request.getNewPassword(), user.getPassword())) {
       throw new BadRequestException("New password must be different from your current password.");
@@ -329,11 +318,10 @@ private LoginResponse createLoginResponse(
     String device,
     String ipAddress) {
 
-//  String jwt = jwtUtils.generateAccessToken(authentication);
   String accessToken = jwtUtils.generateAccessToken(authentication);
 
   String refreshToken = refreshTokenService.createRefreshToken(user, device, ipAddress);
-  StoreUserDetails userDetails = (StoreUserDetails) authentication.getPrincipal();
+//  StoreUserDetails userDetails = (StoreUserDetails) authentication.getPrincipal();
   UserResponseDto userDto = userService.convertToDto(user);
 
   return new LoginResponse(accessToken,refreshToken, userDto);
@@ -358,150 +346,5 @@ private LoginResponse createLoginResponse(
         device,
         ipAddress
     );
-
-//    String jwt = jwtUtils.generateAccessToken(authentication);
-//    UserResponseDto userDto = userService.convertToDto(user);
-//
-//    return new LoginResponse(
-//        jwt,
-//        "",
-//        userDto
-//    );
   }
 }
-
-//  @Override
-//  public LoginResponse login(LoginRequest request) {
-//    Authentication authentication = authenticationManager.authenticate(
-//        new UsernamePasswordAuthenticationToken(
-//            request.getEmail(),
-//            request.getPassword()
-//        )
-//    );
-//
-//    SecurityContextHolder.getContext().setAuthentication(authentication);
-//    String jwt = jwtUtils.generateTokenForUser(authentication);
-//    StoreUserDetails userDetails = (StoreUserDetails) authentication.getPrincipal();
-//
-//    User user = userRepository.findByEmail(request.getEmail())
-//        .orElseThrow(() ->
-//            new UsernameNotFoundException("User not found"));
-//    if (!user.isEmailVerified()) {
-//      throw new BadRequestException("Please verify your email before logging in.");
-//    }
-//
-//    if (user.getStatus() != UserStatus.ACTIVE) {
-//      throw new BadRequestException("Your account is not active.");
-//    }
-////    UserResponseDto userDto = userService.convertToDto(user);
-////    String refreshToken = "yet to work on the feature";
-//    try {
-//      EmailRequest email = loginEmailBuilder.build(user);
-//      emailService.send(email);
-//    } catch (Exception ex) {
-//      log.error("Unable to send login email", ex);
-//    }
-//
-//    return new LoginResponse(
-//        jwt,
-//      userDetails.getSlug(),
-//    );
-//  }
-
-
-//  @Transactional
-//  public LoginResponse verifyEmail(VerifyEmailRequest request) {
-//
-//    User user = userRepository.findByEmail(request.getEmail())
-//        .orElseThrow(() ->
-//            new ResourceNotFoundException("User not found"));
-//
-//    if (user.isEmailVerified()) {
-//      throw new BadRequestException("Email already verified.");
-//    }
-//
-//    EmailVerification verification =
-//        verificationRepository.findTopByUserOrderByCreatedAtDesc(user)
-//            .orElseThrow(() ->
-//                new BadRequestException("Verification code not found."));
-//
-//
-////    if (verification.getExpiresAt().isBefore(LocalDateTime.now())) {
-////      throw new BadRequestException("Verification code expired.");
-////    }
-//
-//    if (verification.isExpired()) {
-//      throw new BadRequestException("Verification code expired.");
-//    }
-//
-//    if (!passwordEncoder.matches(
-//        request.getCode(),
-//        verification.getToken())) {
-//
-//      throw new BadRequestException("Invalid verification code.");
-//    }
-//
-////    if (verification.getUsedAt() != null) {
-////      throw new BadRequestException("Verification code has already been used.");
-////    }
-////
-//    if(verification.isUsed()){
-//      throw new BadRequestException("Verification code has already been used.");
-//    }
-//    verification.setUsedAt(LocalDateTime.now());
-//
-//    user.setEmailVerified(true);
-//    user.setStatus(UserStatus.ACTIVE);
-//
-//    verificationRepository.save(verification);
-//    userRepository.save(user);
-//
-//    String accessToken = jwtService.generateAccessToken(user);
-//    String jwt = jwtUtils.generateTokenForUser(authentication);
-////    String refreshToken = refreshTokenService.createRefreshToken(user);
-//
-//
-//    try {
-//      EmailRequest email = welcomeEmailBuilder.build(user);
-//      emailService.send(email);
-//    } catch (Exception ex) {
-//      log.error("Unable to send welcome email", ex);
-//    }
-//  }
-
-//  @Transactional
-//  @Override
-//  public User register(CreateUserRequest request) {
-//    Set<Role> defaultRoles = new HashSet<>();
-//
-//    // Add ROLE_CUSTOMER
-//    Role customerRole = roleRepository.findByName(RoleName.CUSTOMER.name())
-//        .orElseThrow(() -> new RuntimeException("Default role not found: " + RoleName.CUSTOMER));
-//
-//    defaultRoles.add(customerRole);
-//
-//    User existingUser = userRepository.findByEmail(request.getEmail()).get();
-//
-//    if (existingUser && )) {
-//      throw new AlreadyExistsException(request.getEmail() + " already exists!");
-//    }
-//
-//    User user = new User();
-//
-//    user.setEmail(request.getEmail());
-//    user.setPassword(passwordEncoder.encode(request.getPassword()));
-//    user.setFirstName(request.getFirstName());
-//    user.setLastName(request.getLastName());
-//    user.setRoles(defaultRoles);
-//    user = userRepository.save(user);
-//    log.info("User info detail={}", user);
-//
-//    try {
-//      EmailRequest email = welcomeEmailBuilder.build(user);
-//      emailService.send(email);
-//    } catch (Exception ex) {
-//      log.error("Unable to send welcome email", ex);
-//    }
-//
-//    return user;
-//  }

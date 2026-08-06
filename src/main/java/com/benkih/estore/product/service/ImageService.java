@@ -42,6 +42,7 @@ public class ImageService implements IImageService {
         .orElseThrow(() -> new ResourceNotFoundException("No image found with id: " + slug));
   }
 
+
   @Override
   public void deleteImageById(String slug) {
     imageRepository.findBySlug(slug).ifPresentOrElse(imageRepository :: delete, () -> {
@@ -53,6 +54,7 @@ public class ImageService implements IImageService {
     return productRepository.findBySlug(slug)
         .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
   }
+
 
   @Override
   public List<ImageDto> addImages(List<MultipartFile> files, String slug) {

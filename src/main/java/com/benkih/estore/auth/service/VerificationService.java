@@ -18,6 +18,7 @@ public class VerificationService implements IVerificationService {
   private final EmailVerificationRepository verificationRepository;
   private final PasswordEncoder passwordEncoder;
 
+
   @Override
   @Transactional
   public VerificationTokenResponse createVerificationToken(User user) {
@@ -38,6 +39,7 @@ public class VerificationService implements IVerificationService {
         verification
     );
   }
+
 
   private String generateOtp() {
     SecureRandom random = new SecureRandom();

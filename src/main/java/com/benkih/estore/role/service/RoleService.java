@@ -26,6 +26,7 @@ public class RoleService implements IRoleService{
   private final PermissionRepository permissionRepository;
   private final PermissionService permissionService;
 
+
   @Override
   public Role createRole(CreateRoleRequest request) {
 
@@ -50,6 +51,7 @@ public class RoleService implements IRoleService{
     return roleRepository.save(role);
   }
 
+
   @Override
   @Transactional
   public Role updateRole(String slug, UpdateRoleRequest request) {
@@ -60,7 +62,6 @@ public class RoleService implements IRoleService{
       throw new BadRequestException("System roles cannot be modified");
     }
 
-    // Update name
     if (request.getName() != null && !request.getName().isBlank()) {
 
       roleRepository.findByNameIgnoreCase(request.getName().trim())
@@ -73,17 +74,14 @@ public class RoleService implements IRoleService{
       role.setName(request.getName().trim());
     }
 
-    // Update description
     if (request.getDescription() != null) {
       role.setDescription(request.getDescription().trim());
     }
 
-    // Update active status
     if (request.getActive() != null) {
       role.setActive(request.getActive());
     }
 
-    // Update permissions
     if (request.getPermissionSlugs() != null) {
 
       Set<Permission> permissions = new HashSet<>(
@@ -101,6 +99,7 @@ public class RoleService implements IRoleService{
     return roleRepository.save(role);
   }
 
+
   @Override
   public void deleteRole(String slug) {
     Role role = getRole(slug);
@@ -111,6 +110,7 @@ public class RoleService implements IRoleService{
     roleRepository.delete(role);
   }
 
+
   @Override
   @Transactional(readOnly = true)
   public Role getRole(String slug) {
@@ -118,6 +118,7 @@ public class RoleService implements IRoleService{
     return roleRepository.findBySlug(slug)
         .orElseThrow(() -> new ResourceNotFoundException("Role not found"));
   }
+
 
   @Override
   @Transactional(readOnly = true)
@@ -128,6 +129,7 @@ public class RoleService implements IRoleService{
         .map(this::convertToDto)
         .toList();
   }
+
 
   @Override
   @Transactional(readOnly = true)

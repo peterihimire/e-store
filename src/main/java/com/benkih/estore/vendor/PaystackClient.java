@@ -40,16 +40,7 @@ public class PaystackClient {
 
 
   public InitializePaymentResponse initialize(InitializePaymentRequest request){
-    // with using @Data annotation
-    //    PaystackInitializeRequest body = new PaystackInitializeRequest();
-    //
-    //    body.setEmail(request.getEmail());
-    //    body.setAmount(request.getAmount().multiply(BigDecimal.valueOf(100)));
-    //    body.setReference(request.getReference());
-    //    body.setCurrency(request.getCurrency().name());
-    //    body.setCallbackUrl(request.getCallbackUrl());
 
-    // with using @Builder and the rest annotations
     PaystackInitializeRequest body = PaystackInitializeRequest.builder()
         .email(request.getEmail())
         .amount(request.getAmount().multiply(BigDecimal.valueOf(100)))
@@ -88,6 +79,7 @@ public class PaystackClient {
         throw e;
     }
   }
+
 
   public VerifyPaymentResponse verify(String reference){
     try {
@@ -153,9 +145,9 @@ public class PaystackClient {
         response.getData().getAccessCode(),
         response.getData().getReference(),
         response.getMessage()
-//        response.getData().
     );
   }
+
 
   private VerifyPaymentResponse map(PaystackVerifyResponse response) {
     BigDecimal amount = BigDecimal
@@ -180,6 +172,7 @@ public class PaystackClient {
         response.getData().getPaidAt()
     );
   }
+
 
   private PaymentStatus mapStatus(String status) {
     return switch (status.toLowerCase()) {
