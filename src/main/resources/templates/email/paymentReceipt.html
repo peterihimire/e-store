@@ -2,51 +2,35 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <head>
-
   <meta charset="UTF-8">
-
   <title>Payment Receipt</title>
-
   <th:block th:replace="~{email/fragments/styles :: styles}" />
-
 </head>
 
 <body>
 
 <table class="wrapper" role="presentation" cellspacing="0" cellpadding="0">
-
   <tr>
-
     <td align="center">
-
       <table class="container" role="presentation" cellspacing="0" cellpadding="0">
-
         <th:block th:replace="~{email/fragments/header :: header}" />
 
         <tr>
-
           <td class="content">
-
             <h2>
-
               Hello
               <span th:text="${name}">
                                 Customer
                             </span>,
-
             </h2>
 
             <p>
-
               Thank you for shopping with
               <strong>E-Store</strong>.
-
             </p>
 
             <p>
-
               We have successfully received your payment.
-
             </p>
 
             <div class="info-box">
@@ -58,43 +42,31 @@
               <table class="info-table">
 
                 <tr>
-
                   <td><strong>Order Number</strong></td>
-
                   <td th:text="${orderNumber}">
                     ORD-123456
                   </td>
-
                 </tr>
 
                 <tr>
-
                   <td><strong>Payment Reference</strong></td>
-
                   <td th:text="${reference}">
                     PAY-123456789
                   </td>
-
                 </tr>
 
                 <tr>
-
                   <td><strong>Amount Paid</strong></td>
-
                   <td th:text="${amount}">
                     ₦50,000
                   </td>
-
                 </tr>
 
                 <tr>
-
                   <td><strong>Payment Date</strong></td>
-
                   <td th:text="${paymentDate}">
                     14 Jul 2026 10:35 AM
                   </td>
-
                 </tr>
 
               </table>
@@ -102,51 +74,36 @@
             </div>
 
             <p>
-
               Your official payment receipt has been attached to this email as a PDF for your records.
-
             </p>
 
             <p>
-
               If you have any questions about your order,
               simply reply to this email and we'll be happy to help.
-
             </p>
 
             <br>
 
             <p>
-
               Thank you for choosing
               <strong>E-Store</strong>.
-
             </p>
 
             <p>
-
               Regards,
-
               <br>
-
               <strong>
                 The E-Store Team
               </strong>
-
             </p>
-
           </td>
 
         </tr>
-
         <th:block th:replace="~{email/fragments/footer :: footer}" />
 
       </table>
-
     </td>
-
   </tr>
-
 </table>
 
 </body>

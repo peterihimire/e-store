@@ -2,259 +2,174 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <head>
-
     <meta charset="UTF-8">
-
     <th:block th:replace="~{email/fragments/styles :: styles}" />
-
     <title>You're Invited</title>
-
 </head>
 
 <body>
 
-
-
 <table class="wrapper" role="presentation" cellspacing="0" cellpadding="0">
-
     <tr>
-
         <td align="center">
-
             <table class="container" role="presentation" cellspacing="0" cellpadding="0">
 
                 <!-- Header -->
-
-                <th:block
-
-                        th:replace="~{email/fragments/header :: header}" />
+                <th:block th:replace="~{email/fragments/header :: header}" />
 
                 <!-- Body -->
-
                 <tr>
-
                     <td style="padding:40px;">
-
                         <h2 style="margin-top:0;">
-
                             Hello
                             <span th:text="${firstName}">
                                 John
                             </span>,
-
                         </h2>
 
                         <p>
-
                             You have been invited to join
                             <strong>E-Store</strong>.
-
                         </p>
 
                         <p>
-
                             <strong>
                                 Invited by:
                             </strong>
-
                             <span th:text="${invitedBy}">
                                 Administrator
                             </span>
-
                         </p>
 
                         <p>
-
                             <strong>Email:</strong>
-
                             <span th:text="${email}"></span>
-
                         </p>
 
                         <!-- Assignment -->
-
-                        <div
-                                style="
+                        <div style="
                                 background:#f4f8ff;
                                 border:1px solid #d7e5ff;
                                 border-radius:6px;
                                 padding:18px;
                                 margin:30px 0;
 ">
-
                             <h3 style="margin-top:0;">
                                 Your Access
                             </h3>
 
                             <p>
-
                                 <strong>Role(s)</strong>
-
                             </p>
 
                             <ul>
-
                                 <li
                                         th:each="role : ${roles}"
                                         th:text="${role}">
                                 </li>
-
                             </ul>
 
-                            <div
-                                    th:if="${!departments.isEmpty()}">
-
+                            <div th:if="${!departments.isEmpty()}">
                                 <p>
-
                                     <strong>Department(s)</strong>
-
                                 </p>
 
                                 <ul>
-
                                     <li
                                             th:each="department : ${departments}"
                                             th:text="${department}">
                                     </li>
-
                                 </ul>
 
                             </div>
-
                         </div>
 
                         <!-- Personal message -->
-
-                        <div
-                                th:if="${message != null and !message.isEmpty()}"
-                                style="
+                        <div th:if="${message != null and !message.isEmpty()}" style="
                                 background:#fafafa;
                                 border-left:4px solid #0d6efd;
                                 padding:18px;
                                 margin-bottom:30px;
 ">
-
                             <strong>
                                 Personal Message
                             </strong>
 
-                            <p
-                                    th:text="${message}"
-                                    style="margin-bottom:0;">
+                            <p th:text="${message}" style="margin-bottom:0;">
                             </p>
-
                         </div>
 
                         <p>
-
                             Click the button below to activate your account and create your password.
-
                         </p>
 
-                        <table
-                                align="center"
-                                cellpadding="0"
-                                cellspacing="0"
-                                style="margin:30px auto;">
-
+                        <table align="center" cellpadding="0" cellspacing="0" style="margin:30px auto;">
                             <tr>
+                                <td bgcolor="#0d6efd" style="border-radius:6px;">
 
-                                <td
-                                        bgcolor="#0d6efd"
-                                        style="border-radius:6px;">
-
-                                    <a
-                                            th:href="${invitationUrl}"
-                                            style="
+                                    <a th:href="${invitationUrl}" style="
                                             display:inline-block;
                                             padding:14px 34px;
                                             color:#ffffff;
                                             text-decoration:none;
                                             font-weight:bold;
 ">
-
                                         Accept Invitation
-
                                     </a>
 
                                 </td>
-
                             </tr>
-
                         </table>
 
                         <p>
-
                             If the button above doesn't work,
                             copy and paste this link into your browser.
-
                         </p>
 
-                        <p
-                                style="word-break:break-word;">
-
+                        <p style="word-break:break-word;">
                             <a
                                     th:href="${invitationUrl}"
                                     th:text="${invitationUrl}">
                             </a>
-
                         </p>
 
-                        <div
-                                style="
+                        <div style="
                                 background:#fff8e5;
                                 border:1px solid #ffe08a;
                                 border-radius:6px;
                                 padding:18px;
                                 margin-top:30px;
 ">
-
                             <strong>
                                 Important
                             </strong>
 
                             <p>
-
                                 This invitation can only be used once and expires on
-
                                 <strong
                                         th:text="${expiresAt}">
                                 </strong>.
-
                             </p>
-
                         </div>
 
                         <br>
 
                         <p>
-
                             Regards,
-
                             <br>
-
                             <strong>
                                 The E-Store Team
                             </strong>
-
                         </p>
-
                     </td>
 
                 </tr>
 
                 <!-- Footer -->
-                <th:block
-
-                        th:replace="~{email/fragments/footer :: footer}" />
-
-
+                <th:block th:replace="~{email/fragments/footer :: footer}" />
             </table>
-
         </td>
-
     </tr>
-
 </table>
 
 </body>

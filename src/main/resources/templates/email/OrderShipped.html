@@ -2,13 +2,9 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <head>
-
     <meta charset="UTF-8">
-
     <title>Order Shipped</title>
-
     <th:block th:replace="~{email/fragments/styles :: styles}" />
-
 </head>
 
 <body>
@@ -16,96 +12,72 @@
 <table class="wrapper" role="presentation" cellspacing="0" cellpadding="0">
 
     <tr>
-
         <td align="center">
-
             <table class="container" role="presentation" cellspacing="0" cellpadding="0">
-
                 <th:block th:replace="~{email/fragments/header :: header}" />
 
                 <tr>
-
                     <td class="content">
-
                         <h2 class="mt-0">
-
                             Hello
                             <span th:text="${name}">
                                 Customer
                             </span>,
-
                         </h2>
 
                         <p>
-
                             Great news!
-
                         </p>
 
                         <p>
-
                             Your order has been shipped and is on its way to you.
-
                         </p>
 
                         <div class="divider"></div>
 
                         <h3>
-
                             Order Summary
-
                         </h3>
 
                         <table class="info-table">
 
                             <tr>
-
                                 <td>Order Number</td>
 
                                 <td th:text="${orderNumber}">
                                     ORD-10001
                                 </td>
-
                             </tr>
 
                             <tr>
-
                                 <td>Order Date</td>
 
                                 <td th:text="${orderDate}">
                                     25 Jul 2026
                                 </td>
-
                             </tr>
 
                             <tr>
-
                                 <td>Status</td>
 
                                 <td class="success">
                                     Shipped
                                 </td>
-
                             </tr>
 
                             <tr>
-
                                 <td>Total</td>
 
                                 <td th:text="${total}">
                                     ₦20,000
                                 </td>
-
                             </tr>
 
                             <tr th:if="${trackingNumber != null}">
-
                                 <td>Tracking Number</td>
-
                                 <td th:text="${trackingNumber}">
                                     TRK123456789
                                 </td>
-
                             </tr>
 
                         </table>
@@ -113,9 +85,7 @@
                         <div class="divider"></div>
 
                         <p>
-
                             Your package is currently on its way.
-
                         </p>
 
                         <div
@@ -123,73 +93,52 @@
                                 th:if="${trackingUrl != null}">
 
                             <p style="margin-top:0;">
-
                                 You can track your shipment using the button below.
-
                             </p>
 
                             <p style="text-align:center; margin:24px 0;">
-
                                 <a class="button"
                                    th:href="${trackingUrl}">
-
                                     Track Shipment
-
                                 </a>
-
                             </p>
 
                             <p class="small" style="margin-bottom:0;">
-
                                 If the button doesn't work, copy and paste this link into your browser:
-
                             </p>
 
                             <p class="small">
-
                                 <a th:href="${trackingUrl}"
                                    th:text="${trackingUrl}">
                                 </a>
-
                             </p>
 
                         </div>
 
                         <p>
-
                             We'll notify you once your order has been delivered.
-
                         </p>
 
                         <br>
 
                         <p>
-
                             Thank you for shopping with
                             <strong>E-Store</strong>.
-
                         </p>
 
                         <p>
-
                             Regards,
-
                             <br>
-
                             <strong>The E-Store Team</strong>
-
                         </p>
 
                     </td>
 
                 </tr>
-
                 <th:block th:replace="~{email/fragments/footer :: footer}" />
 
             </table>
-
         </td>
-
     </tr>
 
 </table>
