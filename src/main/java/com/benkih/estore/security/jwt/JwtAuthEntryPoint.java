@@ -17,11 +17,13 @@ import java.util.Map;
 @Component
 public class JwtAuthEntryPoint implements AuthenticationEntryPoint {
 
+
   @Override
   public void commence(
       HttpServletRequest request,
       HttpServletResponse response,
       AuthenticationException authException) throws IOException, ServletException {
+
     // Set response content type to JSON
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

@@ -11,5 +11,4 @@ class EStoreApplicationTests {
 	@Test
 	void contextLoads() {
 	}
-
 }

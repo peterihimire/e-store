@@ -21,11 +21,12 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 @Slf4j
-@Component  // Add this to make it a Spring bean
-@RequiredArgsConstructor  // Add this for constructor injection
+@Component
+@RequiredArgsConstructor
 public class AuthTokenFilter extends OncePerRequestFilter {
   private final JwtUtils jwtUtils;
   private final StoreUserDetailsService storeUserDetailsService;
+
 
   @Override
   protected void doFilterInternal(
@@ -42,7 +43,6 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         SecurityContextHolder.getContext().setAuthentication(auth);
       }
     } catch (JwtException e) {
-      // LOG ONLY - DO NOT WRITE RESPONSE
       log.warn("JWT validation failed: {}", e.getMessage());
       SecurityContextHolder.clearContext();
     } catch (Exception e) {
@@ -51,6 +51,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     }
     filterChain.doFilter(request, response);
   }
+
 
   private String parseJwt(HttpServletRequest request){
     String headerAuth = request.getHeader("Authorization");

@@ -15,6 +15,7 @@ import java.util.Optional;
 public class StoreUserDetailsService implements UserDetailsService {
   private final UserRepository userRepository;
 
+
   @Override
   public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
     User user = Optional.ofNullable(userRepository.findByEmail(email))

@@ -15,9 +15,6 @@ public class ApiLogService implements IApiLogService{
   private final ApiLogRepository apiLogRepository;
   private final ObjectMapper objectMapper;
 
-//  public ApiLogService(ApiLogRepository apiLogRepository) { //when constructor is generated manually, without using the @RequiredArgsConstructor annotation
-//    this.apiLogRepository = apiLogRepository;
-//  }
 
   public ApiLog start(String method, String endpoint, Object request) {
     ApiLog log = new ApiLog();
@@ -33,10 +30,6 @@ public class ApiLogService implements IApiLogService{
     return apiLogRepository.save(log);
   }
 
-//  @Override
-//  public ApiLog start(String method, String endpoint, String requestBody) {
-//    return null;
-//  }
 
   public void success(ApiLog log, int statusCode, Object response) {
     log.setStatusCode(statusCode);
@@ -48,6 +41,7 @@ public class ApiLogService implements IApiLogService{
 
     apiLogRepository.save(log);
   }
+
 
   public void failure(ApiLog log, int statusCode, String responseBody, Exception e) {
     log.setStatusCode(statusCode);
@@ -80,6 +74,7 @@ public class ApiLogService implements IApiLogService{
     apiLogRepository.save(log);
   }
 
+
   @Override
   public void saveInboundLog(
       String method,
@@ -103,6 +98,7 @@ public class ApiLogService implements IApiLogService{
     }
     apiLogRepository.save(log);
   }
+
 
   private String writeJson(Object value) {
     if (value == null) {

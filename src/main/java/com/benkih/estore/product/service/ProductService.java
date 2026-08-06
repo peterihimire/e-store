@@ -73,28 +73,16 @@ public class ProductService implements IProductService{
         request.getBrand(),
         request.getDescription(),
         request.getPrice(),
-//        request.getInventory(),
         category
     );
   }
 
 
-//  @Transactional(readOnly = true)
   @Override
   public List<Product> getAllProducts() {
     return productRepository.findAll();
   }
 
-//@Transactional(readOnly = true)
-//@Override
-//public Page<ProductResponseDto> getAllProducts(int page, int limit) {
-//
-//  Pageable pageable = PageRequest.of(page, limit);
-//
-//  return productRepository
-//      .findAll(pageable)
-//      .map(this::convertToDto);
-//}
 
   @Transactional(readOnly = true)
   @Override
@@ -110,11 +98,6 @@ public class ProductService implements IProductService{
     );
   }
 
-//  @Transactional(readOnly = true)
-//  @Override
-//  public List<ProductResponseDto> getConvertedProducts(List<Product> products) {
-//    return products.stream().map(this::convertToDto).toList();
-//  }
 
   @Override
   public List<ProductResponseDto> getConvertedProducts(List<Product> products) {
@@ -123,9 +106,7 @@ public class ProductService implements IProductService{
 
   @Transactional(readOnly = true)
   @Override
-  public ProductResponseDto convertToDto(Product product
-//                                         Inventory inventory
-  ) {
+  public ProductResponseDto convertToDto(Product product) {
     List<ImageDto> imageDtos = Optional.ofNullable(product.getImages())
         .orElse(List.of())
         .stream()
@@ -151,43 +132,37 @@ public class ProductService implements IProductService{
     );
   }
 
+
   @Override
   public List<Product> getProductsByCategory(String category) {
     return productRepository.findByCategoryName(category);
   }
+
 
   @Override
   public List<Product> getProductsByBrand(String brand) {
     return productRepository.findByBrand(brand);
   }
 
+
   @Override
   public List<Product> getProductsByCategoryAndBrand(String category, String brand) {
     return productRepository.findByCategoryNameAndBrand(category, brand);
   }
+
 
   @Override
   public List<Product> getProductsByName(String name) {
     return productRepository.findByName(name);
   }
 
+
   @Override
   public List<Product> getProductsByBrandAndName(String brand, String name) {
     return List.of();
   }
 
-//  @Override
-//  public List<Product> getProductsByBrandAndName(String brand, String name) {
-//    return productRepository.findByBrandAndName(brand, name);
-//  }
 
-  //  @Override
-  //  public Product getProductById(Long id) {
-  //    return productRepository.findById(id)
-  //        .orElseThrow(()-> new NotFoundException("Product not found!"));
-  //  }
-
-  //  @Transactional(readOnly = true)
   @Override
   public Product getProductBySlug(String slug) {
     Product product = productRepository.findBySlug(slug)
@@ -195,6 +170,7 @@ public class ProductService implements IProductService{
 
     return product;
   }
+
 
   @Override
   public Product updateProduct(UpdateProductRequest request, String slug) {
@@ -204,8 +180,8 @@ public class ProductService implements IProductService{
         .orElseThrow(() -> new ResourceNotFoundException("Product not found!"));
 
     return updatedProduct;
-
   }
+
 
   private String generateSku(Product product) {
     long sequence = skuSequenceRepository.nextSkuNumber();
@@ -219,6 +195,8 @@ public class ProductService implements IProductService{
         sequence
     );
   }
+
+
   private String abbreviate(String value) {
     String cleaned = value
         .replaceAll("[^A-Za-z]", "")
@@ -226,6 +204,7 @@ public class ProductService implements IProductService{
 
     return cleaned.substring(0, Math.min(3, cleaned.length()));
   }
+
 
   private Product updateExistingProduct(Product existingProduct, UpdateProductRequest request) {
     if (request.getName() != null) {
@@ -240,10 +219,6 @@ public class ProductService implements IProductService{
     if (request.getPrice() != null) {
       existingProduct.setPrice(request.getPrice());
     }
-//    if (request.getInventory() != null) {
-//      existingProduct.setInventory(request.getInventory());
-//    }
-
     if (request.getCategoryName() != null) {
       Category category = categoryRepository.findByName(request.getCategoryName());
       if (category == null) {
@@ -262,10 +237,12 @@ public class ProductService implements IProductService{
         () -> {throw new ResourceNotFoundException("Product not found!");});
   }
 
+
   @Override
   public Long countProductByBrandAndName(String brand, String name) {
     return productRepository.countByBrandAndName(brand, name);
   }
+
 
   @Override
   @Transactional(readOnly = true)
@@ -279,7 +256,6 @@ public class ProductService implements IProductService{
         return Page.empty(pageable);
       }
 
-//      return productPage.map(this::convertToDto);
     List<ProductResponseDto> dtos = convertProducts(productPage.getContent());
 
     return new PageImpl<>(
@@ -290,21 +266,18 @@ public class ProductService implements IProductService{
   }
 
   @Override
-  public Page<ProductResponseDto> getProductsByBrandAndName(String brand, String name,
-                                                  Pageable pageable) {
-    log.info("Fetching products with page: {}, size: {}",
-        pageable.getPageNumber(), pageable.getPageSize());
-
-
-      Page<Product> productPage =
-          productRepository.findByBrandAndName(brand, name, pageable);
+  public Page<ProductResponseDto> getProductsByBrandAndName(
+      String brand,
+      String name,
+      Pageable pageable) {
+//    log.info("Fetching products with page: {}, size: {}", pageable.getPageNumber(), pageable.getPageSize());
+      Page<Product> productPage = productRepository.findByBrandAndName(brand, name, pageable);
 
       if (productPage.isEmpty()) {
-        log.info("No products found for brand: {} and name: {}", brand, name);
+//        log.info("No products found for brand: {} and name: {}", brand, name);
         return Page.empty(pageable);
       }
 
-//      return productPage.map(this::convertToDto);
     List<ProductResponseDto> dtos =
         convertProducts(productPage.getContent());
 
@@ -317,7 +290,7 @@ public class ProductService implements IProductService{
   private List<ProductResponseDto> convertProducts(List<Product> products) {
     List<String> slugs = products.stream()
         .map(Product::getSlug)
-        .toList(); // Extract all the slugs from the product
+        .toList();
 
     return products.stream()
         .map(product -> convertToDto(product))

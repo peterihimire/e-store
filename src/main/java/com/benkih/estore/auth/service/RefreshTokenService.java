@@ -26,6 +26,7 @@ public class RefreshTokenService implements IRefreshTokenService{
   private final JwtUtils jwtUtils;
   private final PasswordEncoder passwordEncoder;
 
+
   @Override
   public String createRefreshToken(User user, String device, String ipAddress) {
     String plainToken = jwtUtils.generateRefreshToken(user);
@@ -43,6 +44,7 @@ public class RefreshTokenService implements IRefreshTokenService{
 
     return plainToken;
   }
+
 
   @Override
   public RefreshToken validateRefreshToken(String plainToken) {
@@ -72,6 +74,7 @@ public class RefreshTokenService implements IRefreshTokenService{
     return refreshTokenRepository.save(token);
   }
 
+
   @Override
   public String rotateRefreshToken(String plainToken, String device, String ipAddress) {
     RefreshToken existing = validateRefreshToken(plainToken);
@@ -83,6 +86,7 @@ public class RefreshTokenService implements IRefreshTokenService{
 
     return createRefreshToken(existing.getUser(), device, ipAddress);
   }
+
 
   @Override
   @Transactional
@@ -110,16 +114,6 @@ public class RefreshTokenService implements IRefreshTokenService{
   }
 
 
-//  @Override
-//  public void revokeRefreshToken(String plainToken) {
-//    RefreshToken token = validateRefreshToken(plainToken);
-//
-//    token.setRevoked(true);
-//    token.setRevokedAt(LocalDateTime.now());
-//    token.setRevokedReason("Logout");
-//    refreshTokenRepository.save(token);
-//  }
-
   @Transactional
   @Override
   public void revokeAllUserTokens(User user) {
@@ -130,6 +124,7 @@ public class RefreshTokenService implements IRefreshTokenService{
           token.setRevokedReason(RevocationReason.LOGOUT_ALL_DEVICES);
         });
   }
+
 
   @Override
   public void deleteExpiredTokens() {
@@ -152,5 +147,4 @@ public class RefreshTokenService implements IRefreshTokenService{
       throw new IllegalStateException("SHA-256 not available", e);
     }
   }
-
 }

@@ -14,10 +14,12 @@ import java.util.List;
 public class PermissionService implements IPermissionService {
   private final PermissionRepository permissionRepository;
 
+
   @Override
   public List<Permission> getPermissions() {
     return permissionRepository.findAll();
   }
+
 
   @Override
   public List<PermissionResponseDto> getConvertedPermissions(List<Permission> permissions) {
@@ -27,12 +29,14 @@ public class PermissionService implements IPermissionService {
         .toList();
   }
 
+
   @Override
   public PermissionResponseDto getPermissionBySlug(String slug) {
     Permission permission = permissionRepository.findBySlug(slug)
         .orElseThrow(() -> new ResourceNotFoundException("Permission not found"));
     return convertToDto(permission);
   }
+
 
   @Override
   public PermissionResponseDto convertToDto(Permission permission) {
@@ -44,5 +48,4 @@ public class PermissionService implements IPermissionService {
         permission.getAction()
     );
   }
-
 }

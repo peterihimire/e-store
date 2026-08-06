@@ -21,6 +21,7 @@ public class BrevoSmtpProvider extends AbstractEmailProvider {
     this.mailSender = mailSender;
   }
 
+
   @Override
   public void send(EmailRequest request) {
     validate(request);

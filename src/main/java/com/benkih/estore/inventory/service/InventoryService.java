@@ -25,11 +25,13 @@ import java.util.stream.Collectors;
 public class InventoryService implements IInventoryService{
   private final InventoryRepository inventoryRepository;
 
+
   @Override
   public Inventory getByProductSlug(String productSlug) {
     return inventoryRepository.findByProductSlug(productSlug)
         .orElseThrow(() -> new ResourceNotFoundException("Inventory not found for product."));
   }
+
 
   @Transactional(readOnly = true)
   @Override
@@ -43,6 +45,7 @@ public class InventoryService implements IInventoryService{
     return inventoryPage.map(this::convertToDto);
   }
 
+
   @Override
   public Inventory getInventoryBySlug(String slug) {
     Inventory inventory =
@@ -51,12 +54,14 @@ public class InventoryService implements IInventoryService{
     return inventory;
   }
 
+
   @Override
   public Map<String, Inventory> getInventoriesByProductSlugs(Collection<String> productSlugs) {
     return inventoryRepository.findByProductSlugIn(productSlugs)
         .stream()
         .collect(Collectors.toMap(inventory -> inventory.getProduct().getSlug(), Function.identity()));
   }
+
 
   @Transactional
   @Override
@@ -67,6 +72,7 @@ public class InventoryService implements IInventoryService{
      inventoryRepository.save(inventory);
   }
 
+
   @Transactional
   @Override
   public void release(String productSlug, int quantity) {
@@ -75,6 +81,7 @@ public class InventoryService implements IInventoryService{
     inventory.release(quantity);
      inventoryRepository.save(inventory);
   }
+
 
   @Transactional
   @Override
@@ -85,6 +92,7 @@ public class InventoryService implements IInventoryService{
    inventoryRepository.save(inventory);
   }
 
+
   @Transactional
   @Override
   public Inventory addStock(String slug, int quantity) {
@@ -93,6 +101,7 @@ public class InventoryService implements IInventoryService{
     inventory.addStock(quantity);
    return  inventoryRepository.save(inventory);
   }
+
 
   @Transactional
   @Override
@@ -103,11 +112,11 @@ public class InventoryService implements IInventoryService{
    return inventoryRepository.save(inventory);
   }
 
+
   @Override
   public Inventory createInventory(Product product) {
 
     if (inventoryRepository.existsByProductSlug(product.getSlug())) {
-      log.warn("Inventory already exists for product {}", product.getSlug());
       throw new AlreadyExistsException("Inventory already exists for product ");
     }
 
@@ -117,8 +126,8 @@ public class InventoryService implements IInventoryService{
     product.setInventory(inventory);
 
    return  inventoryRepository.save(inventory);
-//    log.info("Inventory created for product {}", product.getSlug());
   }
+
 
   @Transactional(readOnly = true)
   @Override

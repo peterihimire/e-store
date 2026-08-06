@@ -20,6 +20,7 @@ public class PasswordResetTokenService implements IPasswordResetTokenService {
   private final PasswordEncoder passwordEncoder;
   private final PasswordResetTokenRepository passwordResetTokenRepository;
 
+
   @Transactional
   @Override
   public PasswordResetTokenResponse createPasswordResetToken(User user) {
@@ -45,6 +46,7 @@ public class PasswordResetTokenService implements IPasswordResetTokenService {
         resetToken
     );
   }
+
 
   private String generateOtp() {
     SecureRandom random = new SecureRandom();

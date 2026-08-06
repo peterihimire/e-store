@@ -40,7 +40,7 @@ public class AddressService implements IAddressService {
     address.setState(request.getState());
     address.setCountry(request.getCountry());
     address.setPostalCode(request.getPostalCode());
-    //    address.setDefault(request.isDefault());
+
     if (firstAddress) {
       address.setDefaultAddress(true);
     } else if (request.isDefaultAddress()) {
@@ -54,6 +54,7 @@ public class AddressService implements IAddressService {
     return convertToDto(address);
   }
 
+
   @Override
   public List<AddressResponseDto> getMyAddresses() {
     User user = currentUserService.getCurrentUser();
@@ -65,17 +66,14 @@ public class AddressService implements IAddressService {
         .toList();
   }
 
+
   @Override
   public AddressResponseDto updateAddress(String slug, UpdateAddressRequest request) {
     User user = currentUserService.getCurrentUser();
 
     Address address =
-        addressRepository
-            .findBySlugAndUserSlug(slug, user.getSlug())
-            .orElseThrow(()->
-                new ResourceNotFoundException("Address not found."));
-
-
+        addressRepository.findBySlugAndUserSlug(slug, user.getSlug())
+            .orElseThrow(()-> new ResourceNotFoundException("Address not found."));
 
     if (request.getFirstName() != null) {
       address.setFirstName(request.getFirstName());
@@ -125,33 +123,34 @@ public class AddressService implements IAddressService {
     return convertToDto(address);
   }
 
+
   @Override
   public AddressResponseDto getAddress(String slug) {
     User user = currentUserService.getCurrentUser();
     Address address =
         addressRepository.findBySlugAndUserSlug(slug,user.getSlug())
-            .orElseThrow(() ->
-                new ResourceNotFoundException("Address not found."));
+            .orElseThrow(() -> new ResourceNotFoundException("Address not found."));
     return convertToDto(address);
   }
+
 
   @Override
   public void deleteAddress(String slug) {
     User user = currentUserService.getCurrentUser();
     Address address =
         addressRepository.findBySlugAndUserSlug(slug, user.getSlug())
-            .orElseThrow(() ->
-                new ResourceNotFoundException("Address not found."));
+            .orElseThrow(() -> new ResourceNotFoundException("Address not found."));
 
     addressRepository.delete(address);
   }
+
 
   public AddressResponseDto convertToDto(Address address){
     AddressResponseDto dto = new AddressResponseDto();
 
     dto.setSlug(address.getSlug());
-        dto.setFirstName(address.getFirstName());
-        dto.setLastName(address.getLastName());
+    dto.setFirstName(address.getFirstName());
+    dto.setLastName(address.getLastName());
     dto.setPhoneNumber(address.getPhoneNumber());
     dto.setAddressLine1(address.getAddressLine1());
     dto.setAddressLine2(address.getAddressLine2());
@@ -160,6 +159,7 @@ public class AddressService implements IAddressService {
     dto.setCountry(address.getCountry());
     dto.setPostalCode(address.getPostalCode());
     dto.setDefaultAddress(address.isDefaultAddress());
+
     return dto;
   }
 }

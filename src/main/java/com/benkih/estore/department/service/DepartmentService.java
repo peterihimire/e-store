@@ -18,12 +18,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+
 @RequiredArgsConstructor
 @Service
 public class DepartmentService implements IDepartmentService{
   private final DepartmentRepository departmentRepository;
   private final UserRepository userRepository;
   private final UserService userService;
+
 
   @Override
   public Department createDepartment(CreateDepartmentRequest request) {
@@ -39,6 +41,7 @@ public class DepartmentService implements IDepartmentService{
 
     return departmentRepository.save(department);
   }
+
 
   @Override
   public Department updateDepartment(String slug, UpdateDepartmentRequest request) {
@@ -64,6 +67,7 @@ public class DepartmentService implements IDepartmentService{
     return departmentRepository.save(department);
   }
 
+
   @Override
   public void deleteDepartment(String slug) {
 
@@ -72,6 +76,7 @@ public class DepartmentService implements IDepartmentService{
     departmentRepository.delete(department);
   }
 
+
   @Override
   @Transactional(readOnly = true)
   public Department getDepartment(String slug) {
@@ -79,6 +84,7 @@ public class DepartmentService implements IDepartmentService{
     return departmentRepository.findBySlug(slug)
         .orElseThrow(() -> new ResourceNotFoundException("Department not found"));
   }
+
 
   @Override
   @Transactional(readOnly = true)
@@ -89,6 +95,7 @@ public class DepartmentService implements IDepartmentService{
         .map(this::convertToDto)
         .toList();
   }
+
 
   @Override
   @Transactional
@@ -117,6 +124,7 @@ public class DepartmentService implements IDepartmentService{
     }
   }
 
+
   @Override
   @Transactional
   public void removeUser(String departmentSlug, String userSlug) {
@@ -142,6 +150,7 @@ public class DepartmentService implements IDepartmentService{
     userRepository.save(user);
   }
 
+
   @Override
   @Transactional(readOnly = true)
   public List<UserResponseDto> getDepartmentUsers(String departmentSlug) {
@@ -154,6 +163,7 @@ public class DepartmentService implements IDepartmentService{
         .map(userService::convertToDto)
         .toList();
   }
+
 
   @Override
   @Transactional(readOnly = true)

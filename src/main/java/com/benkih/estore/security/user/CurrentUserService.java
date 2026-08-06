@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 public class CurrentUserService {
   private final UserRepository userRepository;
 
+
   public StoreUserDetails getPrincipal() {
     Authentication authentication =
         SecurityContextHolder.getContext().getAuthentication();
@@ -25,13 +26,16 @@ public class CurrentUserService {
     return principal;
   }
 
+
   public String getCurrentUserSlug() {
     return getPrincipal().getSlug();
   }
 
+
   public String getCurrentUserEmail() {
-    return getPrincipal().getUsername(); // email
+    return getPrincipal().getUsername();
   }
+
 
   public User getCurrentUser() {
     return userRepository.findBySlug(getCurrentUserSlug())

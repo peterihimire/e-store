@@ -20,6 +20,7 @@ public class MailTrapSmtpProvider extends AbstractEmailProvider {
     this.mailSender = mailSender;
   }
 
+
   @Override
   public void send(EmailRequest request) {
     validate(request);
@@ -35,8 +36,8 @@ public class MailTrapSmtpProvider extends AbstractEmailProvider {
       if (request.getAttachments() != null && !request.getAttachments().isEmpty()) {
 
         for (EmailAttachment attachment : request.getAttachments()) {
-          helper.addAttachment(
-              attachment.getFilename(),
+          helper.addAttachment(attachment.getFilename(),
+
               new ByteArrayResource(attachment.getContent()),
               attachment.getContentType()
           );
