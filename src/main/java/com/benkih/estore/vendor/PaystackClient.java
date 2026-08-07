@@ -4,15 +4,16 @@ import com.benkih.estore.audit.entity.ApiLog;
 import com.benkih.estore.audit.service.ApiLogService;
 import com.benkih.estore.audit.service.IApiLogService;
 import com.benkih.estore.common.enums.PaymentStatus;
+import com.benkih.estore.common.enums.RefundStatus;
+import com.benkih.estore.common.exceptions.PaymentGatewayException;
 import com.benkih.estore.payment.dto.request.InitializePaymentRequest;
 import com.benkih.estore.payment.dto.request.PaystackInitializeRequest;
-import com.benkih.estore.payment.dto.response.InitializePaymentResponse;
-import com.benkih.estore.payment.dto.response.PaystackInitializeResponse;
-import com.benkih.estore.payment.dto.response.PaystackVerifyResponse;
-import com.benkih.estore.payment.dto.response.VerifyPaymentResponse;
+import com.benkih.estore.payment.dto.request.RefundPaymentRequest;
+import com.benkih.estore.payment.dto.response.*;
 import com.benkih.estore.payment.dto.webhook.PaystackWebhookEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
@@ -25,6 +26,7 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.HexFormat;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class PaystackClient {
@@ -66,7 +68,7 @@ public class PaystackClient {
           response,
           null);
 
-      return map(response);
+      return mapInitializeResponse(response);
     } catch (Exception e){
       apiLogService.saveOutboundLog(
           "POST",
@@ -83,8 +85,8 @@ public class PaystackClient {
 
   public VerifyPaymentResponse verify(String reference){
     try {
-      PaystackVerifyResponse response = webClient.get().uri(baseUrl +
-              "/transaction/verify/" + reference)
+      PaystackVerifyResponse response = webClient.get()
+          .uri(baseUrl + "/transaction/verify/" + reference)
           .header(HttpHeaders.AUTHORIZATION, "Bearer " + secretKey)
           .retrieve()
           .bodyToMono(PaystackVerifyResponse.class)
@@ -98,7 +100,7 @@ public class PaystackClient {
           response,
           null);
 
-      return map(response);
+      return mapVerifyResponse(response);
     } catch(Exception e){
       apiLogService.saveOutboundLog(
           "GET",
@@ -137,8 +139,85 @@ public class PaystackClient {
     }
   }
 
+  // work this
+  public RefundPaymentResponse refund(RefundPaymentRequest request) {
 
-  private InitializePaymentResponse map(PaystackInitializeResponse response) {
+    try {
+
+      PaystackRefundResponse response = webClient.post()
+          .uri(baseUrl + "/refund")
+          .header(HttpHeaders.AUTHORIZATION, "Bearer " + secretKey)
+          .bodyValue(request)
+          .retrieve()
+          .bodyToMono(PaystackRefundResponse.class)
+          .block();
+
+      apiLogService.saveOutboundLog(
+          "POST",
+          baseUrl + "/refund",
+          request,
+          200,
+          response,
+          null
+      );
+
+      return mapRefundResponse(response);
+
+    } catch (Exception e) {
+
+      apiLogService.saveOutboundLog(
+          "POST",
+          baseUrl + "/refund",
+          request,
+          500,
+          e.getMessage(),
+          e
+      );
+
+      throw new PaymentGatewayException("Unable to initiate refund", e);
+    }
+  }
+
+  // work that
+  public RefundPaymentResponse verifyRefund(String reference) {
+
+    try {
+
+      PaystackRefundResponse response = webClient.get()
+          .uri(baseUrl + "/refund/" + reference)
+          .header(HttpHeaders.AUTHORIZATION, "Bearer " + secretKey)
+          .retrieve()
+          .bodyToMono(PaystackRefundResponse.class)
+          .block();
+
+      apiLogService.saveOutboundLog(
+          "GET",
+          baseUrl + "/refund/" + reference,
+          null,
+          200,
+          response,
+          null
+      );
+
+      return mapRefundResponse(response);
+
+    } catch (Exception e) {
+
+      apiLogService.saveOutboundLog(
+          "GET",
+          baseUrl + "/refund/" + reference,
+          null,
+          500,
+          e.getMessage(),
+          e
+      );
+
+      throw new PaymentGatewayException("Unable to verify refund", e);
+    }
+  }
+
+
+  private InitializePaymentResponse mapInitializeResponse(PaystackInitializeResponse response) {
     return new InitializePaymentResponse(
         response.isStatus(),
         response.getData().getAuthorizationUrl(),
@@ -149,7 +228,7 @@ public class PaystackClient {
   }
 
 
-  private VerifyPaymentResponse map(PaystackVerifyResponse response) {
+  private VerifyPaymentResponse mapVerifyResponse(PaystackVerifyResponse response) {
     BigDecimal amount = BigDecimal
         .valueOf(response.getData().getAmount())
         .movePointLeft(2);
@@ -179,6 +258,44 @@ public class PaystackClient {
       case "success" -> PaymentStatus.SUCCESS;
       case "failed", "reversed" -> PaymentStatus.FAILED;
       default -> PaymentStatus.PENDING;
+    };
+  }
+
+  private RefundPaymentResponse mapRefundResponse(PaystackRefundResponse response) {
+
+    RefundPaymentResponse dto = new RefundPaymentResponse();
+
+    dto.setSuccess(response.isStatus());
+    dto.setMessage(response.getMessage());
+    dto.setRefundReference(response.getData().getRefundReference());
+    dto.setTransactionReference(response.getData().getTransactionReference());
+    dto.setStatus(mapRefundStatus(response.getData().getStatus()));
+    dto.setAmount(
+        BigDecimal.valueOf(response.getData().getAmount()).movePointLeft(2)
+    );
+    dto.setCurrency(response.getData().getCurrency());
+    dto.setReason(response.getData().getReason());
+    dto.setCreatedAt(response.getData().getCreatedAt());
+
+    return dto;
+  }
+
+  private RefundStatus mapRefundStatus(String status) {
+
+    if (status == null) {
+      return RefundStatus.PENDING;
+    }
+
+    return switch (status.toLowerCase()) {
+      case "pending" -> RefundStatus.PENDING;
+      case "processing" -> RefundStatus.PROCESSING;
+      case "processed", "success", "completed" -> RefundStatus.SUCCESS;
+      case "failed" -> RefundStatus.FAILED;
+      case "needs-attention" -> RefundStatus.NEEDS_ATTENTION;
+      default -> {
+        log.warn("Unknown Paystack refund status: {}", status);
+        yield RefundStatus.UNKNOWN;
+      }
     };
   }
 }

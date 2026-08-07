@@ -253,9 +253,7 @@ public class OrderService implements IOrderService{
     if (order.getOrderStatus() != OrderStatus.PENDING &&
         order.getOrderStatus() != OrderStatus.CONFIRMED) {
 
-      throw new IllegalStateException(
-          "Order cannot be cancelled."
-      );
+      throw new IllegalStateException("Order cannot be cancelled.");
     }
 
     for (OrderItem item : order.getOrderItems()) {
@@ -329,12 +327,7 @@ public class OrderService implements IOrderService{
 
   private void updateOrderStatus(Order order, OrderStatus newStatus) {
     if (!isValidTransition(order.getOrderStatus(), newStatus)) {
-      throw new IllegalStateException(
-          "Cannot change order status from "
-              + order.getOrderStatus()
-              + " to "
-              + newStatus
-      );
+      throw new IllegalStateException("Cannot change order status from " + order.getOrderStatus() + " to " + newStatus);
     }
 
     order.setOrderStatus(newStatus);

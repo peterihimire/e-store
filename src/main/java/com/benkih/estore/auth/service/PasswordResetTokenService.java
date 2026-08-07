@@ -26,8 +26,7 @@ public class PasswordResetTokenService implements IPasswordResetTokenService {
   public PasswordResetTokenResponse createPasswordResetToken(User user) {
 
     // Revoke previous unused tokens
-    passwordResetTokenRepository
-        .findByUserAndUsedAtIsNull(user)
+    passwordResetTokenRepository.findByUserAndUsedAtIsNull(user)
         .forEach(token ->
             token.setUsedAt(LocalDateTime.now())
         );
@@ -53,5 +52,4 @@ public class PasswordResetTokenService implements IPasswordResetTokenService {
     int otp = 100000 + random.nextInt(900000);
     return String.valueOf(otp);
   }
-
 }

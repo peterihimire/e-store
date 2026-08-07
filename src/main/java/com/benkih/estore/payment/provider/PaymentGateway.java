@@ -3,7 +3,9 @@ package com.benkih.estore.payment.provider;
 import com.benkih.estore.common.enums.PaymentMethod;
 import com.benkih.estore.common.enums.PaymentProvider;
 import com.benkih.estore.payment.dto.request.InitializePaymentRequest;
+import com.benkih.estore.payment.dto.request.RefundPaymentRequest;
 import com.benkih.estore.payment.dto.response.InitializePaymentResponse;
+import com.benkih.estore.payment.dto.response.RefundPaymentResponse;
 import com.benkih.estore.payment.dto.response.VerifyPaymentResponse;
 
 public interface PaymentGateway {
@@ -14,7 +16,9 @@ public interface PaymentGateway {
 
   VerifyPaymentResponse verify(String reference);
 
-//  void refund(String reference);
+  RefundPaymentResponse refund(RefundPaymentRequest request);
+
+  RefundPaymentResponse verifyRefund(String refundReference);
 //
 //  String getName();
 }
