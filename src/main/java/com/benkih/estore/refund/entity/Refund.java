@@ -3,6 +3,7 @@ package com.benkih.estore.refund.entity;
 import com.benkih.estore.common.entity.BaseEntity;
 import com.benkih.estore.common.enums.Currency;
 import com.benkih.estore.common.enums.PaymentProvider;
+import com.benkih.estore.common.enums.RefundGatewayStatus;
 import com.benkih.estore.common.enums.RefundStatus;
 import com.benkih.estore.payment.entity.Payment;
 import com.benkih.estore.user.entity.User;
@@ -41,8 +42,12 @@ public class Refund extends BaseEntity {
   private Currency currency;
 
   @Enumerated(EnumType.STRING)
-  @Column(nullable = false)
-  private RefundStatus status = RefundStatus.PENDING;
+  @Column(name = "refund_status", nullable = false)
+  private RefundStatus refundStatus = RefundStatus.REQUESTED;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "gateway_status", nullable = false)
+  private RefundGatewayStatus gatewayStatus = RefundGatewayStatus.PENDING;
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)

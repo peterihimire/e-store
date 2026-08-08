@@ -2,6 +2,7 @@ package com.benkih.estore.refund.dto.response;
 
 import com.benkih.estore.common.enums.Currency;
 import com.benkih.estore.common.enums.PaymentProvider;
+import com.benkih.estore.common.enums.RefundGatewayStatus;
 import com.benkih.estore.common.enums.RefundStatus;
 import lombok.*;
 
@@ -27,9 +28,13 @@ public class RefundResponse {
 
   private Currency currency;
 
-  private RefundStatus status;
+  private RefundStatus refundStatus;
+
+  private RefundGatewayStatus gatewayStatus;
 
   private String reason;
+
+  private String failureReason;
 
   private String gatewayRefundId;
 

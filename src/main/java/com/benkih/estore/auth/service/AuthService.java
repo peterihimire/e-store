@@ -186,7 +186,7 @@ public LoginResponse login(LoginRequest request, HttpServletRequest httpRequest)
 
   String device = httpRequest.getHeader("User-Agent");
   String ipAddress = httpRequest.getRemoteAddr();
-  notificationService.sendLoginEmail(user);
+//  notificationService.sendLoginEmail(user);
 
   refreshTokenService.revokeAllUserTokens(user);
 //  String refreshToken = refreshTokenService.createRefreshToken(user, device, ipAddress);

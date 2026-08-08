@@ -10,4 +10,8 @@ public interface PaymentWebhookEvent {
   String reference();
 
   String transactionId();
+
+  String transactionReference();
+
+  String refundReference();
 }

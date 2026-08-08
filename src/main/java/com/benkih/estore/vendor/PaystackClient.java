@@ -4,6 +4,7 @@ import com.benkih.estore.audit.entity.ApiLog;
 import com.benkih.estore.audit.service.ApiLogService;
 import com.benkih.estore.audit.service.IApiLogService;
 import com.benkih.estore.common.enums.PaymentStatus;
+import com.benkih.estore.common.enums.RefundGatewayStatus;
 import com.benkih.estore.common.enums.RefundStatus;
 import com.benkih.estore.common.exceptions.PaymentGatewayException;
 import com.benkih.estore.payment.dto.request.InitializePaymentRequest;
@@ -141,7 +142,11 @@ public class PaystackClient {
 
   // work this
   public RefundPaymentResponse refund(RefundPaymentRequest request) {
-
+    log.info("Refund request peter: transactionReference={}, amount={}, reason={}",
+        request.getTransactionReference(),
+        request.getAmount(),
+        request.getReason()
+    );
     try {
 
       PaystackRefundResponse response = webClient.post()
@@ -280,21 +285,21 @@ public class PaystackClient {
     return dto;
   }
 
-  private RefundStatus mapRefundStatus(String status) {
+  private RefundGatewayStatus mapRefundStatus(String status) {
 
     if (status == null) {
-      return RefundStatus.PENDING;
+      return RefundGatewayStatus.PENDING;
     }
 
     return switch (status.toLowerCase()) {
-      case "pending" -> RefundStatus.PENDING;
-      case "processing" -> RefundStatus.PROCESSING;
-      case "processed", "success", "completed" -> RefundStatus.SUCCESS;
-      case "failed" -> RefundStatus.FAILED;
-      case "needs-attention" -> RefundStatus.NEEDS_ATTENTION;
+      case "pending" -> RefundGatewayStatus.PENDING;
+      case "processing" -> RefundGatewayStatus.PROCESSING;
+      case "processed", "success", "completed" -> RefundGatewayStatus.SUCCESS;
+      case "failed" -> RefundGatewayStatus.FAILED;
+      case "needs-attention" -> RefundGatewayStatus.NEEDS_ATTENTION;
       default -> {
         log.warn("Unknown Paystack refund status: {}", status);
-        yield RefundStatus.UNKNOWN;
+        yield RefundGatewayStatus.UNKNOWN;
       }
     };
   }

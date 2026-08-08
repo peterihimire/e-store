@@ -1,5 +1,6 @@
 package com.benkih.estore.payment.dto.response;
 
+import com.benkih.estore.common.enums.RefundGatewayStatus;
 import com.benkih.estore.common.enums.RefundStatus;
 import lombok.*;
 
@@ -21,7 +22,7 @@ public class RefundPaymentResponse {
   private String transactionReference;
 
  // Refund status returned by gateway.
-  private RefundStatus status;
+  private RefundGatewayStatus status;
 
 // Gateway message.
   private String message;

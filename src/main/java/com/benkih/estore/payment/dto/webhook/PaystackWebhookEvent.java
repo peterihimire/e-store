@@ -25,14 +25,36 @@ public class PaystackWebhookEvent implements PaymentWebhookEvent{
     return event;
   }
 
+//  @Override
+//  public String reference() {
+//    return data.getReference();
+//  }
+//
+//  @Override
+//  public String transactionId() {
+//    return String.valueOf(data.getId());
+//  }
+
   @Override
   public String reference() {
-    return data.getReference();
+    return data != null ? data.getReference() : null;
+  }
+
+  @Override
+  public String transactionReference() {
+    return data != null ? data.getTransactionReference() : null;
+  }
+
+  @Override
+  public String refundReference() {
+    return data != null ? data.getRefundReference() : null;
   }
 
   @Override
   public String transactionId() {
-    return String.valueOf(data.getId());
+    return data != null && data.getId() != null
+        ? String.valueOf(data.getId())
+        : null;
   }
 
   @Data
@@ -43,11 +65,19 @@ public class PaystackWebhookEvent implements PaymentWebhookEvent{
 
     private String reference;
 
+    @JsonProperty("transaction_reference")
+    private String transactionReference;
+
+    @JsonProperty("refund_reference")
+    private String refundReference;
+
     private String status;
 
-
-    //  Amount in kobo
     private Integer amount;
+
+    private String currency;
+
+    private String reason;
 
     @JsonProperty("gateway_response")
     private String gatewayResponse;

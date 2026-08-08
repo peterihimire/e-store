@@ -22,6 +22,8 @@ import com.benkih.estore.payment.provider.PaymentWebhookHandler;
 import com.benkih.estore.payment.provider.PaymentWebhookHandlerFactory;
 import com.benkih.estore.payment.repository.PaymentEventRepository;
 import com.benkih.estore.payment.repository.PaymentRepository;
+import com.benkih.estore.refund.service.IRefundService;
+import com.benkih.estore.refund.service.RefundService;
 import com.benkih.estore.security.user.CurrentUserService;
 import com.benkih.estore.user.entity.User;
 import lombok.RequiredArgsConstructor;
@@ -56,6 +58,7 @@ public class PaymentService implements IPaymentService {
   private final PaymentWebhookHandlerFactory paymentWebhookHandlerFactory;
   private final ApiLogService apiLogService;
   private final INotificationService notificationService;
+  private final IRefundService refundService;
 
 
   @Override
@@ -119,6 +122,8 @@ public class PaymentService implements IPaymentService {
       handler.verifySignature(signature, payload);
 
       PaymentWebhookEvent event = handler.parseWebhook(payload);
+      log.info("Here is the payload ={}", payload);
+      log.info("Here is the event ={}", event);
 
       switch (event.eventType()) {
 
@@ -132,12 +137,24 @@ public class PaymentService implements IPaymentService {
 //          handleTransferEvent(event, payload);
           break;
 
-        case "customeridentification.success":
-//          handleCustomerIdentificationEvent(event, payload);
+        case "refund.pending":
+          refundService.markPending(event.transactionReference());
           break;
 
-        case "dedicatedaccount.assign.success":
-//          handleDedicatedAccountAssignedEvent(event, payload);
+        case "refund.processing":
+          refundService.markProcessing(event.transactionReference());
+          break;
+
+        case "refund.needs-attention":
+          refundService.markNeedsAttention(event.transactionReference());
+          break;
+
+        case "refund.failed":
+          refundService.markFailed(event.transactionReference(), "Refund failed");
+          break;
+
+        case "refund.processed":
+          refundService.markSuccessful(event.transactionReference());
           break;
 
         default:

@@ -24,8 +24,7 @@ public class PaymentWebhookController {
       @RequestBody String payload) {
     String url = request.getRequestURL().toString();
     log.info("Here is the controller, execution got here");
-    paymentService.handleWebhook(PaymentProvider.PAYSTACK,signature, payload,
-        url);
+    paymentService.handleWebhook(PaymentProvider.PAYSTACK,signature, payload, url);
     return ResponseEntity.ok(new ApiResponse("success", "Paystack webhook success", null));
   }
 }
