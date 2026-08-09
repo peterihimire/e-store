@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 
 @Data
@@ -45,6 +46,7 @@ public class PaystackWebhookEvent implements PaymentWebhookEvent{
     return data != null ? data.getTransactionReference() : null;
   }
 
+
   @Override
   public String refundReference() {
     return data != null ? data.getRefundReference() : null;
@@ -55,6 +57,17 @@ public class PaystackWebhookEvent implements PaymentWebhookEvent{
     return data != null && data.getId() != null
         ? String.valueOf(data.getId())
         : null;
+  }
+
+  @Override
+  public BigDecimal amount() {
+    if (data == null || data.getAmount() == null) {
+      return null;
+    }
+
+    return BigDecimal
+        .valueOf(data.getAmount())
+        .movePointLeft(2);
   }
 
   @Data
@@ -73,7 +86,7 @@ public class PaystackWebhookEvent implements PaymentWebhookEvent{
 
     private String status;
 
-    private Integer amount;
+    private Long amount;
 
     private String currency;
 

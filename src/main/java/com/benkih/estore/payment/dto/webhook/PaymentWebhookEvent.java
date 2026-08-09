@@ -2,6 +2,8 @@ package com.benkih.estore.payment.dto.webhook;
 
 import com.benkih.estore.common.enums.PaymentProvider;
 
+import java.math.BigDecimal;
+
 public interface PaymentWebhookEvent {
   PaymentProvider provider();
 
@@ -12,6 +14,8 @@ public interface PaymentWebhookEvent {
   String transactionId();
 
   String transactionReference();
+
+  BigDecimal amount();
 
   String refundReference();
 }

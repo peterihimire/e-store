@@ -19,6 +19,6 @@ public interface PaymentGateway {
   RefundPaymentResponse refund(RefundPaymentRequest request);
 
   RefundPaymentResponse verifyRefund(String refundReference);
-//
+
 //  String getName();
 }

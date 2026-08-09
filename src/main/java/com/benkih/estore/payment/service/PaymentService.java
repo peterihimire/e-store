@@ -138,23 +138,23 @@ public class PaymentService implements IPaymentService {
           break;
 
         case "refund.pending":
-          refundService.markPending(event.transactionReference());
+          refundService.markPending(event);
           break;
 
         case "refund.processing":
-          refundService.markProcessing(event.transactionReference());
+          refundService.markProcessing(event);
           break;
 
         case "refund.needs-attention":
-          refundService.markNeedsAttention(event.transactionReference());
+          refundService.markNeedsAttention(event);
           break;
 
         case "refund.failed":
-          refundService.markFailed(event.transactionReference(), "Refund failed");
+          refundService.markFailed(event, "Refund failed");
           break;
 
         case "refund.processed":
-          refundService.markSuccessful(event.transactionReference());
+          refundService.markSuccessful(event);
           break;
 
         default:

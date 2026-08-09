@@ -20,7 +20,8 @@ import org.springframework.web.bind.annotation.*;
 public class InventoryController {
   private final IInventoryService inventoryService;
 
-  @PreAuthorize("hasRole('ADMIN')")
+
+  @PreAuthorize("hasAuthority('INVENTORY_READ')")
   @GetMapping("/all")
   public ResponseEntity<ApiResponse> getAllInventories(
       @RequestParam(defaultValue = "1") int page,
@@ -32,19 +33,20 @@ public class InventoryController {
     return ResponseEntity.ok(new ApiResponse("success", "Inventories retrieved", response));
   }
 
-  @PreAuthorize("hasRole('ADMIN')")
+
+  @PreAuthorize("hasAuthority('INVENTORY_READ')")
   @GetMapping("/inventory/{slug}")
   public ResponseEntity<ApiResponse> getInventory(@PathVariable String slug){
     Inventory inventory = inventoryService.getInventoryBySlug(slug);
-    InventoryResponseDto inventoryDto =
-        inventoryService.convertToDto(inventory);
+    InventoryResponseDto inventoryDto = inventoryService.convertToDto(inventory);
 
     return ResponseEntity.ok(
         new ApiResponse("success", "inventory returned", inventoryDto)
     );
   }
 
-  @PreAuthorize("hasRole('ADMIN')")
+
+  @PreAuthorize("hasAuthority('INVENTORY_ADJUST')")
   @PostMapping("/inventory/{slug}/add")
   public ResponseEntity<ApiResponse> addStock(@PathVariable String slug,
                                                   @RequestBody InventoryAdjustmentRequest qty) {
@@ -56,7 +58,8 @@ public class InventoryController {
     );
   }
 
-  @PreAuthorize("hasRole('ADMIN')")
+
+  @PreAuthorize("hasAuthority('INVENTORY_DAMAGE')")
   @PostMapping("/inventory/{slug}/damage")
   public ResponseEntity<ApiResponse> markDamage(@PathVariable String slug,
                                                   @RequestBody InventoryAdjustmentRequest qty) {
@@ -67,6 +70,4 @@ public class InventoryController {
         new ApiResponse("success", "mark damage success", inventoryDto)
     );
   }
-
-
 }

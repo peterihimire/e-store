@@ -2,6 +2,7 @@ package com.benkih.estore.refund.service;
 
 
 import com.benkih.estore.audit.service.ApiLogService;
+import com.benkih.estore.common.enums.OrderStatus;
 import com.benkih.estore.common.enums.PaymentStatus;
 import com.benkih.estore.common.enums.RefundGatewayStatus;
 import com.benkih.estore.common.enums.RefundStatus;
@@ -13,6 +14,7 @@ import com.benkih.estore.order.entity.Order;
 import com.benkih.estore.order.repository.OrderRepository;
 import com.benkih.estore.payment.dto.request.RefundPaymentRequest;
 import com.benkih.estore.payment.dto.response.RefundPaymentResponse;
+import com.benkih.estore.payment.dto.webhook.PaymentWebhookEvent;
 import com.benkih.estore.payment.entity.Payment;
 import com.benkih.estore.payment.provider.PaymentGateway;
 import com.benkih.estore.payment.provider.PaymentGatewayFactory;
@@ -204,57 +206,171 @@ public class RefundService implements IRefundService{
   // WEBHOOK STATUS UPDATES
   @Override
   @Transactional
-  public void markPending(String transactionReference) {
-    Refund refund = getRefundByPaymentReference(transactionReference);
+  public void markPending(PaymentWebhookEvent event) {
+    Refund refund = getRefundByPaymentReference(event.transactionReference());
     refund.setGatewayStatus(RefundGatewayStatus.PENDING);
 
     refundRepository.save(refund);
   }
 
+
   @Override
   @Transactional
-  public void markProcessing(String transactionReference) {
-    Refund refund = getRefundByPaymentReference(transactionReference);
+  public void markProcessing(PaymentWebhookEvent event) {
+    Refund refund = getRefundByPaymentReference(event.transactionReference());
     refund.setGatewayStatus(RefundGatewayStatus.PROCESSING);
 
     refundRepository.save(refund);
   }
 
+
   @Override
   @Transactional
-  public void markNeedsAttention(String transactionReference) {
-    Refund refund = getRefundByPaymentReference(transactionReference);
+  public void markNeedsAttention(PaymentWebhookEvent event) {
+    Refund refund = getRefundByPaymentReference(event.transactionReference());
     refund.setGatewayStatus(RefundGatewayStatus.NEEDS_ATTENTION);
 
     refundRepository.save(refund);
     // Notification can be added here later.
-    log.info("Refund {} requires customer attention", transactionReference);
+    log.info("Refund {} requires customer attention",
+        event.transactionReference());
   }
+
+
+@Override
+@Transactional
+public void markSuccessful(PaymentWebhookEvent event) {
+
+  Refund refund = getRefundByPaymentReference(
+      event.transactionReference()
+  );
+
+  Payment payment = refund.getPayment();
+  Order order = payment.getOrder();
+
+  BigDecimal refundedAmount = event.amount();
+
+
+  if (refundedAmount.compareTo(refund.getAmount()) != 0) {
+    throw new PaymentException(
+        "Gateway refund amount does not match refund amount."
+    );
+  }
+
+  refund.setGatewayStatus(RefundGatewayStatus.PROCESSED);
+  refund.setRefundedAt(LocalDateTime.now());
+
+  refundRepository.flush();
+
+  BigDecimal totalRefunded =
+      refundRepository.sumRefundsByPaymentId(payment.getId(),RefundGatewayStatus.PROCESSED);
+
+  BigDecimal paidAmount = payment.getAmount();
+
+  if (totalRefunded.compareTo(paidAmount) > 0) {
+
+    refund.setGatewayStatus(
+        RefundGatewayStatus.NEEDS_ATTENTION
+    );
+
+    refund.setFailureReason("Total refunded amount exceeds payment amount.");
+
+    log.error(
+        "OVER-REFUND detected. Payment={}, paid={}, refunded={}",
+        payment.getReference(),
+        paidAmount,
+        totalRefunded
+    );
+
+    return;
+  }
+
+//  if (totalRefunded.compareTo(paidAmount) == 0) {
+//
+//    payment.setPaymentStatus(
+//        PaymentStatus.REFUNDED
+//    );
+//
+//    order.setPaymentStatus(
+//        PaymentStatus.REFUNDED
+//    );
+//
+//    order.setOrderStatus(
+//        OrderStatus.REFUNDED
+//    );
+//
+//  } else {
+//
+//    payment.setPaymentStatus(
+//        PaymentStatus.PARTIALLY_REFUNDED
+//    );
+//
+//    order.setPaymentStatus(
+//        PaymentStatus.PARTIALLY_REFUNDED
+//    );
+//
+//    order.setOrderStatus(
+//        OrderStatus.PARTIALLY_REFUNDED
+//    );
+//  }
+
+  if (totalRefunded.compareTo(paidAmount) == 0) {
+
+    payment.setPaymentStatus(PaymentStatus.REFUNDED);
+
+    updateOrderRefundStatus(
+        payment.getOrder(),
+        PaymentStatus.REFUNDED
+    );
+
+  } else {
+
+    payment.setPaymentStatus(PaymentStatus.PARTIALLY_REFUNDED);
+
+    updateOrderRefundStatus(
+        payment.getOrder(),
+        PaymentStatus.PARTIALLY_REFUNDED
+    );
+  }
+
+  paymentRepository.save(payment);
+  orderRepository.save(order);
+
+  log.info(
+      "Refund {} processed for payment {}. Paid={}, totalRefunded={}, order={}",
+      refund.getReference(),
+      payment.getReference(),
+      paidAmount,
+      totalRefunded,
+      order.getOrderNumber()
+  );
+}
 
   @Override
   @Transactional
-  public void markFailed(String transactionReference, String reason) {
-    Refund refund = getRefundByPaymentReference(transactionReference);
+  public void markFailed(PaymentWebhookEvent event, String reason) {
+    Refund refund = getRefundByPaymentReference(event.transactionReference());
     refund.setGatewayStatus(RefundGatewayStatus.FAILED);
     refund.setFailureReason(reason);
 
     refundRepository.save(refund);
   }
 
-  @Override
-  @Transactional
-  public void markSuccessful(String transactionReference) {
-    Refund refund = getRefundByPaymentReference(transactionReference);
-    refund.setGatewayStatus(RefundGatewayStatus.PROCESSED);
-    refund.setRefundedAt(LocalDateTime.now());
-
-    refundRepository.save(refund);
-    log.info(
-        "Refund {} successfully processed for payment {}",
-        refund.getReference(),
-        transactionReference
-    );
-  }
+//  @Override
+//  @Transactional
+//  public void markSuccessful(PaymentWebhookEvent event) {
+//    Refund refund = getRefundByPaymentReference(event.transactionReference());
+//    refund.setGatewayStatus(RefundGatewayStatus.PROCESSED);
+//    refund.setRefundedAt(LocalDateTime.now());
+//
+//
+//    refundRepository.save(refund);
+//    log.info(
+//        "Refund {} successfully processed for payment {}",
+//        refund.getReference(),
+//        event.transactionReference()
+//    );
+//  }
 
 
   // RETRIEVAL
@@ -375,5 +491,19 @@ public class RefundService implements IRefundService{
             .replace("-", "")
             .substring(0, 12)
             .toUpperCase();
+  }
+
+  private void updateOrderRefundStatus(
+      Order order,
+      PaymentStatus paymentStatus
+  ) {
+
+    order.setPaymentStatus(paymentStatus);
+
+    if (paymentStatus == PaymentStatus.REFUNDED) {
+      order.setOrderStatus(OrderStatus.REFUNDED);
+    } else if (paymentStatus == PaymentStatus.PARTIALLY_REFUNDED) {
+      order.setOrderStatus(OrderStatus.PARTIALLY_REFUNDED);
+    }
   }
 }
