@@ -58,18 +58,19 @@ public class OrderService implements IOrderService{
         )
     );
     Order order = createOrder(cart);
-    System.out.println("Cart size = " + cart.getItems().size());
+
     List<OrderItem> items = createOrderItems(order, cart);
-    System.out.println("Created = " + items.size());
+
     order.setOrderItems(items);
-    System.out.println("Order before save = " + order.getOrderItems().size());
+
     order.setTotalAmount(calculateTotalAmount(items));
     Order saved = orderRepository.save(order);
-    System.out.println("Saved order = " + saved.getOrderItems().size());
+
     cartService.clearCart(cart.getSlug());
+
     Order fetched = orderRepository.findBySlug(saved.getSlug())
-        .orElseThrow();
-    System.out.println("Fetched order = " + fetched.getOrderItems().size());
+        .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+
     return convertToDto(fetched);
   }
 
@@ -337,7 +338,8 @@ public class OrderService implements IOrderService{
   private boolean isValidTransition(OrderStatus current, OrderStatus next) {
     return switch (current) {
       case PENDING -> next == OrderStatus.CONFIRMED
-          || next == OrderStatus.CANCELLED;
+          || next == OrderStatus.CANCELLED
+          || next == OrderStatus.EXPIRED;
       case CONFIRMED -> next == OrderStatus.PROCESSING
           || next == OrderStatus.CANCELLED;
       case PROCESSING -> next == OrderStatus.SHIPPED;

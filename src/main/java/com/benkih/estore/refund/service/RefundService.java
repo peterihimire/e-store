@@ -260,7 +260,7 @@ public void markSuccessful(PaymentWebhookEvent event) {
   refund.setGatewayStatus(RefundGatewayStatus.PROCESSED);
   refund.setRefundedAt(LocalDateTime.now());
 
-  refundRepository.flush();
+  refundRepository.flush(); // see note below
 
   BigDecimal totalRefunded =
       refundRepository.sumRefundsByPaymentId(payment.getId(),RefundGatewayStatus.PROCESSED);
@@ -268,10 +268,7 @@ public void markSuccessful(PaymentWebhookEvent event) {
   BigDecimal paidAmount = payment.getAmount();
 
   if (totalRefunded.compareTo(paidAmount) > 0) {
-
-    refund.setGatewayStatus(
-        RefundGatewayStatus.NEEDS_ATTENTION
-    );
+    refund.setGatewayStatus(RefundGatewayStatus.NEEDS_ATTENTION); // maybe send message to the admin or something
 
     refund.setFailureReason("Total refunded amount exceeds payment amount.");
 
@@ -285,54 +282,15 @@ public void markSuccessful(PaymentWebhookEvent event) {
     return;
   }
 
-//  if (totalRefunded.compareTo(paidAmount) == 0) {
-//
-//    payment.setPaymentStatus(
-//        PaymentStatus.REFUNDED
-//    );
-//
-//    order.setPaymentStatus(
-//        PaymentStatus.REFUNDED
-//    );
-//
-//    order.setOrderStatus(
-//        OrderStatus.REFUNDED
-//    );
-//
-//  } else {
-//
-//    payment.setPaymentStatus(
-//        PaymentStatus.PARTIALLY_REFUNDED
-//    );
-//
-//    order.setPaymentStatus(
-//        PaymentStatus.PARTIALLY_REFUNDED
-//    );
-//
-//    order.setOrderStatus(
-//        OrderStatus.PARTIALLY_REFUNDED
-//    );
-//  }
-
   if (totalRefunded.compareTo(paidAmount) == 0) {
-
     payment.setPaymentStatus(PaymentStatus.REFUNDED);
-
-    updateOrderRefundStatus(
-        payment.getOrder(),
-        PaymentStatus.REFUNDED
-    );
-
   } else {
-
     payment.setPaymentStatus(PaymentStatus.PARTIALLY_REFUNDED);
-
-    updateOrderRefundStatus(
-        payment.getOrder(),
-        PaymentStatus.PARTIALLY_REFUNDED
-    );
   }
-
+  updateOrderPaymentStatus(
+      order,
+      payment.getPaymentStatus()
+  );
   paymentRepository.save(payment);
   orderRepository.save(order);
 
@@ -493,17 +451,16 @@ public void markSuccessful(PaymentWebhookEvent event) {
             .toUpperCase();
   }
 
-  private void updateOrderRefundStatus(
+  private void updateOrderPaymentStatus(
       Order order,
       PaymentStatus paymentStatus
   ) {
-
     order.setPaymentStatus(paymentStatus);
-
-    if (paymentStatus == PaymentStatus.REFUNDED) {
-      order.setOrderStatus(OrderStatus.REFUNDED);
-    } else if (paymentStatus == PaymentStatus.PARTIALLY_REFUNDED) {
-      order.setOrderStatus(OrderStatus.PARTIALLY_REFUNDED);
-    }
   }
 }
+//NOTE:
+//Also, your refundRepository.flush() is different from save() here.
+// You need the flush because you’re immediately querying the database
+// for sumRefundsByPaymentId() and you want the just-marked refund included in that SUM.
+// You don’t need to flush the payment before reading its status because you’re
+// reading the Java object, not querying the database.
