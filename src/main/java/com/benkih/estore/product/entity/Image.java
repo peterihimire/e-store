@@ -1,5 +1,6 @@
 package com.benkih.estore.product.entity;
 
+import com.benkih.estore.business.entity.Business;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
@@ -40,6 +41,10 @@ public class Image {
     @JoinColumn(name = "product_id")
     @JsonIgnore
     private Product product;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "business_id", nullable = false)
+    private Business business;
 
     @PrePersist
     public void onCreate() {

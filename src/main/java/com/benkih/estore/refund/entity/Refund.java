@@ -1,5 +1,6 @@
 package com.benkih.estore.refund.entity;
 
+import com.benkih.estore.business.entity.Business;
 import com.benkih.estore.common.entity.BaseEntity;
 import com.benkih.estore.common.enums.Currency;
 import com.benkih.estore.common.enums.PaymentProvider;
@@ -92,4 +93,8 @@ public class Refund extends BaseEntity {
   private String accountName;
 
   private LocalDateTime refundedAt;
+
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "business_id", nullable = false)
+  private Business business;
 }

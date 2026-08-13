@@ -1,5 +1,6 @@
 package com.benkih.estore.inventory.entity;
 
+import com.benkih.estore.business.entity.Business;
 import com.benkih.estore.common.exceptions.InsufficientReservedStockException;
 import com.benkih.estore.common.exceptions.InsufficientStockException;
 import com.benkih.estore.common.exceptions.InvalidInventoryQuantityException;
@@ -56,6 +57,10 @@ public class Inventory {
   @JoinColumn(name = "product_id",nullable = false, unique = true) // the owning side,
   private Product product; // loading an inventory does not automatically
   // load the products
+
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "business_id", nullable = false)
+  private Business business;
 
   public int getAvailableStock() {
     return totalStock - reservedStock - damagedStock;

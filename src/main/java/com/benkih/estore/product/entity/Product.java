@@ -1,5 +1,6 @@
 package com.benkih.estore.product.entity;
 
+import com.benkih.estore.business.entity.Business;
 import com.benkih.estore.common.enums.ProductStatus;
 import com.benkih.estore.inventory.entity.Inventory;
 import jakarta.persistence.*;
@@ -68,6 +69,10 @@ public class Product {
         // behave as EAGER.that's why we have the warning
     )
     private Inventory inventory;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "business_id", nullable = false)
+    private Business business;
 
     // Below is Product constructor
     public Product(

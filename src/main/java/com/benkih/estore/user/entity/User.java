@@ -1,5 +1,6 @@
 package com.benkih.estore.user.entity;
 
+import com.benkih.estore.business.entity.BusinessMember;
 import com.benkih.estore.cart.entity.Cart;
 import com.benkih.estore.common.enums.UserStatus;
 import com.benkih.estore.department.entity.Department;
@@ -107,6 +108,12 @@ public class User {
       inverseJoinColumns=@JoinColumn(name="department_id")
   )
   private Set<Department> departments = new HashSet<>();
+
+  @OneToMany(
+      mappedBy = "user",
+      fetch = FetchType.LAZY
+  )
+  private Set<BusinessMember> businessMembers = new HashSet<>();
 
   @Column(nullable = false,updatable = false)
   private LocalDateTime createdAt;

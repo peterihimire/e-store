@@ -1,5 +1,6 @@
 package com.benkih.estore.order.entity;
 
+import com.benkih.estore.business.entity.Business;
 import com.benkih.estore.product.entity.Product;
 import jakarta.persistence.*;
 import lombok.*;
@@ -46,6 +47,10 @@ public class OrderItem {
     this.order = order;
     this.product = product;
   }
+
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "business_id", nullable = false)
+  private Business business;
 
   @PrePersist
   public void onCreate() {

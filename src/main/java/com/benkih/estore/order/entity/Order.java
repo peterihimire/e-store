@@ -1,5 +1,6 @@
 package com.benkih.estore.order.entity;
 
+import com.benkih.estore.business.entity.Business;
 import com.benkih.estore.user.entity.Address;
 import com.benkih.estore.common.enums.Currency;
 import com.benkih.estore.common.enums.OrderStatus;
@@ -93,6 +94,10 @@ public class Order {
       cascade = CascadeType.ALL
   )
   private List<Payment> payments = new ArrayList<>();
+
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "business_id", nullable = false)
+  private Business business;
 
   @PrePersist
   public void onCreate() {

@@ -2,6 +2,8 @@ package com.benkih.estore.inventory.repository;
 
 import com.benkih.estore.inventory.entity.Inventory;
 import com.benkih.estore.product.entity.Product;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -16,6 +18,17 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long> {
 
   @EntityGraph(attributePaths = {"product"})
   Optional<Inventory> findBySlug(String slug);
+
+  @EntityGraph(attributePaths = {"product"})
+  Optional<Inventory> findByBusinessIdAndSlug(
+      Long businessId,
+      String slug
+  );
+
+  Page<Inventory> findByBusinessId(
+      Long businessId,
+      Pageable pageable
+  );
 
   Optional<Inventory> findByProductSlug(String productSlug);
 

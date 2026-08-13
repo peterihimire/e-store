@@ -1,5 +1,6 @@
 package com.benkih.estore.product.repository;
 
+import com.benkih.estore.product.entity.Category;
 import com.benkih.estore.product.entity.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,6 +14,9 @@ import java.util.Optional;
 public interface ProductRepository extends JpaRepository<Product, Long> {
   @EntityGraph(attributePaths = {"images", "category", "inventory"})
   Optional<Product> findBySlug(String slug);
+
+  @EntityGraph(attributePaths = {"images", "category", "inventory"})
+  Optional<Product> findByBusinessIdAndSlug(String businessId, String slug);
 
   @EntityGraph(attributePaths = {"images", "category", "inventory"})
   List<Product> findByCategoryName(String category);
@@ -36,4 +40,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
   List<Product> findAll();
 
   boolean existsByNameAndBrand(String name, String brand);
+
+  Page<Product> findByBusinessId(Long businessId, Pageable pageable);
+
+  boolean existsByBusinessIdAndName(Long businessId, String name);
 }
