@@ -13,11 +13,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-  @Table(name = "business_customers")
+  @Table(name = "customers")
   @Getter
   @Setter
   @NoArgsConstructor
-  public class BusinessCustomer extends BaseEntity {
+  public class Customer extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "business_id", nullable = false)
@@ -32,11 +32,11 @@ import java.util.List;
 
     private String email;
     private String phone;
+
   @OneToMany(
-      mappedBy = "user",
+      mappedBy = "customer",
       cascade = CascadeType.ALL,
       orphanRemoval = true
   )
-  private List<Address> addresses = new ArrayList<>();
-
+  private List<CustomerAddress> addresses = new ArrayList<>();
   }

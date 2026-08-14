@@ -20,13 +20,13 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long> {
   Optional<Inventory> findBySlug(String slug);
 
   @EntityGraph(attributePaths = {"product"})
-  Optional<Inventory> findByBusinessIdAndSlug(
-      Long businessId,
+  Optional<Inventory> findByBusinessSlugAndSlug(
+      String businessSlug,
       String slug
   );
 
-  Page<Inventory> findByBusinessId(
-      Long businessId,
+  Page<Inventory> findByBusinessSlug(
+      String businessSlug,
       Pageable pageable
   );
 

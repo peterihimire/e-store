@@ -16,7 +16,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
   Optional<Product> findBySlug(String slug);
 
   @EntityGraph(attributePaths = {"images", "category", "inventory"})
-  Optional<Product> findByBusinessIdAndSlug(String businessId, String slug);
+  Optional<Product> findByBusinessSlugAndSlug(String businessSlug, String slug);
 
   @EntityGraph(attributePaths = {"images", "category", "inventory"})
   List<Product> findByCategoryName(String category);
@@ -41,7 +41,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
   boolean existsByNameAndBrand(String name, String brand);
 
-  Page<Product> findByBusinessId(Long businessId, Pageable pageable);
+  Page<Product> findByBusinessSlug(String businessSlug, Pageable pageable);
 
-  boolean existsByBusinessIdAndName(Long businessId, String name);
+  boolean existsByBusinessSlugAndName(String businessSlug, String name);
 }

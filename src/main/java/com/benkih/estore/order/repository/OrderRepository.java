@@ -15,7 +15,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
       "user",
       "orderItems",
       "orderItems.product",
-//      "items.product.images",
       "orderItems.product.category"
   })
   Optional<Order> findBySlug(String slug);
@@ -24,11 +23,10 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
       "user",
       "orderItems",
       "orderItems.product",
-//      "items.product.images",
       "orderItems.product.category"
   })
-  Optional<Order> findByBusinessIdAndSlug(
-      Long businessId,
+  Optional<Order> findByBusinessSlugAndSlug(
+      String businessSlug,
       String slug
   );
 
@@ -36,11 +34,10 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
       "user",
       "orderItems",
       "orderItems.product",
-//      "items.product.images",
       "orderItems.product.category"
   })
-  Optional<Order> findByBusinessIdAndOrderNumber(
-      Long businessId,
+  Optional<Order> findByBusinessSlugAndOrderNumber(
+      String businessSlug,
       String orderNumber
   );
 
@@ -48,11 +45,10 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
       "user",
       "orderItems",
       "orderItems.product",
-//      "items.product.images",
       "orderItems.product.category"
   })
-  Page<Order> findByBusinessId(
-      Long businessId,
+  Page<Order> findByBusinessSlug(
+      String businessSlug,
       Pageable pageable
   );
 
@@ -60,7 +56,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
       "user",
       "orderItems",
       "orderItems.product",
-//      "items.product.images",
       "orderItems.product.category"
   })
   List<Order> findByUserSlug(String slug);

@@ -13,10 +13,11 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
 
   Optional<Category> findBySlug(String slug);
 
-  Optional<Category> findByBusinessIdAndSlug(String businessId, String slug);
+  Optional<Category> findByBusinessSlugAndSlug(String businessSlug,
+                                               String slug);
 
-  boolean existsByBusinessIdAndCategoryId(
-      Long businessId,
-      Long categoryId
+  boolean existsByBusinessSlugAndSlug(
+      String businessSlug,
+      String slug
   );
 }

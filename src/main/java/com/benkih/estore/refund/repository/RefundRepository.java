@@ -20,14 +20,14 @@ public interface RefundRepository extends JpaRepository<Refund, Long> {
 
   Optional<Refund> findBySlug(String slug);
 
-  Optional<Refund> findByBusinessIdAndSlug(String businessId, String slug);
+  Optional<Refund> findByBusinessSlugAndSlug(String businessSlug, String slug);
 
   Optional<Refund> findByReference(String reference);
 
   Optional<Refund> findByPaymentReference(String paymentReference);
 
-  Optional<Refund> findByPaymentBusinessIdAndReference(
-      Long businessId,
+  Optional<Refund> findByPaymentBusinessSlugAndReference(
+      String businessSlug,
       String reference
   );
 
@@ -35,13 +35,13 @@ public interface RefundRepository extends JpaRepository<Refund, Long> {
 
   List<Refund> findByPaymentOrderOrderByCreatedAtDesc(Order order);
 
-  boolean existsByPaymentIdAndRefundStatusIn(
-      Long paymentId,
+  boolean existsByPaymentSlugAndRefundStatusIn(
+      String paymentSlug,
       List<com.benkih.estore.common.enums.RefundStatus> statuses
   );
 
-  Optional<Refund> findByPaymentBusinessIdAndPaymentReference(
-      Long businessId,
+  Optional<Refund> findByPaymentBusinessSlugAndPaymentReference(
+      String businessSlug,
       String paymentReference
   );
 

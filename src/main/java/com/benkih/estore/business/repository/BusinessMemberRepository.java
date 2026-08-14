@@ -8,21 +8,21 @@ import java.util.Optional;
 
 public interface BusinessMemberRepository extends JpaRepository<BusinessMember, Long> {
 
-  Optional<BusinessMember> findByBusinessIdAndUserId(
-      Long businessId,
-      Long userId
+  Optional<BusinessMember> findByBusinessSlugAndUserSlug(
+      String businessSlug,
+      String userSlug
   );
 
-  List<BusinessMember> findByUserId(
-      Long userId
+  List<BusinessMember> findByUserSlug(
+      String userSlug
   );
 
-  List<BusinessMember> findByBusinessId(
-      Long businessId
+  List<BusinessMember> findByBusinessSlug(
+      String businessString
   );
 
-  boolean existsByBusinessIdAndUserId(
-      Long businessId,
-      Long userId
+  boolean existsByBusinessSlugAndUserSlug(
+      String businessSlug,
+      String userSlug
   );
 }

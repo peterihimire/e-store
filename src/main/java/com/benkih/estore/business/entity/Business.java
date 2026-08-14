@@ -39,9 +39,9 @@ public class Business extends BaseEntity {
   private BusinessType type = BusinessType.COMPANY;
 
   @OneToMany(
-      mappedBy = "user",
+      mappedBy = "business",
       cascade = CascadeType.ALL,
       orphanRemoval = true
   )
-  private List<Address> addresses = new ArrayList<>();
+  private List<BusinessAddress> addresses = new ArrayList<>();
 }

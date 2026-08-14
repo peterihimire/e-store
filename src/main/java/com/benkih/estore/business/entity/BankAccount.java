@@ -7,11 +7,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "business_bank_accounts")
+@Table(name = "bank_accounts")
 @Getter
 @Setter
 @NoArgsConstructor
-public class BusinessBankAccount extends BaseEntity {
+public class BankAccount extends BaseEntity {
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "business_id", nullable = false)

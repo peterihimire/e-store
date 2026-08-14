@@ -18,7 +18,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 
 @Component
@@ -150,9 +152,47 @@ public class DataSeeder implements CommandLineRunner {
     createPermission("ORDER_READ", "ORDER", "READ");
     createPermission("ORDER_UPDATE", "ORDER", "UPDATE");
     createPermission("ORDER_DELETE", "ORDER", "DELETE");
+    createPermission("ORDER_CANCEL", "ORDER", "CANCEL");
+    createPermission("ORDER_APPROVE", "ORDER", "APPROVE");
+    createPermission("ORDER_REJECT", "ORDER", "REJECT");
 
     createPermission("PAYMENT_READ", "PAYMENT", "READ");
     createPermission("PAYMENT_UPDATE", "PAYMENT", "UPDATE");
+
+    createPermission("REFUND_CREATE", "REFUND", "CREATE");
+    createPermission("REFUND_READ", "REFUND", "READ");
+    createPermission("REFUND_UPDATE", "REFUND", "UPDATE");
+    createPermission("REFUND_APPROVE", "REFUND", "APPROVE");
+    createPermission("REFUND_REJECT", "REFUND", "REJECT");
+    createPermission("REFUND_CANCEL", "REFUND", "CANCEL");
+
+    createPermission("INVENTORY_READ", "INVENTORY", "READ");
+    createPermission("INVENTORY_ADJUST", "INVENTORY", "ADJUST");
+    createPermission("INVENTORY_DAMAGE", "INVENTORY", "DAMAGE");
+
+    createPermission("CATEGORY_CREATE", "CATEGORY", "CREATE");
+    createPermission("CATEGORY_READ", "CATEGORY", "READ");
+    createPermission("CATEGORY_UPDATE", "CATEGORY", "UPDATE");
+    createPermission("CATEGORY_DELETE", "CATEGORY", "DELETE");
+
+    createPermission("CUSTOMER_CREATE", "CUSTOMER", "CREATE");
+    createPermission("CUSTOMER_READ", "CUSTOMER", "READ");
+    createPermission("CUSTOMER_UPDATE", "CUSTOMER", "UPDATE");
+    createPermission("CUSTOMER_DELETE", "CUSTOMER", "DELETE");
+
+    createPermission("BUSINESS_CREATE", "BUSINESS", "CREATE");
+    createPermission("BUSINESS_READ", "BUSINESS", "READ");
+    createPermission("BUSINESS_UPDATE", "BUSINESS", "UPDATE");
+    createPermission("BUSINESS_DELETE", "BUSINESS", "DELETE");
+
+    createPermission("REPORT_READ", "REPORT", "READ");
+
+    createPermission("SHIPPING_CREATE", "SHIPPING", "CREATE");
+    createPermission("SHIPPING_READ", "SHIPPING", "READ");
+    createPermission("SHIPPING_UPDATE", "SHIPPING", "UPDATE");
+    createPermission("SHIPPING_DELETE", "SHIPPING", "DELETE");
+
+
 
     log.info("Permissions seeded.");
   }
@@ -176,24 +216,30 @@ public class DataSeeder implements CommandLineRunner {
   }
 
   private void seedSystemRoles() {
-    if (roleRepository.findByName("SUPER_ADMIN").isPresent()) {
-      return;
-    }
 
-    Role role = new Role();
+      List<Permission> allPermissions = permissionRepository.findAll();
 
-    role.setName("SUPER_ADMIN");
-    role.setSystemRole(true);
-    role.setActive(true);
-    role.setCreatedAt(LocalDateTime.now());
+      seedSuperAdminRole(allPermissions);
+      seedOwnerRole(allPermissions);
 
-    Set<Permission> permissions = new HashSet<>(permissionRepository.findAll());
-
-    role.setPermissions(permissions);
-
-    roleRepository.save(role);
-
-    log.info("Created SUPER_ADMIN role.");
+//    if (roleRepository.findByName("SUPER_ADMIN").isPresent()) {
+//      return;
+//    }
+//
+//    Role role = new Role();
+//
+//    role.setName("SUPER_ADMIN");
+//    role.setSystemRole(true);
+//    role.setActive(true);
+//    role.setCreatedAt(LocalDateTime.now());
+//
+//    Set<Permission> permissions = new HashSet<>(permissionRepository.findAll());
+//
+//    role.setPermissions(permissions);
+//
+//    roleRepository.save(role);
+//
+//    log.info("Created SUPER_ADMIN role.");
   }
 
   private void createSuperAdmin() {
@@ -220,5 +266,67 @@ public class DataSeeder implements CommandLineRunner {
     userRepository.save(user);
 
     log.info("Super Admin created.");
+  }
+
+  private void seedSuperAdminRole(List<Permission> permissions) {
+
+    if (roleRepository.findByName("SUPER_ADMIN").isPresent()) {
+      return;
+    }
+
+    Role role = new Role();
+
+    role.setName("SUPER_ADMIN");
+    role.setSystemRole(true);
+    role.setActive(true);
+    role.setCreatedAt(LocalDateTime.now());
+
+    role.setPermissions(new HashSet<>(permissions));
+
+    roleRepository.save(role);
+
+    log.info("Created SUPER_ADMIN role.");
+  }
+
+  private void seedOwnerRole(List<Permission> allPermissions) {
+
+    if (roleRepository.findByName("OWNER").isPresent()) {
+      return;
+    }
+
+    Set<String> ownerResources = Set.of(
+        "USER",
+        "ROLE",
+        "DEPARTMENT",
+        "PRODUCT",
+        "CATEGORY",
+        "ORDER",
+        "PAYMENT",
+        "REFUND",
+        "INVENTORY",
+        "CUSTOMER",
+        "REPORT"
+    );
+
+    Set<Permission> permissions = allPermissions.stream()
+        .filter(permission ->
+            ownerResources.contains(permission.getResource())
+        )
+        .collect(Collectors.toSet());
+
+    Role role = new Role();
+
+    role.setName("OWNER");
+    role.setSystemRole(true);
+    role.setActive(true);
+    role.setCreatedAt(LocalDateTime.now());
+    role.setPermissions(permissions);
+
+    roleRepository.save(role);
+
+    log.info(
+        "Created OWNER role with {} permissions.",
+        permissions.size()
+    );
   }
 }
