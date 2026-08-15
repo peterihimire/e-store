@@ -9,6 +9,14 @@ import com.benkih.estore.auth.entity.PasswordResetToken;
 import com.benkih.estore.auth.entity.RefreshToken;
 import com.benkih.estore.auth.repository.EmailVerificationRepository;
 import com.benkih.estore.auth.repository.PasswordResetTokenRepository;
+import com.benkih.estore.business.dto.request.BusinessRegistrationRequest;
+import com.benkih.estore.business.entity.Business;
+import com.benkih.estore.business.entity.BusinessMember;
+import com.benkih.estore.business.enums.BusinessStatus;
+import com.benkih.estore.business.enums.MemberStatus;
+import com.benkih.estore.business.repository.BusinessMemberRepository;
+import com.benkih.estore.business.repository.BusinessRepository;
+import com.benkih.estore.common.enums.AccountType;
 import com.benkih.estore.common.enums.RoleName;
 import com.benkih.estore.common.enums.UserStatus;
 import com.benkih.estore.common.exceptions.AlreadyExistsException;
@@ -43,6 +51,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
@@ -69,45 +78,28 @@ public class AuthService implements IAuthService {
   private final IPasswordResetTokenService passwordResetTokenService;
   private final PasswordResetTokenRepository passwordResetTokenRepository;
   private final CurrentUserService currentUserService;
+  private final BusinessMemberRepository businessMemberRepository;
+  private final BusinessRepository businessRepository;
 
 
   @Transactional
   @Override
   public User register(CreateUserRequest request) {
-    Optional<User> existingUser = userRepository.findByEmail(request.getEmail());
-    if (existingUser.isPresent()) {
-      User user = existingUser.get();
 
-      if (user.isEmailVerified()) {
-        throw new AlreadyExistsException(
-            request.getEmail() + " already exists!"
+    User user = findOrCreateUser(request);
+
+    if (request.getAccountType() == AccountType.BUSINESS) {
+
+      if (request.getBusiness() == null) {
+        throw new BadRequestException(
+            "Business information is required for a business account"
         );
       }
 
-      VerificationTokenResponse token = verificationService.createVerificationToken(user);
-      // wrap in try-catch or use the notification service
-      EmailRequest email = verificationEmailBuilder.build(user, token.getPlainToken());
-      emailService.send(email);
-
-      return user;
+      createBusinessAccount(user, request.getBusiness());
     }
 
-    Role customerRole = roleRepository.findByName(RoleName.CUSTOMER.name())
-        .orElseThrow(() ->
-            new RuntimeException("Default role not found: " + RoleName.CUSTOMER));
-
-    User user = new User();
-
-    user.setEmail(request.getEmail());
-    user.setFirstName(request.getFirstName());
-    user.setLastName(request.getLastName());
-
-    user.setStatus(UserStatus.PENDING_VERIFICATION);
-    user.setEmailVerified(false);
-    user.setRoles(Set.of(customerRole));
-
-    user = userRepository.save(user);
-
+//    sendVerificationEmail(user);
     VerificationTokenResponse token = verificationService.createVerificationToken(user);
     notificationService.sendVerificationEmail(user, token.getPlainToken());
 
@@ -348,4 +340,109 @@ private LoginResponse createLoginResponse(
         ipAddress
     );
   }
+
+
+  private User findOrCreateUser(CreateUserRequest request) {
+
+    Optional<User> existingUser = userRepository.findByEmail(request.getEmail());
+
+    if (existingUser.isPresent()) {
+      User user = existingUser.get();
+
+      if (user.isEmailVerified()) {
+        throw new AlreadyExistsException(request.getEmail() + " already exists!");
+      }
+
+      user.setAccountType(request.getAccountType());
+
+      VerificationTokenResponse token = verificationService.createVerificationToken(user);
+      notificationService.sendVerificationEmail(user, token.getPlainToken());
+
+      return userRepository.save(user);
+    }
+
+    return createUser(request);
+  }
+
+
+  private User createUser(CreateUserRequest request) {
+
+    User user = new User();
+
+    user.setEmail(request.getEmail());
+    user.setFirstName(request.getFirstName());
+    user.setLastName(request.getLastName());
+
+    user.setAccountType(request.getAccountType());
+
+    user.setStatus(UserStatus.PENDING_VERIFICATION);
+    user.setEmailVerified(false);
+
+    return userRepository.save(user);
+  }
+
+  private Business createBusinessAccount(User user, BusinessRegistrationRequest request) {
+    Business business = new Business();
+
+    business.setName(request.getName());
+    business.setEmail(request.getEmail());
+    business.setPhone(request.getPhoneNumber());
+    business.setStatus(BusinessStatus.PENDING);
+
+    business = businessRepository.save(business);
+
+    Role ownerRole = roleRepository.findByName(RoleName.OWNER.name())
+        .orElseThrow(() -> new RuntimeException("OWNER role not found"));
+
+    BusinessMember member = new BusinessMember();
+
+    member.setBusiness(business);
+    member.setUser(user);
+    member.setRole(ownerRole);
+    member.setStatus(MemberStatus.ACTIVE);
+
+    businessMemberRepository.save(member);
+
+    return business;
+  }
 }
+//  public User register(CreateUserRequest request) {
+//    Optional<User> existingUser = userRepository.findByEmail(request.getEmail());
+//    if (existingUser.isPresent()) {
+//      User user = existingUser.get();
+//
+//      if (user.isEmailVerified()) {
+//        throw new AlreadyExistsException(
+//            request.getEmail() + " already exists!"
+//        );
+//      }
+//
+//      VerificationTokenResponse token = verificationService.createVerificationToken(user);
+//      // wrap in try-catch or use the notification service
+//      EmailRequest email = verificationEmailBuilder.build(user, token.getPlainToken());
+//      emailService.send(email);
+//
+//      return user;
+//    }
+//
+//    Role customerRole = roleRepository.findByName(RoleName.CUSTOMER.name())
+//        .orElseThrow(() ->
+//            new RuntimeException("Default role not found: " + RoleName.CUSTOMER));
+//
+//    User user = new User();
+//
+//    user.setEmail(request.getEmail());
+//    user.setFirstName(request.getFirstName());
+//    user.setLastName(request.getLastName());
+//
+//    user.setStatus(UserStatus.PENDING_VERIFICATION);
+//    user.setEmailVerified(false);
+//    user.setRoles(Set.of(customerRole));
+//
+//    user = userRepository.save(user);
+//
+//    VerificationTokenResponse token = verificationService.createVerificationToken(user);
+//    notificationService.sendVerificationEmail(user, token.getPlainToken());
+//
+//    return user;
+//  }

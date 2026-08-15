@@ -13,6 +13,7 @@ import com.benkih.estore.product.dto.response.ProductPageResponseDto;
 import com.benkih.estore.product.dto.response.ProductResponseDto;
 import com.benkih.estore.product.entity.Product;
 import com.benkih.estore.product.service.IProductService;
+import com.benkih.estore.security.tenant.TenantContext;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -31,6 +32,7 @@ import static org.springframework.http.HttpStatus.*;
 @RequiredArgsConstructor
 public class ProductController {
   private final IProductService productService;
+  private final TenantContext tenantContext;
 
 
 
@@ -166,21 +168,22 @@ public ResponseEntity<ApiResponse> getProductBySlug(@PathVariable String slug) {
   @PreAuthorize("hasAuthority('PRODUCT_CREATE')")
   @PostMapping("/addProduct")
   public ResponseEntity<ApiResponse> addProduct(@RequestBody AddProductRequest product){ // uses general exception to throw error
-      Product productData = productService.addProduct(product);
-      ProductResponseDto productDto = productService.convertToDto(productData);
-      return ResponseEntity.ok(new ApiResponse("success","Product added", productDto));
+    Long businessId = tenantContext.getBusinessId();
+
+    Product productData = productService.addProduct(product, businessId);
+    ProductResponseDto productDto = productService.convertToDto(productData);
+    return ResponseEntity.ok(new ApiResponse("success","Product added", productDto));
   }
 
   @PreAuthorize("hasAuthority('PRODUCT_UPDATE')")
   @PutMapping("/{productSlug}/update")
   public ResponseEntity<ApiResponse> updateProduct(@RequestBody UpdateProductRequest product, @PathVariable String productSlug){
-    try {
-      Product productData = productService.updateProduct(product, productSlug);
+      Long businessId = tenantContext.getBusinessId();
+
+      Product productData = productService.updateProduct(product, productSlug, businessId);
       ProductResponseDto productDto = productService.convertToDto(productData);
       return ResponseEntity.ok(new ApiResponse("success","Product updated", productDto));
-    } catch (ResourceNotFoundException e) {
-      return ResponseEntity.status(NOT_FOUND).body(new ApiResponse("fail",e.getMessage(), null));
-    }
+
   }
 
   @PreAuthorize("hasAuthority('PRODUCT_DELETE')")

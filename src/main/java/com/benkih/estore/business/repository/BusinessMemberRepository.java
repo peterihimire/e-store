@@ -1,6 +1,7 @@
 package com.benkih.estore.business.repository;
 
 import com.benkih.estore.business.entity.BusinessMember;
+import com.benkih.estore.business.enums.MemberStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -25,4 +26,6 @@ public interface BusinessMemberRepository extends JpaRepository<BusinessMember, 
       String businessSlug,
       String userSlug
   );
+
+  Optional<BusinessMember> findFirstByUserIdAndStatus(Long userId, MemberStatus status);
 }

@@ -39,7 +39,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
   @EntityGraph(attributePaths = {"images", "category", "inventory"})
   List<Product> findAll();
 
-  boolean existsByNameAndBrand(String name, String brand);
+  boolean existsByNameAndBrandAndBusinessId(String name, String brand, Long businessId);
 
   Page<Product> findByBusinessSlug(String businessSlug, Pageable pageable);
 

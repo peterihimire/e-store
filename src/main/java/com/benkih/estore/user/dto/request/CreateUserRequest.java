@@ -1,9 +1,9 @@
 package com.benkih.estore.user.dto.request;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import com.benkih.estore.business.dto.request.BusinessRegistrationRequest;
+import com.benkih.estore.business.entity.Business;
+import com.benkih.estore.common.enums.AccountType;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 
 @Data
@@ -20,6 +20,11 @@ public class CreateUserRequest {
   @NotBlank(message = "Email is required")
   @Email(message = "Please provide a valid email address")
   private String email;
+
+  @NotNull(message = "Account type is required")
+  private AccountType accountType;
+
+  private  BusinessRegistrationRequest business;
 
 }
 // instead of @Pattern we could create a custom validation annotation: [@StrongPassword] in the future

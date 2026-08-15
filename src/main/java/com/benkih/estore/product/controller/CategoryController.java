@@ -6,6 +6,7 @@ import com.benkih.estore.product.service.ICategoryService;
 import com.benkih.estore.common.exceptions.AlreadyExistsException;
 import com.benkih.estore.common.exceptions.ResourceNotFoundException;
 import com.benkih.estore.common.response.ApiResponse;
+import com.benkih.estore.security.tenant.TenantContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +20,7 @@ import static org.springframework.http.HttpStatus.*;
 @RequestMapping("${api.prefix}/categories")
 public class CategoryController {
   private final ICategoryService categoryService;
+  private final TenantContext tenantContext;
 
   @GetMapping("/all")
   public ResponseEntity<ApiResponse> getAllCategories(){
@@ -52,8 +54,9 @@ public class CategoryController {
 
   @GetMapping("/category/{name}/name")
   public ResponseEntity<ApiResponse> getCategoryByName(@PathVariable String name){
+    Long businessId = tenantContext.getBusinessId();
     try {
-      Category category = categoryService.getCategoryByName(name);
+      Category category = categoryService.getCategoryByName(name, businessId);
       return ResponseEntity.ok(new ApiResponse("success","Category returned", category));
     } catch (ResourceNotFoundException e) {
       return ResponseEntity.status(NOT_FOUND).body(new ApiResponse("fail",e.getMessage(), null));

@@ -76,10 +76,10 @@ public class UserService implements IUserService {
   public User createUser(CreateUserRequest request) {
     Set<Role> defaultRoles = new HashSet<>();
 
-    Role customerRole = roleRepository.findByName(RoleName.CUSTOMER.name())
-        .orElseThrow(() -> new RuntimeException("Default role not found: " + RoleName.CUSTOMER));
-
-    defaultRoles.add(customerRole);
+//    Role customerRole = roleRepository.findByName(RoleName.CUSTOMER.name())
+//        .orElseThrow(() -> new RuntimeException("Default role not found: " + RoleName.CUSTOMER));
+//
+//    defaultRoles.add(customerRole);
 
     if (userRepository.existsByEmail(request.getEmail())) {
       throw new AlreadyExistsException(request.getEmail() + " already exists!");

@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @NoArgsConstructor
 public class StoreUserDetails implements UserDetails {
+  private Long userId;
   private String slug;
   private String email;
   private String password;
@@ -34,13 +35,23 @@ public class StoreUserDetails implements UserDetails {
             .map(permission -> new SimpleGrantedAuthority(permission.getName()))
             .collect(Collectors.toSet());
 
+    StoreUserDetails userDetails = new StoreUserDetails();
+    userDetails.userId = user.getId();
+    userDetails.slug = user.getSlug();
+    userDetails.email = user.getEmail();
+    userDetails.password = user.getPassword();
+    userDetails.authorities = authorities;
+
+    return userDetails;
+
 //    log.info("User {} has authorities: {}", user.getEmail(), authorities);
-    return new StoreUserDetails(
-        user.getSlug(),
-        user.getEmail(),
-        user.getPassword(),
-        authorities
-    );
+//    return new StoreUserDetails(
+//        user.getId(),
+//        user.getSlug(),
+//        user.getEmail(),
+//        user.getPassword(),
+//        authorities
+//    );
   }
 
 

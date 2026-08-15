@@ -82,7 +82,8 @@ public class Product {
 //        ProductStatus status,
         String description,
         BigDecimal price,
-        Category category
+        Category category,
+        Business business
     ) {
         this.name = name;
         this.brand = brand;
@@ -91,6 +92,7 @@ public class Product {
         this.description = description;
         this.price = price;
         this.category = category;
+        this.business = business;
     }
 
     @PrePersist

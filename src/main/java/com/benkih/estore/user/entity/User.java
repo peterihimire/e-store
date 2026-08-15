@@ -2,6 +2,7 @@ package com.benkih.estore.user.entity;
 
 import com.benkih.estore.business.entity.BusinessMember;
 import com.benkih.estore.cart.entity.Cart;
+import com.benkih.estore.common.enums.AccountType;
 import com.benkih.estore.common.enums.UserStatus;
 import com.benkih.estore.department.entity.Department;
 import com.benkih.estore.order.entity.Order;
@@ -47,6 +48,10 @@ public class User {
 
   @Column(nullable = false)
   private boolean emailVerified = false;
+
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private AccountType accountType = AccountType.PERSONAL;
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)

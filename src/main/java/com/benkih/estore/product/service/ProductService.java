@@ -1,5 +1,7 @@
 package com.benkih.estore.product.service;
 
+import com.benkih.estore.business.entity.Business;
+import com.benkih.estore.business.repository.BusinessRepository;
 import com.benkih.estore.common.enums.ProductStatus;
 import com.benkih.estore.inventory.entity.Inventory;
 import com.benkih.estore.inventory.repository.InventoryRepository;
@@ -37,43 +39,54 @@ public class ProductService implements IProductService{
   private final InventoryRepository inventoryRepository;
   private final IInventoryService inventoryService;
   private final SkuSequenceRepository skuSequenceRepository;
+  private final BusinessRepository businessRepository;
 
 
   @Transactional
   @Override
-  public Product addProduct(AddProductRequest request) {
+  public Product addProduct(AddProductRequest request, Long businessId) {
 
-    if(productExists(request.getName(), request.getBrand())){
+    if(productExists(request.getName(), request.getBrand(), businessId)){
       throw new AlreadyExistsException(
           request.getBrand() + " " + request.getName() + " already exists, you may update this product instead." );
     }
 
-    Category category = Optional.ofNullable(categoryRepository.findByName(request.getCategory()))
+    Business business = businessRepository.findById(businessId)
+        .orElseThrow(() -> new ResourceNotFoundException("Business not found"));
+
+    Category category =
+        Optional.ofNullable(categoryRepository.findByNameAndBusinessId(request.getCategory(), businessId))
         .orElseGet(() -> {
             Category newCategory = new Category(request.getCategory());// Remember this place had issues
             return categoryRepository.save(newCategory);
     });
 
-    Product product = createProduct(request, category);
+    Product product = createProduct(request, category, business);
     product.setSku(generateSku(product));
-//    product.setStatus(ProductStatus.DRAFT);
     product = productRepository.save(product);
     inventoryService.createInventory(product);
 
     return product;
   }
 
-  private boolean productExists(String name, String brand ){
-    return productRepository.existsByNameAndBrand(name, brand);
+  private boolean productExists(String name, String brand, Long businessId ){
+    return productRepository.existsByNameAndBrandAndBusinessId(
+        name,
+        brand,
+        businessId);
   }
 
-  private Product createProduct(AddProductRequest request, Category category){
+  private Product createProduct(
+      AddProductRequest request,
+      Category category,
+      Business business){
     return new Product(
         request.getName(),
         request.getBrand(),
         request.getDescription(),
         request.getPrice(),
-        category
+        category,
+        business
     );
   }
 
@@ -173,9 +186,11 @@ public class ProductService implements IProductService{
 
 
   @Override
-  public Product updateProduct(UpdateProductRequest request, String slug) {
+  public Product updateProduct(UpdateProductRequest request, String slug,
+                               Long businessId) {
     Product updatedProduct = productRepository.findBySlug(slug)
-        .map(existingProduct -> updateExistingProduct(existingProduct, request))
+        .map(existingProduct -> updateExistingProduct(existingProduct,
+            request, businessId))
         .map(productRepository::save)
         .orElseThrow(() -> new ResourceNotFoundException("Product not found!"));
 
@@ -206,7 +221,9 @@ public class ProductService implements IProductService{
   }
 
 
-  private Product updateExistingProduct(Product existingProduct, UpdateProductRequest request) {
+  private Product updateExistingProduct(Product existingProduct,
+                                        UpdateProductRequest request,
+                                        Long businessId) {
     if (request.getName() != null) {
       existingProduct.setName(request.getName());
     }
@@ -220,7 +237,8 @@ public class ProductService implements IProductService{
       existingProduct.setPrice(request.getPrice());
     }
     if (request.getCategoryName() != null) {
-      Category category = categoryRepository.findByName(request.getCategoryName());
+      Category category =
+          categoryRepository.findByNameAndBusinessId(request.getCategoryName(), businessId);
       if (category == null) {
         throw new ResourceNotFoundException("Category not found");
       }

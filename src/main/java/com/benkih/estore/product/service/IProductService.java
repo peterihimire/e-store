@@ -13,7 +13,7 @@ import java.util.List;
 
 // Here is abstract class for product service
 public interface IProductService {
-  Product addProduct(AddProductRequest product);
+  Product addProduct(AddProductRequest product, Long businessId);
   List<Product> getAllProducts();
 
   //  @Override
@@ -39,7 +39,7 @@ public interface IProductService {
   //  Product getProductById(Long id);
   @EntityGraph(attributePaths = "images")
   Product getProductBySlug(String slug);
-  Product updateProduct(UpdateProductRequest product, String slug);
+  Product updateProduct(UpdateProductRequest product, String slug, Long businessId);
   void deleteProductById(String slug);
   Long countProductByBrandAndName(String brand, String name);
 
