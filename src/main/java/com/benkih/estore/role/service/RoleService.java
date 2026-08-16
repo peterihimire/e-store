@@ -1,5 +1,7 @@
 package com.benkih.estore.role.service;
 
+import com.benkih.estore.business.entity.Business;
+import com.benkih.estore.business.repository.BusinessRepository;
 import com.benkih.estore.common.exceptions.AlreadyExistsException;
 import com.benkih.estore.common.exceptions.BadRequestException;
 import com.benkih.estore.common.exceptions.ResourceNotFoundException;
@@ -25,20 +27,25 @@ public class RoleService implements IRoleService{
   private final RoleRepository roleRepository;
   private final PermissionRepository permissionRepository;
   private final PermissionService permissionService;
+  private final BusinessRepository businessRepository;
 
 
   @Override
-  public Role createRole(CreateRoleRequest request) {
+  public Role createRole(CreateRoleRequest request, Long businessId) {
 
-    if (roleRepository.existsByNameIgnoreCase(request.getName())) {
+    if (roleRepository.existsByNameIgnoreCaseAndBusinessId(request.getName(), businessId)) {
       throw new AlreadyExistsException("Role already exists");
     }
+
+    Business business = businessRepository.findById(businessId)
+        .orElseThrow(() -> new ResourceNotFoundException("Business not found"));
 
     Role role = new Role();
     role.setName(request.getName());
     role.setDescription(request.getDescription());
     role.setSystemRole(false);
     role.setActive(true);
+    role.setBusiness(business);
 
     Set<Permission> permissions = new HashSet<>(
             permissionRepository.findAllBySlugIn(request.getPermissionSlugs()));

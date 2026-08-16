@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface IRoleService {
 
-  Role createRole(CreateRoleRequest request);
+  Role createRole(CreateRoleRequest request, Long businessId);
 
   Role updateRole(String slug, UpdateRoleRequest request);
 

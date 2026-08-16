@@ -1,5 +1,7 @@
 package com.benkih.estore.security.user;
 
+import com.benkih.estore.business.entity.BusinessMember;
+import com.benkih.estore.business.enums.MemberStatus;
 import com.benkih.estore.role.entity.Role;
 import com.benkih.estore.user.entity.User;
 import lombok.AllArgsConstructor;
@@ -12,6 +14,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.stream.Collectors;
 
 @Getter
@@ -27,15 +30,40 @@ public class StoreUserDetails implements UserDetails {
   private Collection<GrantedAuthority> authorities;
 
 
-  public static StoreUserDetails buildUserDetails(User user){
-    Collection<GrantedAuthority> authorities = user.getRoles()
-            .stream()
-            .filter(Role::isActive)
-            .flatMap(role -> role.getPermissions().stream())
-            .map(permission -> new SimpleGrantedAuthority(permission.getName()))
-            .collect(Collectors.toSet());
+
+  public static StoreUserDetails buildUserDetails(User user) {
+
+    Collection<GrantedAuthority> authorities = new HashSet<>();
+
+    // System-level authorities
+    user.getRoles()
+        .stream()
+        .filter(Role::isActive)
+        .flatMap(role -> role.getPermissions().stream())
+        .map(permission ->
+            new SimpleGrantedAuthority(permission.getName())
+        )
+        .forEach(authorities::add);
+
+    // Business-level authorities
+    BusinessMember businessMember = user.getBusinessMember();
+
+    if (businessMember != null
+        && businessMember.getStatus() == MemberStatus.ACTIVE
+        && businessMember.getRole() != null
+        && businessMember.getRole().isActive()) {
+
+      businessMember.getRole()
+          .getPermissions()
+          .stream()
+          .map(permission ->
+              new SimpleGrantedAuthority(permission.getName())
+          )
+          .forEach(authorities::add);
+    }
 
     StoreUserDetails userDetails = new StoreUserDetails();
+
     userDetails.userId = user.getId();
     userDetails.slug = user.getSlug();
     userDetails.email = user.getEmail();
@@ -43,16 +71,33 @@ public class StoreUserDetails implements UserDetails {
     userDetails.authorities = authorities;
 
     return userDetails;
-
-//    log.info("User {} has authorities: {}", user.getEmail(), authorities);
-//    return new StoreUserDetails(
-//        user.getId(),
-//        user.getSlug(),
-//        user.getEmail(),
-//        user.getPassword(),
-//        authorities
-//    );
   }
+//  public static StoreUserDetails buildUserDetails(User user){
+//    Collection<GrantedAuthority> authorities = user.getRoles()
+//            .stream()
+//            .filter(Role::isActive)
+//            .flatMap(role -> role.getPermissions().stream())
+//            .map(permission -> new SimpleGrantedAuthority(permission.getName()))
+//            .collect(Collectors.toSet());
+//
+//    StoreUserDetails userDetails = new StoreUserDetails();
+//    userDetails.userId = user.getId();
+//    userDetails.slug = user.getSlug();
+//    userDetails.email = user.getEmail();
+//    userDetails.password = user.getPassword();
+//    userDetails.authorities = authorities;
+//
+//    return userDetails;
+//
+////    log.info("User {} has authorities: {}", user.getEmail(), authorities);
+////    return new StoreUserDetails(
+////        user.getId(),
+////        user.getSlug(),
+////        user.getEmail(),
+////        user.getPassword(),
+////        authorities
+////    );
+//  }
 
 
   @Override

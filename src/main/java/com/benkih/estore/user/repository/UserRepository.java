@@ -9,11 +9,21 @@ import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 
-  @EntityGraph(attributePaths = {"roles", "roles.permissions"})
+  @EntityGraph(attributePaths = {
+      "roles",
+      "roles.permissions",
+      "businessMember",
+      "businessMember.role",
+      "businessMember.role.permissions"})
   Optional<User> findBySlug(String slug);
 
   boolean existsByEmail(String email);
 
-  @EntityGraph(attributePaths = {"roles", "roles.permissions"})
+  @EntityGraph(attributePaths = {
+      "roles",
+      "roles.permissions",
+      "businessMember",
+      "businessMember.role",
+      "businessMember.role.permissions"})
   Optional<User> findByEmail(String email);
 }

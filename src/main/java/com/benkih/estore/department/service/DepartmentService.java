@@ -1,5 +1,7 @@
 package com.benkih.estore.department.service;
 
+import com.benkih.estore.business.entity.Business;
+import com.benkih.estore.business.repository.BusinessRepository;
 import com.benkih.estore.common.exceptions.AlreadyExistsException;
 import com.benkih.estore.common.exceptions.ResourceNotFoundException;
 import com.benkih.estore.department.dto.request.AssignUsersToDepartmentRequest;
@@ -25,19 +27,25 @@ public class DepartmentService implements IDepartmentService{
   private final DepartmentRepository departmentRepository;
   private final UserRepository userRepository;
   private final UserService userService;
+  private final BusinessRepository businessRepository;
 
 
   @Override
-  public Department createDepartment(CreateDepartmentRequest request) {
+  public Department createDepartment(CreateDepartmentRequest request, Long businessId) {
 
-    if (departmentRepository.existsByNameIgnoreCase(request.getName())) {
+    if (departmentRepository.existsByNameIgnoreCaseAndBusinessId(request.getName(), businessId)) {
       throw new AlreadyExistsException("Department already exists");
     }
+
+    Business business = businessRepository.findById(businessId)
+        .orElseThrow(() -> new ResourceNotFoundException("Business not found"));
+
 
     Department department = new Department();
 
     department.setName(request.getName().trim());
     department.setDescription(request.getDescription());
+    department.setBusiness(business);
 
     return departmentRepository.save(department);
   }

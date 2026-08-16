@@ -6,6 +6,7 @@ import com.benkih.estore.role.dto.request.UpdateRoleRequest;
 import com.benkih.estore.role.dto.response.RoleResponseDto;
 import com.benkih.estore.role.entity.Role;
 import com.benkih.estore.role.service.RoleService;
+import com.benkih.estore.security.tenant.TenantContext;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,11 +21,14 @@ import java.util.List;
 @RequestMapping("${api.prefix}/roles")
 public class RoleController {
   private final RoleService roleService;
+  private final TenantContext tenantContext;
 
   @PostMapping("/add")
   @PreAuthorize("hasAuthority('ROLE_CREATE')")
   public ResponseEntity<ApiResponse> createRole(@Valid @RequestBody CreateRoleRequest request) {
-    Role role = roleService.createRole(request);
+    Long businessId = tenantContext.getBusinessId();
+
+    Role role = roleService.createRole(request, businessId);
     RoleResponseDto responseDto = roleService.convertToDto(role);
 
     return ResponseEntity.status(HttpStatus.CREATED)

@@ -12,7 +12,7 @@ public interface DepartmentRepository extends JpaRepository<Department, Long> {
 
   Optional<Department> findByNameIgnoreCase(String name);
 
-  boolean existsByNameIgnoreCase(String name);
+  boolean existsByNameIgnoreCaseAndBusinessId(String name, Long businessId);
 
   boolean existsBySlug(String slug);
 

@@ -1,5 +1,6 @@
 package com.benkih.estore.auth.entity;
 
+import com.benkih.estore.business.entity.Business;
 import com.benkih.estore.common.entity.BaseEntity;
 import com.benkih.estore.common.enums.InvitationStatus;
 import com.benkih.estore.department.entity.Department;
@@ -24,7 +25,8 @@ import java.util.Set;
         @Index(name = "idx_invitation_email", columnList = "email"),
         @Index(name = "idx_invitation_token", columnList = "tokenHash"),
         @Index(name = "idx_invitation_status", columnList = "status"),
-        @Index(name = "idx_invitation_expiry", columnList = "expiresAt")
+        @Index(name = "idx_invitation_expiry", columnList = "expiresAt"),
+        @Index(name = "idx_invitation_business_id", columnList = "business_id")
     }
 )
 public class UserInvitation extends BaseEntity {
@@ -72,6 +74,10 @@ public class UserInvitation extends BaseEntity {
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "invited_by")
   private User invitedBy;
+
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "business_id", nullable = false)
+  private Business business;
 
   public boolean isExpired() {
     return !expiresAt.isAfter(LocalDateTime.now());

@@ -11,7 +11,7 @@ import java.util.List;
 
 public interface IDepartmentService {
 
-  Department createDepartment(CreateDepartmentRequest request);
+  Department createDepartment(CreateDepartmentRequest request, Long businessId);
 
   Department updateDepartment(String slug, UpdateDepartmentRequest request);
 

@@ -14,7 +14,7 @@ public interface RoleRepository  extends JpaRepository<Role, Long> {
 
   Optional<Role> findByNameIgnoreCase(String name);
 
-  boolean existsByNameIgnoreCase(String name);
+  boolean existsByNameIgnoreCaseAndBusinessId(String name, Long businessId);
 
   List<Role> findAllBySlugIn(Collection<String> slugs);
 }

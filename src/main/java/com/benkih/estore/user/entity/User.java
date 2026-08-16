@@ -114,11 +114,17 @@ public class User {
   )
   private Set<Department> departments = new HashSet<>();
 
-  @OneToMany(
+//  @OneToMany(
+//      mappedBy = "user",
+//      fetch = FetchType.LAZY
+//  )
+//  private Set<BusinessMember> businessMembers = new HashSet<>();
+
+  @OneToOne(
       mappedBy = "user",
       fetch = FetchType.LAZY
   )
-  private Set<BusinessMember> businessMembers = new HashSet<>();
+  private BusinessMember businessMember;
 
   @Column(nullable = false,updatable = false)
   private LocalDateTime createdAt;

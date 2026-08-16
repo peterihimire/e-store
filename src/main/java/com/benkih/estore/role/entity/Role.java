@@ -1,5 +1,6 @@
 package com.benkih.estore.role.entity;
 
+import com.benkih.estore.business.entity.Business;
 import com.benkih.estore.permission.entity.Permission;
 import com.benkih.estore.user.entity.User;
 import jakarta.persistence.*;
@@ -18,7 +19,14 @@ import java.util.*;
     name = "roles",
     indexes = {
         @Index(name = "idx_roles_slug", columnList = "slug"),
-        @Index(name = "idx_roles_name", columnList = "name")
+        @Index(name = "idx_roles_name", columnList = "name"),
+        @Index(name = "idx_roles_business_id", columnList = "business_id")
+    },
+    uniqueConstraints = {
+        @UniqueConstraint(
+            name = "uk_role_business_name",
+            columnNames = {"business_id", "name"}
+        )
     }
 )
 public class Role {
@@ -29,7 +37,7 @@ public class Role {
   @Column(nullable = false, unique = true, updatable = false)
   private String slug;
 
-  @Column(nullable = false, unique = true)
+  @Column(nullable = false)
   private String name;
 
   @Column(length = 500)
@@ -48,6 +56,12 @@ public class Role {
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
 
+  /*
+   * System roles are associated with users through this relationship.
+   *
+   * Business roles should NOT be assigned here.
+   * Business roles are assigned through BusinessMember.
+   */
   @ManyToMany(mappedBy = "roles")
   private Collection<User> users = new HashSet<>(); //using collection here allows the user to switch between Set and ArrayList
 
@@ -58,6 +72,14 @@ public class Role {
       inverseJoinColumns = @JoinColumn(name = "permission_id")
   )
   private Set<Permission> permissions = new HashSet<>();
+
+  /*
+   * NULL  -> system role
+   * NOT NULL -> business-specific role
+   */
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "business_id")
+  private Business business;
 
   public Role(String name) { //manual arg constructor
     this.name = name;

@@ -6,6 +6,7 @@ import com.benkih.estore.department.dto.request.CreateDepartmentRequest;
 import com.benkih.estore.department.dto.request.UpdateDepartmentRequest;
 import com.benkih.estore.department.entity.Department;
 import com.benkih.estore.department.service.DepartmentService;
+import com.benkih.estore.security.tenant.TenantContext;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,13 +19,15 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class DepartmentController {
   private final DepartmentService departmentService;
+  private final TenantContext tenantContext;
 
   @PostMapping("/add")
   @PreAuthorize("hasAuthority('DEPARTMENT_CREATE')")
   public ResponseEntity<ApiResponse> createDepartment(
       @Valid @RequestBody CreateDepartmentRequest request) {
+    Long businessId = tenantContext.getBusinessId();
 
-    Department department = departmentService.createDepartment(request);
+    Department department = departmentService.createDepartment(request, businessId);
 
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(new ApiResponse(
