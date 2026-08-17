@@ -21,6 +21,10 @@ import java.util.Set;
         @UniqueConstraint(
             name = "uk_business_user",
             columnNames = {"business_id", "user_id"}
+        ),
+        @UniqueConstraint(
+            name = "uk_business_member_user",
+            columnNames = {"user_id"}
         )
     }
 )
@@ -35,7 +39,7 @@ public class BusinessMember extends BaseEntity {
   private Business business;
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
-  @JoinColumn(name = "user_id", nullable = false)
+  @JoinColumn(name = "user_id", nullable = false,unique = true)
   private User user;
 
 //  @Enumerated(EnumType.STRING)

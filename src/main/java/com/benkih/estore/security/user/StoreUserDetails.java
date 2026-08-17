@@ -28,8 +28,7 @@ public class StoreUserDetails implements UserDetails {
   private String email;
   private String password;
   private Collection<GrantedAuthority> authorities;
-
-
+  
 
   public static StoreUserDetails buildUserDetails(User user) {
 
@@ -71,32 +70,6 @@ public class StoreUserDetails implements UserDetails {
 
     return userDetails;
   }
-//  public static StoreUserDetails buildUserDetails(User user){
-//    Collection<GrantedAuthority> authorities = user.getRoles()
-//            .stream()
-//            .filter(Role::isActive)
-//            .flatMap(role -> role.getPermissions().stream())
-//            .map(permission -> new SimpleGrantedAuthority(permission.getName()))
-//            .collect(Collectors.toSet());
-//
-//    StoreUserDetails userDetails = new StoreUserDetails();
-//    userDetails.userId = user.getId();
-//    userDetails.slug = user.getSlug();
-//    userDetails.email = user.getEmail();
-//    userDetails.password = user.getPassword();
-//    userDetails.authorities = authorities;
-//
-//    return userDetails;
-//
-////    log.info("User {} has authorities: {}", user.getEmail(), authorities);
-////    return new StoreUserDetails(
-////        user.getId(),
-////        user.getSlug(),
-////        user.getEmail(),
-////        user.getPassword(),
-////        authorities
-////    );
-//  }
 
 
   @Override
@@ -140,3 +113,30 @@ public class StoreUserDetails implements UserDetails {
     return UserDetails.super.isEnabled();
   }
 }
+
+//  public static StoreUserDetails buildUserDetails(User user){
+//    Collection<GrantedAuthority> authorities = user.getRoles()
+//            .stream()
+//            .filter(Role::isActive)
+//            .flatMap(role -> role.getPermissions().stream())
+//            .map(permission -> new SimpleGrantedAuthority(permission.getName()))
+//            .collect(Collectors.toSet());
+//
+//    StoreUserDetails userDetails = new StoreUserDetails();
+//    userDetails.userId = user.getId();
+//    userDetails.slug = user.getSlug();
+//    userDetails.email = user.getEmail();
+//    userDetails.password = user.getPassword();
+//    userDetails.authorities = authorities;
+//
+//    return userDetails;
+//
+////    log.info("User {} has authorities: {}", user.getEmail(), authorities);
+////    return new StoreUserDetails(
+////        user.getId(),
+////        user.getSlug(),
+////        user.getEmail(),
+////        user.getPassword(),
+////        authorities
+////    );
+//  }

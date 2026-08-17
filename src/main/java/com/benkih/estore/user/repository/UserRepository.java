@@ -13,8 +13,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
       "roles",
       "roles.permissions",
       "businessMember",
-      "businessMember.role",
-      "businessMember.role.permissions"})
+      "businessMember.roles",
+      "businessMember.roles.permissions",
+      "businessMember.departments"})
   Optional<User> findBySlug(String slug);
 
   boolean existsByEmail(String email);
@@ -23,7 +24,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
       "roles",
       "roles.permissions",
       "businessMember",
-      "businessMember.role",
-      "businessMember.role.permissions"})
+      "businessMember.roles",
+      "businessMember.roles.permissions",
+      "businessMember.departments"})
   Optional<User> findByEmail(String email);
 }
