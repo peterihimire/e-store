@@ -10,11 +10,13 @@ import java.util.Optional;
 public interface RoleRepository  extends JpaRepository<Role, Long> {
   Optional<Role> findByName(String name);
 
+  Optional<Role> findByNameAndSystemRole(String name, boolean systemRole);
+
   Optional<Role> findBySlug(String slug);
 
   Optional<Role> findByNameIgnoreCase(String name);
 
   boolean existsByNameIgnoreCaseAndBusinessId(String name, Long businessId);
 
-  List<Role> findAllBySlugIn(Collection<String> slugs);
+  List<Role> findAllBySlugInAndBusinessId(Collection<String> slugs, Long id);
 }

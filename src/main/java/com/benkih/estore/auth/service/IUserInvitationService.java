@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface IUserInvitationService {
 
-  UserInvitationResponseDto inviteUser(UserInvitationRequest request);
+  UserInvitationResponseDto inviteUser(UserInvitationRequest request, Long businessId);
 
   List<UserInvitationResponseDto> getInvitations();
 

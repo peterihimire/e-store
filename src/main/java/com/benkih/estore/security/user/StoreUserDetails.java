@@ -49,13 +49,12 @@ public class StoreUserDetails implements UserDetails {
     BusinessMember businessMember = user.getBusinessMember();
 
     if (businessMember != null
-        && businessMember.getStatus() == MemberStatus.ACTIVE
-        && businessMember.getRole() != null
-        && businessMember.getRole().isActive()) {
+        && businessMember.getStatus() == MemberStatus.ACTIVE) {
 
-      businessMember.getRole()
-          .getPermissions()
+      businessMember.getRoles()
           .stream()
+          .filter(Role::isActive)
+          .flatMap(role -> role.getPermissions().stream())
           .map(permission ->
               new SimpleGrantedAuthority(permission.getName())
           )

@@ -16,5 +16,6 @@ public interface DepartmentRepository extends JpaRepository<Department, Long> {
 
   boolean existsBySlug(String slug);
 
-  List<Department> findAllBySlugIn(Collection<String> slugs);
+  List<Department> findAllBySlugInAndBusinessId(Collection<String> slugs,
+                                                Long businessId);
 }

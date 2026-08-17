@@ -391,14 +391,20 @@ private LoginResponse createLoginResponse(
 
     business = businessRepository.save(business);
 
-    Role ownerRole = roleRepository.findByName(RoleName.OWNER.name())
-        .orElseThrow(() -> new RuntimeException("OWNER role not found"));
+    Role ownerRole = roleRepository.findByNameAndSystemRole(
+            RoleName.OWNER.name(),
+            true
+        )
+        .orElseThrow(() ->
+            new RuntimeException("OWNER role not found")
+        );
 
     BusinessMember member = new BusinessMember();
 
     member.setBusiness(business);
     member.setUser(user);
-    member.setRole(ownerRole);
+//    member.setRole(ownerRole);
+    member.setRoles(Set.of(ownerRole));
     member.setStatus(MemberStatus.ACTIVE);
 
     businessMemberRepository.save(member);

@@ -7,6 +7,7 @@ import com.benkih.estore.auth.service.IUserInvitationService;
 import com.benkih.estore.common.exceptions.AlreadyExistsException;
 import com.benkih.estore.common.response.ApiResponse;
 
+import com.benkih.estore.security.tenant.TenantContext;
 import com.benkih.estore.security.user.StoreUserDetails;
 import com.benkih.estore.user.dto.request.CreateUserRequest;
 import com.benkih.estore.user.dto.response.UserResponseDto;
@@ -34,6 +35,7 @@ public class AuthController {
   private final AuthService authService;
   private final IUserService userService;
   private final IUserInvitationService userInvitationService;
+  private final TenantContext tenantContext;
 //  private final AuthenticationManager authenticationManager;
 //  private final JwtUtils jwtUtils;
 
@@ -137,8 +139,9 @@ public class AuthController {
   @PreAuthorize("hasAuthority('USER_CREATE')")
   @PostMapping("/user-invitation")
   public ResponseEntity<ApiResponse> userInvitation(@Valid @RequestBody UserInvitationRequest request) {
+    Long businessId = tenantContext.getBusinessId();
 
-    userInvitationService.inviteUser(request);
+    userInvitationService.inviteUser(request, businessId);
 
     return ResponseEntity.ok(
         new ApiResponse(

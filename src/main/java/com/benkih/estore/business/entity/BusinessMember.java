@@ -11,6 +11,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Entity
 @Table(
     name = "business_members",
@@ -38,14 +41,28 @@ public class BusinessMember extends BaseEntity {
 //  @Enumerated(EnumType.STRING)
 //  @Column(nullable = false)
 //  private BusinessMemberRole role;
+@ManyToMany(fetch = FetchType.LAZY)
+@JoinTable(
+    name = "business_member_roles",
+    joinColumns = @JoinColumn(name = "business_member_id"),
+    inverseJoinColumns = @JoinColumn(name = "role_id")
+)
+private Set<Role> roles = new HashSet<>();
 
-  @ManyToOne(fetch = FetchType.LAZY, optional = false)
-  @JoinColumn(name = "role_id", nullable = false)
-  private Role role;
+//  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+//  @JoinColumn(name = "role_id", nullable = false)
+//  private Role role;
+@ManyToMany(fetch = FetchType.LAZY)
+@JoinTable(
+    name = "business_member_departments",
+    joinColumns = @JoinColumn(name = "business_member_id"),
+    inverseJoinColumns = @JoinColumn(name = "department_id")
+)
+private Set<Department> departments = new HashSet<>();
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "department_id")
-  private Department department;
+//  @ManyToOne(fetch = FetchType.LAZY)
+//  @JoinColumn(name = "department_id")
+//  private Department department;
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
