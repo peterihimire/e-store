@@ -66,10 +66,6 @@ public class Cart {
     }).reduce(BigDecimal.ZERO, BigDecimal::add);
   }
 
-  //  // watch here
-  //  public Collection<Object> getItems() {
-  //  }
-
   private String createdBy;
   private String updatedBy;
 

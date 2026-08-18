@@ -97,7 +97,8 @@ public class OrderService implements IOrderService{
           cartItem.getQuantity(),
           cartItem.getUnitPrice(),
           order,
-          cartItem.getProduct()
+          cartItem.getProduct(),
+          cartItem.getProduct().getBusiness()
       );
 
       items.add(item);

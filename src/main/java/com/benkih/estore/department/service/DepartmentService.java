@@ -96,7 +96,17 @@ public class DepartmentService implements IDepartmentService{
 
   @Override
   @Transactional(readOnly = true)
-  public List<DepartmentResponseDto> getDepartments() {
+  public List<DepartmentResponseDto> getDepartments(Long businessId) {
+
+    return departmentRepository.findAllByBusinessId(businessId)
+        .stream()
+        .map(this::convertToDto)
+        .toList();
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public List<DepartmentResponseDto> getDepartmentsAdmin() {
 
     return departmentRepository.findAll()
         .stream()

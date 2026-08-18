@@ -26,10 +26,10 @@ public interface RefundRepository extends JpaRepository<Refund, Long> {
 
   Optional<Refund> findByPaymentReference(String paymentReference);
 
-  Optional<Refund> findByPaymentBusinessSlugAndReference(
-      String businessSlug,
-      String reference
-  );
+//  Optional<Refund> findByPaymentBusinessSlugAndReference(
+//      String businessSlug,
+//      String reference
+//  );
 
   List<Refund> findByUserOrderByCreatedAtDesc(User user);
 
@@ -40,10 +40,10 @@ public interface RefundRepository extends JpaRepository<Refund, Long> {
       List<com.benkih.estore.common.enums.RefundStatus> statuses
   );
 
-  Optional<Refund> findByPaymentBusinessSlugAndPaymentReference(
-      String businessSlug,
-      String paymentReference
-  );
+//  Optional<Refund> findByPaymentBusinessSlugAndPaymentReference(
+//      String businessSlug,
+//      String paymentReference
+//  );
 
   @Query("""
     SELECT COALESCE(SUM(r.amount), 0)

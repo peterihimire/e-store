@@ -87,6 +87,7 @@ public class StoreConfig {
             .requestMatchers("/api/v1/products/**").permitAll()
             .requestMatchers("/api/v1/users/**").permitAll()
             .requestMatchers("/api/v1/webhooks/**").permitAll()
+            .requestMatchers("/api/v1/payments/callback").permitAll()
             .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
             .requestMatchers("/h2-console/**").permitAll()
 

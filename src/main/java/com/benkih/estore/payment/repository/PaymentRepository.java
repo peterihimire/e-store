@@ -19,34 +19,34 @@ public interface PaymentRepository extends JpaRepository<Payment,Long> {
 
   Optional<Payment> findBySlug(String slug);
 
-  Optional<Payment> findByBusinessSlugAndReference(
-      String businessSlug,
-      String reference
-  );
-
-  Optional<Payment> findByBusinessSlugAndSlug(
-      String businessSlug,
-      String slug
-  );
-
-  Page<Payment> findByBusinessSlug(
-      String businessSlug,
-      Pageable pageable
-  );
+//  Optional<Payment> findByBusinessSlugAndReference(
+//      String businessSlug,
+//      String reference
+//  );
+//
+//  Optional<Payment> findByBusinessSlugAndSlug(
+//      String businessSlug,
+//      String slug
+//  );
+//
+//  Page<Payment> findByBusinessSlug(
+//      String businessSlug,
+//      Pageable pageable
+//  );
 
   Optional<Payment> findByOrderAndPaymentStatus(Order order, PaymentStatus status);
 
   Optional<Payment> findTopByOrderOrderByCreatedAtDesc(Order order);
 
-  @Query("""
-    SELECT COALESCE(SUM(p.amount), 0)
-    FROM Payment p
-    WHERE p.business.id = :businessId
-    AND p.paymentStatus = :status
-""")
-  BigDecimal sumByBusinessSlugAndStatus(
-      String businessSlug,
-      PaymentStatus status
-  );
+//  @Query("""
+//    SELECT COALESCE(SUM(p.amount), 0)
+//    FROM Payment p
+//    WHERE p.business.id = :businessId
+//    AND p.paymentStatus = :status
+//""")
+//  BigDecimal sumByBusinessSlugAndStatus(
+//      String businessSlug,
+//      PaymentStatus status
+//  );
 
 }

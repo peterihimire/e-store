@@ -129,7 +129,19 @@ public class RoleService implements IRoleService{
 
   @Override
   @Transactional(readOnly = true)
-  public List<RoleResponseDto> getRoles() {
+  public List<RoleResponseDto> getRoles(Long businessId) {
+    Business business = businessRepository.findById(businessId)
+        .orElseThrow(() -> new ResourceNotFoundException("Business not found"));
+
+    return roleRepository.findAllByBusinessId(business.getId())
+        .stream()
+        .map(this::convertToDto)
+        .toList();
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public List<RoleResponseDto> getRolesAdmin() {
 
     return roleRepository.findAll()
         .stream()

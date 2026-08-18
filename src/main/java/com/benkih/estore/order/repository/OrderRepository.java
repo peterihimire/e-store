@@ -19,38 +19,38 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
   })
   Optional<Order> findBySlug(String slug);
 
-  @EntityGraph(attributePaths = {
-      "user",
-      "orderItems",
-      "orderItems.product",
-      "orderItems.product.category"
-  })
-  Optional<Order> findByBusinessSlugAndSlug(
-      String businessSlug,
-      String slug
-  );
+//  @EntityGraph(attributePaths = {
+//      "user",
+//      "orderItems",
+//      "orderItems.product",
+//      "orderItems.product.category"
+//  })
+//  Optional<Order> findByBusinessSlugAndSlug(
+//      String businessSlug,
+//      String slug
+//  );
 
-  @EntityGraph(attributePaths = {
-      "user",
-      "orderItems",
-      "orderItems.product",
-      "orderItems.product.category"
-  })
-  Optional<Order> findByBusinessSlugAndOrderNumber(
-      String businessSlug,
-      String orderNumber
-  );
+//  @EntityGraph(attributePaths = {
+//      "user",
+//      "orderItems",
+//      "orderItems.product",
+//      "orderItems.product.category"
+//  })
+//  Optional<Order> findByBusinessSlugAndOrderNumber(
+//      String businessSlug,
+//      String orderNumber
+//  );
 
-  @EntityGraph(attributePaths = {
-      "user",
-      "orderItems",
-      "orderItems.product",
-      "orderItems.product.category"
-  })
-  Page<Order> findByBusinessSlug(
-      String businessSlug,
-      Pageable pageable
-  );
+//  @EntityGraph(attributePaths = {
+//      "user",
+//      "orderItems",
+//      "orderItems.product",
+//      "orderItems.product.category"
+//  })
+//  Page<Order> findByBusinessSlug(
+//      String businessSlug,
+//      Pageable pageable
+//  );
 
   @EntityGraph(attributePaths = {
       "user",

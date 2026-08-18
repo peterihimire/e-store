@@ -113,9 +113,6 @@ public class Payment {
   @JoinColumn(name = "order_id", nullable = false)
   private Order order;
 
-  @ManyToOne(fetch = FetchType.LAZY, optional = false)
-  @JoinColumn(name = "business_id", nullable = false)
-  private Business business;
 
   @PrePersist
   public void onCreate() {

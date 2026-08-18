@@ -41,11 +41,13 @@ public class OrderItem {
   @JoinColumn(name = "product_id")
   private Product product;
 
-  public OrderItem(int quantity, BigDecimal price, Order order, Product product) {
+  public OrderItem(int quantity, BigDecimal price, Order order,
+                   Product product, Business business) {
     this.quantity = quantity;
     this.price = price;
     this.order = order;
     this.product = product;
+    this.business = business;
   }
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)

@@ -19,7 +19,9 @@ public interface IDepartmentService {
 
   Department getDepartment(String slug);
 
-  List<DepartmentResponseDto> getDepartments();
+  List<DepartmentResponseDto> getDepartments(Long businessId);
+
+  List<DepartmentResponseDto> getDepartmentsAdmin();
 
   DepartmentResponseDto convertToDto(Department department);
 

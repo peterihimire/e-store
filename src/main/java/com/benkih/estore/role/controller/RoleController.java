@@ -42,7 +42,9 @@ public class RoleController {
   @GetMapping("/all")
   @PreAuthorize("hasAuthority('ROLE_READ')")
   public ResponseEntity<ApiResponse> getRoles() {
-    List<RoleResponseDto> rolesDto = roleService.getRoles();
+    Long businessId = tenantContext.getBusinessId();
+
+    List<RoleResponseDto> rolesDto = roleService.getRoles(businessId);
 
     return ResponseEntity.ok(
         new ApiResponse(

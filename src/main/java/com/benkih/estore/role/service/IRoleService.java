@@ -17,7 +17,9 @@ public interface IRoleService {
 
   Role getRole(String slug);
 
-  List<RoleResponseDto> getRoles();
+  List<RoleResponseDto> getRoles(Long businessId);
+
+  List<RoleResponseDto> getRolesAdmin();
 
   RoleResponseDto convertToDto(Role role);
 

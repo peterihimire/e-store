@@ -4,8 +4,10 @@ import com.benkih.estore.common.response.ApiResponse;
 import com.benkih.estore.department.dto.request.AssignUsersToDepartmentRequest;
 import com.benkih.estore.department.dto.request.CreateDepartmentRequest;
 import com.benkih.estore.department.dto.request.UpdateDepartmentRequest;
+import com.benkih.estore.department.dto.response.DepartmentResponseDto;
 import com.benkih.estore.department.entity.Department;
 import com.benkih.estore.department.service.DepartmentService;
+import com.benkih.estore.role.dto.response.RoleResponseDto;
 import com.benkih.estore.security.tenant.TenantContext;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +15,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("${api.prefix}/departments")
@@ -40,12 +44,16 @@ public class DepartmentController {
   @GetMapping("/all")
   @PreAuthorize("hasAuthority('DEPARTMENT_READ')")
   public ResponseEntity<ApiResponse> getDepartments() {
+    Long businessId = tenantContext.getBusinessId();
+
+    List<DepartmentResponseDto> departmentsDto = departmentService.getDepartments(businessId);
 
     return ResponseEntity.ok(
         new ApiResponse(
             "success",
             "Departments retrieved successfully",
-            departmentService.getDepartments()
+            departmentsDto
+
         )
     );
   }

@@ -1,0 +1,5 @@
+ALTER TABLE orders
+DROP CONSTRAINT IF EXISTS fkqac135o6f6wifn3tlfkdgmxey;
+
+ALTER TABLE orders
+DROP COLUMN IF EXISTS business_id;
