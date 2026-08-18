@@ -230,21 +230,21 @@ public class UserInvitationService implements IUserInvitationService{
               new ResourceNotFoundException("Business not found")
           );
 
-      Set<Role> businessRoles = invitation.getRoles();
+      Set<Role> businessRoles = new HashSet<>(invitation.getRoles());
 
       if (businessRoles.isEmpty()) {
         throw new BadRequestException("Invitation must contain at least one business role.");
       }
 
-      Set<Department> departments =
-          invitation.getDepartments();
+      Set<Department> businessDepartments =
+          new HashSet<>(invitation.getDepartments());
 
       BusinessMember member = new BusinessMember();
 
       member.setBusiness(business);
       member.setUser(user);
       member.setRoles(businessRoles);
-      member.setDepartments(departments);
+      member.setDepartments(businessDepartments);
       member.setStatus(MemberStatus.ACTIVE);
 
       businessMemberRepository.save(member);

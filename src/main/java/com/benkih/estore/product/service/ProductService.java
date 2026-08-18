@@ -52,12 +52,14 @@ public class ProductService implements IProductService{
     }
 
     Business business = businessRepository.findById(businessId)
-        .orElseThrow(() -> new ResourceNotFoundException("Business not found"));
+        .orElseThrow(() ->
+            new ResourceNotFoundException("Business not found"));
 
     Category category =
         Optional.ofNullable(categoryRepository.findByNameAndBusinessId(request.getCategory(), businessId))
         .orElseGet(() -> {
-            Category newCategory = new Category(request.getCategory());// Remember this place had issues
+            Category newCategory = new Category(request.getCategory());
+            newCategory.setBusiness(business);
             return categoryRepository.save(newCategory);
     });
 

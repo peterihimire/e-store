@@ -28,7 +28,7 @@ public class StoreUserDetails implements UserDetails {
   private String email;
   private String password;
   private Collection<GrantedAuthority> authorities;
-  
+
 
   public static StoreUserDetails buildUserDetails(User user) {
 

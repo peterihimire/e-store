@@ -18,10 +18,10 @@ import java.util.Set;
 @Table(
     name = "business_members",
     uniqueConstraints = {
-        @UniqueConstraint(
-            name = "uk_business_user",
-            columnNames = {"business_id", "user_id"}
-        ),
+//        @UniqueConstraint(
+//            name = "uk_business_user",
+//            columnNames = {"business_id", "user_id"}
+//        ),
         @UniqueConstraint(
             name = "uk_business_member_user",
             columnNames = {"user_id"}
@@ -38,7 +38,7 @@ public class BusinessMember extends BaseEntity {
   @JoinColumn(name = "business_id", nullable = false)
   private Business business;
 
-  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @OneToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "user_id", nullable = false,unique = true)
   private User user;
 

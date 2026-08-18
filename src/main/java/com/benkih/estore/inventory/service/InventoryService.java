@@ -122,6 +122,7 @@ public class InventoryService implements IInventoryService{
 
     Inventory inventory = new Inventory();
     inventory.setProduct(product);
+    inventory.setBusiness(product.getBusiness());
 
     product.setInventory(inventory);
 
