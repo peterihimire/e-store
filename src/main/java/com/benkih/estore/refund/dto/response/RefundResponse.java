@@ -8,6 +8,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -39,6 +40,8 @@ public class RefundResponse {
   private String gatewayRefundId;
 
   private PaymentProvider provider;
+
+  private List<RefundItemResponse> items;
 
   private LocalDateTime createdAt;
 

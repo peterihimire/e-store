@@ -15,6 +15,8 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -94,7 +96,15 @@ public class Refund extends BaseEntity {
 
   private LocalDateTime refundedAt;
 
-  @ManyToOne(fetch = FetchType.LAZY, optional = false)
-  @JoinColumn(name = "business_id", nullable = false)
-  private Business business;
+  @OneToMany(
+      mappedBy = "refund",
+      cascade = CascadeType.ALL,
+      orphanRemoval = true
+  )
+  private List<RefundItem> items = new ArrayList<>();
+
+  public void addItem(RefundItem item) {
+    items.add(item);
+    item.setRefund(this);
+  }
 }

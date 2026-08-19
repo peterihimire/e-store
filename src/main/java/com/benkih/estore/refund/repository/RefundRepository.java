@@ -20,7 +20,7 @@ public interface RefundRepository extends JpaRepository<Refund, Long> {
 
   Optional<Refund> findBySlug(String slug);
 
-  Optional<Refund> findByBusinessSlugAndSlug(String businessSlug, String slug);
+//  Optional<Refund> findByBusinessSlugAndSlug(String businessSlug, String slug);
 
   Optional<Refund> findByReference(String reference);
 

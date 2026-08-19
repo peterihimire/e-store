@@ -1,0 +1,5 @@
+ALTER TABLE refunds
+DROP CONSTRAINT IF EXISTS fkl7jch38qr8h7905ilih3t8x2x;
+
+ALTER TABLE refunds
+DROP COLUMN IF EXISTS business_id;

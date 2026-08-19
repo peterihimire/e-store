@@ -11,6 +11,8 @@ import com.benkih.estore.common.exceptions.PaymentException;
 import com.benkih.estore.common.exceptions.ResourceNotFoundException;
 import com.benkih.estore.notification.INotificationService;
 import com.benkih.estore.order.entity.Order;
+import com.benkih.estore.order.entity.OrderItem;
+import com.benkih.estore.order.repository.OrderItemRepository;
 import com.benkih.estore.order.repository.OrderRepository;
 import com.benkih.estore.payment.dto.request.RefundPaymentRequest;
 import com.benkih.estore.payment.dto.response.RefundPaymentResponse;
@@ -20,8 +22,12 @@ import com.benkih.estore.payment.provider.PaymentGateway;
 import com.benkih.estore.payment.provider.PaymentGatewayFactory;
 import com.benkih.estore.payment.repository.PaymentRepository;
 import com.benkih.estore.refund.dto.request.CreateRefundRequest;
+import com.benkih.estore.refund.dto.request.RefundItemRequest;
+import com.benkih.estore.refund.dto.response.RefundItemResponse;
 import com.benkih.estore.refund.dto.response.RefundResponse;
 import com.benkih.estore.refund.entity.Refund;
+import com.benkih.estore.refund.entity.RefundItem;
+import com.benkih.estore.refund.repository.RefundItemRepository;
 import com.benkih.estore.refund.repository.RefundRepository;
 import com.benkih.estore.security.user.CurrentUserService;
 import com.benkih.estore.user.entity.User;
@@ -32,6 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -46,6 +53,8 @@ public class RefundService implements IRefundService{
   private final RefundRepository refundRepository;
   private final PaymentRepository paymentRepository;
   private final OrderRepository orderRepository;
+  private final OrderItemRepository orderItemRepository;
+  private final RefundItemRepository refundItemRepository;
 
 
   @Override
@@ -65,24 +74,78 @@ public class RefundService implements IRefundService{
         .orElseThrow(() ->
             new PaymentException("This order does not have a successful payment."));
 
-    BigDecimal refundAmount = request.getAmount() != null
-        ? request.getAmount()
-        : payment.getAmount();
-
-    if (refundAmount.compareTo(BigDecimal.ZERO) <= 0) {
-      throw new PaymentException("Refund amount must be greater than zero.");
+    if (request.getItems() == null || request.getItems().isEmpty()) {
+      throw new PaymentException("At least one refund item is required.");
     }
 
-    if (refundAmount.compareTo(payment.getAmount()) > 0) {
-      throw new PaymentException("Refund amount cannot exceed the payment amount.");
+    BigDecimal totalRefundAmount = BigDecimal.ZERO;
+
+    List<RefundItem> refundItems = new ArrayList<>();
+
+    for (RefundItemRequest itemRequest : request.getItems()) {
+
+      OrderItem orderItem = orderItemRepository.findBySlugAndOrder(
+              itemRequest.getOrderItemSlug(),
+              order
+          ).orElseThrow(() ->
+              new ResourceNotFoundException("Order item not found."));
+
+      int requestedQuantity = itemRequest.getQuantity();
+
+      if (requestedQuantity <= 0) {
+        throw new PaymentException("Refund quantity must be greater than zero.");
+      }
+
+      Integer refundedQuantity = refundItemRepository.sumRefundedQuantityByOrderItemId(
+              orderItem.getId(),
+              RefundGatewayStatus.PROCESSED
+          );
+
+      int remainingQuantity = orderItem.getQuantity() - refundedQuantity;
+
+      if (requestedQuantity > remainingQuantity) {
+        throw new PaymentException(
+            "Requested refund quantity exceeds the " + "remaining refundable quantity."
+        );
+      }
+
+      BigDecimal itemAmount = orderItem.getPrice().multiply(BigDecimal.valueOf(requestedQuantity));
+
+      RefundItem refundItem = new RefundItem();
+
+      refundItem.setOrderItem(orderItem);
+      refundItem.setQuantity(requestedQuantity);
+      refundItem.setAmount(itemAmount);
+      refundItems.add(refundItem);
+
+      totalRefundAmount = totalRefundAmount.add(itemAmount);
 
     }
+
+    if (totalRefundAmount.compareTo(payment.getAmount()) > 0) {
+      throw new PaymentException(
+          "Refund amount cannot exceed the payment amount."
+      );
+    }
+
+//    BigDecimal refundAmount = request.getAmount() != null
+//        ? request.getAmount()
+//        : payment.getAmount();
+
+//    if (refundAmount.compareTo(BigDecimal.ZERO) <= 0) {
+//      throw new PaymentException("Refund amount must be greater than zero.");
+//    }
+//
+//    if (refundAmount.compareTo(payment.getAmount()) > 0) {
+//      throw new PaymentException("Refund amount cannot exceed the payment amount.");
+//
+//    }
 
     Refund refund = new Refund();
 
     refund.setUser(user);
     refund.setPayment(payment);
-    refund.setAmount(refundAmount);
+    refund.setAmount(totalRefundAmount);
     refund.setCurrency(payment.getCurrency());
     refund.setProvider(payment.getPaymentProvider());
     refund.setReference(generateRefundReference());
@@ -90,11 +153,16 @@ public class RefundService implements IRefundService{
     refund.setRefundStatus(RefundStatus.REQUESTED);
     refund.setGatewayStatus(RefundGatewayStatus.PENDING);
 
+    for (RefundItem item : refundItems) {
+      refund.addItem(item);
+    }
+
     Refund saved = refundRepository.save(refund);
 
-    log.info("Refund {} requested for payment {}",
+    log.info("Refund {} requested for payment {} with amount {}",
         saved.getReference(),
-        payment.getReference()
+        payment.getReference(),
+        saved.getAmount()
     );
 
     return convertToDto(saved);
@@ -417,6 +485,12 @@ public void markSuccessful(PaymentWebhookEvent event) {
         .failureReason(refund.getFailureReason())
         .refundedAt(refund.getRefundedAt())
         .createdAt(refund.getCreatedAt())
+        .items(
+            refund.getItems()
+                .stream()
+                .map(this::convertRefundItemToDto)
+                .toList()
+        )
         .build();
   }
 
@@ -456,6 +530,16 @@ public void markSuccessful(PaymentWebhookEvent event) {
       PaymentStatus paymentStatus
   ) {
     order.setPaymentStatus(paymentStatus);
+  }
+
+  private RefundItemResponse convertRefundItemToDto(RefundItem item) {
+
+    return RefundItemResponse.builder()
+        .slug(item.getSlug())
+        .orderItemSlug(item.getOrderItem().getSlug())
+        .quantity(item.getQuantity())
+        .amount(item.getAmount())
+        .build();
   }
 }
 //NOTE:
