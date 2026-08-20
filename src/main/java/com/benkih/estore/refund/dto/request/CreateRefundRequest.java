@@ -1,6 +1,8 @@
 package com.benkih.estore.refund.dto.request;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -23,6 +25,7 @@ public class CreateRefundRequest {
   @Size(max = 1000)
   private String reason;
 
-  @NotBlank
+  @NotEmpty
+  @Valid
   List<RefundItemRequest> items;
 }

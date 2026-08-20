@@ -14,7 +14,7 @@ import java.util.Map;
 public interface IInventoryService {
   Inventory getByProductSlug(String productSlug);
 
-  Page<InventoryResponseDto> getAllInventories(Pageable pageable);
+  Page<InventoryResponseDto> getAllInventories(Pageable pageable, Long businessId);
 
   Inventory getInventoryBySlug(String slug);
 

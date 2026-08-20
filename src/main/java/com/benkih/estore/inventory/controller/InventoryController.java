@@ -6,6 +6,7 @@ import com.benkih.estore.inventory.dto.request.InventoryAdjustmentRequest;
 import com.benkih.estore.inventory.dto.response.InventoryResponseDto;
 import com.benkih.estore.inventory.entity.Inventory;
 import com.benkih.estore.inventory.service.IInventoryService;
+import com.benkih.estore.security.tenant.TenantContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class InventoryController {
   private final IInventoryService inventoryService;
+  private final TenantContext tenantContext;
 
 
   @PreAuthorize("hasAuthority('INVENTORY_READ')")
@@ -26,8 +28,10 @@ public class InventoryController {
   public ResponseEntity<ApiResponse> getAllInventories(
       @RequestParam(defaultValue = "1") int page,
       @RequestParam(defaultValue = "10") int limit) {
+    Long businessId = tenantContext.getBusinessId();
+
     Pageable pageable = PageRequest.of(page - 1, limit);
-    Page<InventoryResponseDto> inventoryPage = inventoryService.getAllInventories(pageable);
+    Page<InventoryResponseDto> inventoryPage = inventoryService.getAllInventories(pageable, businessId);
     PaginatedResponse<InventoryResponseDto> response = PaginatedResponse.from(inventoryPage, page);
 
     return ResponseEntity.ok(new ApiResponse("success", "Inventories retrieved", response));

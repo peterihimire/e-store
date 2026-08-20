@@ -35,8 +35,8 @@ public class InventoryService implements IInventoryService{
 
   @Transactional(readOnly = true)
   @Override
-  public Page<InventoryResponseDto> getAllInventories(Pageable pageable) {
-    Page<Inventory> inventoryPage = inventoryRepository.findAll(pageable);
+  public Page<InventoryResponseDto> getAllInventories(Pageable pageable, Long businessId) {
+    Page<Inventory> inventoryPage = inventoryRepository.findAllByBusinessId(pageable, businessId);
 
     if(inventoryPage.isEmpty()){
       return Page.empty(pageable);

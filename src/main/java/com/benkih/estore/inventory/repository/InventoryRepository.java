@@ -25,10 +25,7 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long> {
       String slug
   );
 
-  Page<Inventory> findByBusinessSlug(
-      String businessSlug,
-      Pageable pageable
-  );
+  Page<Inventory> findAllByBusinessId(Pageable pageable,  Long businessid);
 
   Optional<Inventory> findByProductSlug(String productSlug);
 

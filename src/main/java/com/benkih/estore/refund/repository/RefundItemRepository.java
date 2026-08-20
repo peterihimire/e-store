@@ -18,4 +18,23 @@ public interface RefundItemRepository extends JpaRepository<RefundItem, Long> {
       @Param("orderItemId") Long orderItemId,
       @Param("status") RefundGatewayStatus status
   );
+
+  @Query("""
+    SELECT COALESCE(SUM(ri.quantity), 0)
+    FROM RefundItem ri
+    WHERE ri.orderItem.id = :orderItemId
+      AND (
+          ri.refund.refundStatus IN (
+              com.benkih.estore.common.enums.RefundStatus.REQUESTED,
+              com.benkih.estore.common.enums.RefundStatus.APPROVED
+          )
+          OR
+          ri.refund.gatewayStatus IN (
+              com.benkih.estore.common.enums.RefundGatewayStatus.PROCESSED
+          )
+      )
+""")
+  Integer sumActiveRefundQuantityByOrderItemId(
+      @Param("orderItemId") Long orderItemId
+  );
 }

@@ -38,9 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -78,17 +76,25 @@ public class RefundService implements IRefundService{
       throw new PaymentException("At least one refund item is required.");
     }
 
+    // Prevent the same OrderItem appearing twice
+    Set<String> orderItemSlugs = new HashSet<>();
+
+    // Always acquire locks in a deterministic order
+    List<RefundItemRequest> items = request.getItems()
+        .stream()
+        .sorted(Comparator.comparing(RefundItemRequest::getOrderItemSlug))
+        .toList();
+
     BigDecimal totalRefundAmount = BigDecimal.ZERO;
 
     List<RefundItem> refundItems = new ArrayList<>();
 
-    for (RefundItemRequest itemRequest : request.getItems()) {
+    for (RefundItemRequest itemRequest : items) {
 
-      OrderItem orderItem = orderItemRepository.findBySlugAndOrder(
-              itemRequest.getOrderItemSlug(),
-              order
-          ).orElseThrow(() ->
-              new ResourceNotFoundException("Order item not found."));
+      // Lock order-item
+      OrderItem orderItem = orderItemRepository
+          .findBySlugAndOrderForUpdate(itemRequest.getOrderItemSlug(), order)
+          .orElseThrow(() -> new ResourceNotFoundException("Order item not found."));
 
       int requestedQuantity = itemRequest.getQuantity();
 
@@ -96,18 +102,7 @@ public class RefundService implements IRefundService{
         throw new PaymentException("Refund quantity must be greater than zero.");
       }
 
-      Integer refundedQuantity = refundItemRepository.sumRefundedQuantityByOrderItemId(
-              orderItem.getId(),
-              RefundGatewayStatus.PROCESSED
-          );
-
-      int remainingQuantity = orderItem.getQuantity() - refundedQuantity;
-
-      if (requestedQuantity > remainingQuantity) {
-        throw new PaymentException(
-            "Requested refund quantity exceeds the " + "remaining refundable quantity."
-        );
-      }
+      validateRefundQuantity(orderItem, requestedQuantity);
 
       BigDecimal itemAmount = orderItem.getPrice().multiply(BigDecimal.valueOf(requestedQuantity));
 
@@ -122,24 +117,13 @@ public class RefundService implements IRefundService{
 
     }
 
-    if (totalRefundAmount.compareTo(payment.getAmount()) > 0) {
-      throw new PaymentException(
-          "Refund amount cannot exceed the payment amount."
-      );
+    if (totalRefundAmount.compareTo(BigDecimal.ZERO) <= 0) {
+      throw new PaymentException("Refund amount must be greater than zero.");
     }
 
-//    BigDecimal refundAmount = request.getAmount() != null
-//        ? request.getAmount()
-//        : payment.getAmount();
-
-//    if (refundAmount.compareTo(BigDecimal.ZERO) <= 0) {
-//      throw new PaymentException("Refund amount must be greater than zero.");
-//    }
-//
-//    if (refundAmount.compareTo(payment.getAmount()) > 0) {
-//      throw new PaymentException("Refund amount cannot exceed the payment amount.");
-//
-//    }
+    if (totalRefundAmount.compareTo(payment.getAmount()) > 0) {
+      throw new PaymentException("Refund amount cannot exceed the payment amount.");
+    }
 
     Refund refund = new Refund();
 
@@ -318,11 +302,8 @@ public void markSuccessful(PaymentWebhookEvent event) {
 
   BigDecimal refundedAmount = event.amount();
 
-
   if (refundedAmount.compareTo(refund.getAmount()) != 0) {
-    throw new PaymentException(
-        "Gateway refund amount does not match refund amount."
-    );
+    throw new PaymentException("Gateway refund amount does not match refund amount.");
   }
 
   refund.setGatewayStatus(RefundGatewayStatus.PROCESSED);
@@ -381,22 +362,6 @@ public void markSuccessful(PaymentWebhookEvent event) {
 
     refundRepository.save(refund);
   }
-
-//  @Override
-//  @Transactional
-//  public void markSuccessful(PaymentWebhookEvent event) {
-//    Refund refund = getRefundByPaymentReference(event.transactionReference());
-//    refund.setGatewayStatus(RefundGatewayStatus.PROCESSED);
-//    refund.setRefundedAt(LocalDateTime.now());
-//
-//
-//    refundRepository.save(refund);
-//    log.info(
-//        "Refund {} successfully processed for payment {}",
-//        refund.getReference(),
-//        event.transactionReference()
-//    );
-//  }
 
 
   // RETRIEVAL
@@ -485,8 +450,7 @@ public void markSuccessful(PaymentWebhookEvent event) {
         .failureReason(refund.getFailureReason())
         .refundedAt(refund.getRefundedAt())
         .createdAt(refund.getCreatedAt())
-        .items(
-            refund.getItems()
+        .items(refund.getItems()
                 .stream()
                 .map(this::convertRefundItemToDto)
                 .toList()
@@ -541,6 +505,33 @@ public void markSuccessful(PaymentWebhookEvent event) {
         .amount(item.getAmount())
         .build();
   }
+
+  private void validateRefundQuantity(
+      OrderItem orderItem,
+      int requestedQuantity
+  ) {
+
+    Integer activeQuantity =
+        refundItemRepository.sumActiveRefundQuantityByOrderItemId(
+            orderItem.getId()
+        );
+
+    int activeRefundQuantity = activeQuantity != null ? activeQuantity : 0;
+
+    int purchasedQuantity = orderItem.getQuantity();
+
+    int availableQuantity = purchasedQuantity - activeRefundQuantity;
+
+    if (requestedQuantity > availableQuantity) {
+      throw new PaymentException(
+          String.format(
+              "Cannot refund %d unit(s). " + "Only %d unit(s) are available for refund.",
+              requestedQuantity,
+              Math.max(availableQuantity, 0)
+          )
+      );
+    }
+  }
 }
 //NOTE:
 //Also, your refundRepository.flush() is different from save() here.
@@ -548,3 +539,54 @@ public void markSuccessful(PaymentWebhookEvent event) {
 // for sumRefundsByPaymentId() and you want the just-marked refund included in that SUM.
 // You don’t need to flush the payment before reading its status because you’re
 // reading the Java object, not querying the database.
+
+
+//      if (requestedQuantity <= 0) {
+//        throw new PaymentException("Refund quantity must be greater than zero.");
+//      }
+//
+//      Integer refundedQuantity = refundItemRepository.sumRefundedQuantityByOrderItemId(
+//              orderItem.getId(),
+//              RefundGatewayStatus.PROCESSED
+//          );
+//
+//      if (refundedQuantity == null) {
+//        refundedQuantity = 0;
+//      }
+//
+//      int remainingQuantity = orderItem.getQuantity() - refundedQuantity;
+//
+//      if (requestedQuantity > remainingQuantity) {
+//        throw new PaymentException(
+//            "Requested refund quantity exceeds the " + "remaining refundable quantity."
+//        );
+//      }
+
+//    BigDecimal refundAmount = request.getAmount() != null
+//        ? request.getAmount()
+//        : payment.getAmount();
+
+//    if (refundAmount.compareTo(BigDecimal.ZERO) <= 0) {
+//      throw new PaymentException("Refund amount must be greater than zero.");
+//    }
+//
+//    if (refundAmount.compareTo(payment.getAmount()) > 0) {
+//      throw new PaymentException("Refund amount cannot exceed the payment amount.");
+//
+//    }
+
+//  @Override
+//  @Transactional
+//  public void markSuccessful(PaymentWebhookEvent event) {
+//    Refund refund = getRefundByPaymentReference(event.transactionReference());
+//    refund.setGatewayStatus(RefundGatewayStatus.PROCESSED);
+//    refund.setRefundedAt(LocalDateTime.now());
+//
+//
+//    refundRepository.save(refund);
+//    log.info(
+//        "Refund {} successfully processed for payment {}",
+//        refund.getReference(),
+//        event.transactionReference()
+//    );
+//  }
