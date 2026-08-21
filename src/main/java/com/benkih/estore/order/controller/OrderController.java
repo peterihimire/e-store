@@ -46,11 +46,14 @@ public class OrderController {
   //    return ResponseEntity.ok(new ApiResponse("success","Order returned success", orderData));
   //  }
 
-  @GetMapping("/order/user/{userSlug}")
-  public ResponseEntity<ApiResponse> getUserOrders(@PathVariable String userSlug){
-    List<Order> orders = orderService.getUserOrders(userSlug);
+  @GetMapping("/order/user")
+  public ResponseEntity<ApiResponse> getUserOrders(){
+    List<Order> orders = orderService.getUserOrders();
     List<OrderResponseDto> orderData = orderService.getConvertedOrders(orders);
-    return ResponseEntity.ok(new ApiResponse("success","User orders returned success", orderData));
+    return ResponseEntity.ok(new ApiResponse(
+        "success",
+        "User orders returned success",
+        orderData));
   }
 
   @PreAuthorize("hasRole('ADMIN')")

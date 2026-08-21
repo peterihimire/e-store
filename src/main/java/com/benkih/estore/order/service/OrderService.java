@@ -20,6 +20,8 @@ import com.benkih.estore.order.repository.OrderRepository;
 import com.benkih.estore.product.entity.Product;
 import com.benkih.estore.product.repository.ProductRepository;
 import com.benkih.estore.product.service.ProductService;
+import com.benkih.estore.security.user.CurrentUserService;
+import com.benkih.estore.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -42,6 +44,7 @@ public class OrderService implements IOrderService{
   private final ProductService productService;
   private final IInventoryService inventoryService;
   private final INotificationService notificationService;
+  private final CurrentUserService currentUserService;
 
 
   @Override
@@ -134,16 +137,29 @@ public class OrderService implements IOrderService{
   }
 
 
+  @Transactional(readOnly = true)
   @Override
-  public List<Order> getUserOrders(String slug){
-    return orderRepository.findByUserSlug(slug);
+  public List<Order> getUserOrders(){
+    User user = currentUserService.getCurrentUser();
+//    return orderRepository.findByUserSlug(user.getSlug());
+    List<Order> orders = orderRepository.findByUserSlug(user.getSlug());
+
+    orders.forEach(order ->
+        order.getOrderItems().forEach(item ->
+            item.getProduct().getImages().size()
+        )
+    );
+
+    return orders;
   }
 
 
   @Transactional(readOnly = true)
   @Override
   public List<OrderResponseDto> getConvertedOrders(List<Order> orders) {
-    return orders.stream().map(this::convertToDto).toList();
+    return orders.stream()
+        .map(this::convertToDto)
+        .toList();
   }
 
 
@@ -161,6 +177,7 @@ public class OrderService implements IOrderService{
         .map(item -> {
           Product product = item.getProduct();
           return new OrderItemResponseDto(
+              item.getSlug(),
               productService.convertToDto(product),
               item.getQuantity(),
               item.getPrice()

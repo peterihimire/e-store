@@ -16,7 +16,7 @@ public interface IOrderService {
   @Transactional(readOnly = true)
   OrderResponseDto getOrderDtoBySlug(String slug);
 
-  List<Order> getUserOrders(String slug);
+  List<Order> getUserOrders();
 
   @Transactional(readOnly = true)
   List<OrderResponseDto> getConvertedOrders(List<Order> orders);
