@@ -24,7 +24,17 @@ public class OrderItem {
   private String slug;
 
   private int quantity;
+
+  @Column(nullable = false, precision = 18, scale = 2)
   private BigDecimal price;
+
+  @Column(nullable = false)
+  private String name;
+
+  @Column(nullable = false)
+  private String sku;
+
+  private String brand;
 
   private String createdBy;
   private String updatedBy;
@@ -41,10 +51,14 @@ public class OrderItem {
   @JoinColumn(name = "product_id")
   private Product product;
 
-  public OrderItem(int quantity, BigDecimal price, Order order,
+  public OrderItem(int quantity, BigDecimal price, String name,
+                   String sku, String brand, Order order,
                    Product product, Business business) {
     this.quantity = quantity;
     this.price = price;
+    this.name = name;
+    this.sku = sku;
+    this.brand = brand;
     this.order = order;
     this.product = product;
     this.business = business;

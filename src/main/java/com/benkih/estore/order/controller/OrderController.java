@@ -2,9 +2,12 @@ package com.benkih.estore.order.controller;
 
 import com.benkih.estore.common.response.ApiResponse;
 import com.benkih.estore.order.dto.request.UpdateOrderStatusRequest;
+import com.benkih.estore.order.dto.response.BusinessOrderItemResponseDto;
+import com.benkih.estore.order.dto.response.BusinessOrderResponseDto;
 import com.benkih.estore.order.dto.response.OrderResponseDto;
 import com.benkih.estore.order.entity.Order;
 import com.benkih.estore.order.service.IOrderService;
+import com.benkih.estore.security.tenant.TenantContext;
 import com.benkih.estore.security.user.StoreUserDetails;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +25,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OrderController {
   private final IOrderService orderService;
+  private final TenantContext tenantContext;
 
   @PostMapping("/order/place-order")
   public ResponseEntity<ApiResponse> createOrder(@AuthenticationPrincipal StoreUserDetails userDetails){
@@ -38,13 +42,6 @@ public class OrderController {
   //    OrderResponseDto orderData = orderService.convertToDto(order);
     return ResponseEntity.ok(new ApiResponse("success","Order returned success", order));
   }
-
-  //  @GetMapping("/order/{orderSlug}")
-  //  public ResponseEntity<ApiResponse> getOrderBySlug(@PathVariable String orderSlug){
-  //    Order order = orderService.getOrder(orderSlug);
-  //    OrderResponseDto orderData = orderService.convertToDto(order);
-  //    return ResponseEntity.ok(new ApiResponse("success","Order returned success", orderData));
-  //  }
 
   @GetMapping("/order/user")
   public ResponseEntity<ApiResponse> getUserOrders(){
@@ -67,5 +64,40 @@ public class OrderController {
     return ResponseEntity.ok(
         new ApiResponse("success", "Order updated successfully", order)
     );
+  }
+
+  @GetMapping("/business/get-order/{orderSlug}")
+  public ResponseEntity<ApiResponse> getBusinessOrder(@PathVariable String orderSlug){
+    Long businessId = tenantContext.getBusinessId();
+
+    BusinessOrderResponseDto orderData =
+        orderService.getBusinessOrder(orderSlug, businessId);
+    return ResponseEntity.ok(new ApiResponse(
+        "success",
+        "Business Order returned success",
+        orderData));
+  }
+
+  @GetMapping("/business/get-orders")
+  public ResponseEntity<ApiResponse> getBusinessOrders(){
+    Long businessId = tenantContext.getBusinessId();
+
+    List<BusinessOrderResponseDto> orderData = orderService.getBusinessOrders(businessId);
+    return ResponseEntity.ok(new ApiResponse(
+        "success",
+        "Business Orders returned success",
+        orderData));
+  }
+
+  @GetMapping("/business/get-order-item/{orderSlug}")
+  public ResponseEntity<ApiResponse> getBusinessOrderItems(@PathVariable String orderSlug){
+    Long businessId = tenantContext.getBusinessId();
+
+    BusinessOrderItemResponseDto orderData =
+        orderService.getBusinessOrderItem(orderSlug, businessId);
+    return ResponseEntity.ok(new ApiResponse(
+        "success",
+        "Business Order item returned success",
+        orderData));
   }
 }

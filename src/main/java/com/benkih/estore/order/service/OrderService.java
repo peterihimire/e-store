@@ -1,5 +1,7 @@
 package com.benkih.estore.order.service;
 
+import com.benkih.estore.business.entity.Business;
+import com.benkih.estore.business.repository.BusinessRepository;
 import com.benkih.estore.cart.entity.Cart;
 import com.benkih.estore.cart.entity.CartItem;
 import com.benkih.estore.cart.service.CartService;
@@ -12,10 +14,13 @@ import com.benkih.estore.inventory.entity.Inventory;
 import com.benkih.estore.inventory.service.IInventoryService;
 import com.benkih.estore.notification.INotificationService;
 import com.benkih.estore.notification.NotificationService;
+import com.benkih.estore.order.dto.response.BusinessOrderItemResponseDto;
+import com.benkih.estore.order.dto.response.BusinessOrderResponseDto;
 import com.benkih.estore.order.dto.response.OrderItemResponseDto;
 import com.benkih.estore.order.dto.response.OrderResponseDto;
 import com.benkih.estore.order.entity.Order;
 import com.benkih.estore.order.entity.OrderItem;
+import com.benkih.estore.order.repository.OrderItemRepository;
 import com.benkih.estore.order.repository.OrderRepository;
 import com.benkih.estore.product.entity.Product;
 import com.benkih.estore.product.repository.ProductRepository;
@@ -29,10 +34,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -45,6 +48,9 @@ public class OrderService implements IOrderService{
   private final IInventoryService inventoryService;
   private final INotificationService notificationService;
   private final CurrentUserService currentUserService;
+  private final BusinessRepository businessRepository;
+  private final OrderItemRepository orderItemRepository;
+
 
 
   @Override
@@ -83,6 +89,7 @@ public class OrderService implements IOrderService{
     order.setUser(cart.getUser());
     order.setOrderStatus(OrderStatus.PENDING);
     order.setOrderDate(LocalDateTime.now());
+
     return order;
   }
 
@@ -99,6 +106,9 @@ public class OrderService implements IOrderService{
       OrderItem item = new OrderItem(
           cartItem.getQuantity(),
           cartItem.getUnitPrice(),
+          cartItem.getProduct().getName(),
+          cartItem.getProduct().getSku(),
+          cartItem.getProduct().getBrand(),
           order,
           cartItem.getProduct(),
           cartItem.getProduct().getBusiness()
@@ -154,6 +164,76 @@ public class OrderService implements IOrderService{
   }
 
 
+  public BusinessOrderResponseDto getBusinessOrder(String slug,
+                                                   Long businessId){
+
+    Business business = businessRepository.findById(businessId)
+        .orElseThrow(() ->
+            new ResourceNotFoundException("Business not found"));
+
+    List<OrderItem> businessItems = orderItemRepository.findBusinessOrderItemsByOrderSlug(slug, business.getSlug());
+
+    if (businessItems.isEmpty()) {
+      throw new ResourceNotFoundException("Order not found");
+    }
+
+    Order order = businessItems.get( 0).getOrder();
+
+    return convertBusinessOrderToDto(
+        order,
+        businessItems
+    );
+  }
+
+  public List<BusinessOrderResponseDto> getBusinessOrders(Long businessId){
+    Business business = businessRepository.findById(businessId)
+        .orElseThrow(() ->
+            new ResourceNotFoundException("Business not found"));
+
+    List<OrderItem> orderItems = orderItemRepository.findBusinessOrderItems(
+            business.getSlug()
+        );
+
+    Map<Order, List<OrderItem>> groupedOrders = orderItems
+        .stream()
+        .collect(Collectors.groupingBy(
+            OrderItem::getOrder,
+            LinkedHashMap::new,
+            Collectors.toList()
+        ));
+
+    return groupedOrders.entrySet()
+        .stream()
+        .map(entry ->
+            convertBusinessOrderToDto(
+                entry.getKey(),
+                entry.getValue()
+            )
+        )
+        .toList();
+  }
+
+  @Transactional(readOnly = true)
+  @Override
+  public BusinessOrderItemResponseDto getBusinessOrderItem(String slug,
+                                                           Long businessId) {
+
+    Business business = businessRepository.findById(businessId)
+        .orElseThrow(() ->
+            new ResourceNotFoundException("Business not found"));
+
+    OrderItem orderItem = orderItemRepository.findBusinessOrderItem(
+            slug,
+            business.getSlug()
+        )
+        .orElseThrow(() ->
+            new ResourceNotFoundException("Order item not found")
+        );
+
+    return convertBusinessOrderItemToDto(orderItem);
+  }
+
+
   @Transactional(readOnly = true)
   @Override
   public List<OrderResponseDto> getConvertedOrders(List<Order> orders) {
@@ -192,6 +272,65 @@ public class OrderService implements IOrderService{
         order.getTotalAmount(),
         order.getOrderStatus().name(),
         items
+    );
+  }
+
+  private BusinessOrderItemResponseDto convertBusinessOrderItemToDto(
+      OrderItem item
+  ) {
+    Order order = item.getOrder();
+
+    BigDecimal total = item.getPrice()
+        .multiply(BigDecimal.valueOf(item.getQuantity()));
+
+    return new BusinessOrderItemResponseDto(
+        item.getSlug(),
+
+        order.getSlug(),
+        order.getOrderNumber(),
+
+        item.getProduct().getSlug(),
+        item.getName(),
+        item.getSku(),
+        item.getBrand(),
+
+        item.getQuantity(),
+        item.getPrice(),
+        total,
+
+        order.getOrderStatus().name(),
+        order.getPaymentStatus().name(),
+
+        order.getOrderDate()
+    );
+  }
+
+  private BusinessOrderResponseDto convertBusinessOrderToDto(
+      Order order,
+      List<OrderItem> businessItems
+  ) {
+    List<BusinessOrderItemResponseDto> items = businessItems
+        .stream()
+        .map(this::convertBusinessOrderItemToDto)
+        .toList();
+
+    BigDecimal subtotal = businessItems
+        .stream()
+        .map(item ->
+            item.getPrice()
+                .multiply(BigDecimal.valueOf(item.getQuantity()))
+        )
+        .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+    return new BusinessOrderResponseDto(
+        order.getSlug(),
+        order.getOrderNumber(),
+        order.getOrderDate(),
+        order.getOrderStatus().name(),
+        order.getPaymentStatus().name(),
+        items,
+        subtotal,
+        subtotal
     );
   }
 

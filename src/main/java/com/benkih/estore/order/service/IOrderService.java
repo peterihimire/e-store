@@ -1,6 +1,8 @@
 package com.benkih.estore.order.service;
 
 import com.benkih.estore.common.enums.OrderStatus;
+import com.benkih.estore.order.dto.response.BusinessOrderItemResponseDto;
+import com.benkih.estore.order.dto.response.BusinessOrderResponseDto;
 import com.benkih.estore.order.dto.response.OrderResponseDto;
 import com.benkih.estore.order.entity.Order;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,4 +27,13 @@ public interface IOrderService {
 
   @Transactional
   OrderResponseDto changeOrderStatus(String slug, OrderStatus status);
+
+  BusinessOrderItemResponseDto getBusinessOrderItem(String slug,
+                                                     Long businessId);
+
+  BusinessOrderResponseDto getBusinessOrder(String slug, Long businessId);
+
+  List<BusinessOrderResponseDto> getBusinessOrders(Long businessId);
+
+
 }
