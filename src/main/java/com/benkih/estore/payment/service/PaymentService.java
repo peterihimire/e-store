@@ -268,8 +268,7 @@ public class PaymentService implements IPaymentService {
   private InitializePaymentResponse initializePaymentWithGateway(Payment payment, Order order) {
     try {
       PaymentGateway gateway = gatewayFactory.get(payment.getPaymentProvider());
-      InitializePaymentRequest request =
-          InitializePaymentRequest.builder()
+      InitializePaymentRequest request = InitializePaymentRequest.builder()
               .email(order.getUser().getEmail())
               .amount(order.getTotalAmount())
               .currency(order.getCurrency())
@@ -316,12 +315,14 @@ public class PaymentService implements IPaymentService {
 
 
   private void synchronizePayment(Payment payment, VerifyPaymentResponse response) {
-    if (payment.getPaymentStatus() != response.getStatus()) {
+    if (payment.getPaymentStatus() == response.getStatus()) {
+      return;
+    }
       payment.setPaymentStatus(response.getStatus());
       payment.setTransactionId(response.getTransactionId());
       payment.setGatewayResponse(response.getGatewayResponse());
       payment.setPaidAt(response.getPaidAt());
-    }
+      payment.setProcessorFee(response.getProcessorFee());
   }
 
 

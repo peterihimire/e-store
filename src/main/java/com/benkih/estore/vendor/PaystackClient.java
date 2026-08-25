@@ -238,6 +238,10 @@ public class PaystackClient {
         .valueOf(response.getData().getAmount())
         .movePointLeft(2);
 
+    BigDecimal fees = BigDecimal
+        .valueOf(response.getData().getFees())
+        .movePointLeft(2);
+
     String authorizationCode = null;
 
     if (response.getData().getAuthorization() != null) {
@@ -253,7 +257,8 @@ public class PaystackClient {
         amount,
         response.getData().getGatewayResponse(),
         authorizationCode,
-        response.getData().getPaidAt()
+        response.getData().getPaidAt(),
+        fees
     );
   }
 

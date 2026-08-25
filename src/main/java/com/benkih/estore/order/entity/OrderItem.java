@@ -1,5 +1,6 @@
 package com.benkih.estore.order.entity;
 
+import com.benkih.estore.allocation.entity.Allocation;
 import com.benkih.estore.business.entity.Business;
 import com.benkih.estore.product.entity.Product;
 import jakarta.persistence.*;
@@ -7,6 +8,8 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 
@@ -67,6 +70,13 @@ public class OrderItem {
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "business_id", nullable = false)
   private Business business;
+
+  @OneToMany(
+      mappedBy = "orderItem",
+      cascade = CascadeType.ALL,
+      orphanRemoval = true
+  )
+  private List<Allocation> allocations = new ArrayList<>();
 
   @PrePersist
   public void onCreate() {

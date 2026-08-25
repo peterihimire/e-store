@@ -26,4 +26,6 @@ public class VerifyPaymentResponse {
   private String authorizationCode;
 
   private LocalDateTime paidAt;
+
+  private BigDecimal processorFee;
 }

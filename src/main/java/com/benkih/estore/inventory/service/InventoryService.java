@@ -1,6 +1,7 @@
 package com.benkih.estore.inventory.service;
 
 import com.benkih.estore.common.exceptions.AlreadyExistsException;
+import com.benkih.estore.common.exceptions.BadRequestException;
 import com.benkih.estore.common.exceptions.ResourceNotFoundException;
 import com.benkih.estore.inventory.dto.response.InventoryResponseDto;
 import com.benkih.estore.inventory.entity.Inventory;
@@ -65,11 +66,19 @@ public class InventoryService implements IInventoryService{
 
   @Transactional
   @Override
-  public void reserve(String productSlug, int quantity) {
-   Inventory inventory =  inventoryRepository.findByProductSlug(productSlug)
-            .orElseThrow(() -> new ResourceNotFoundException("Inventory not found"));
+  public void reserve(
+      String productSlug,
+      int quantity
+  ) {
+
+    Inventory inventory =
+        inventoryRepository.findByProductSlugForUpdate(productSlug)
+            .orElseThrow(() ->
+                new ResourceNotFoundException("Inventory not found")
+            );
     inventory.reserve(quantity);
-     inventoryRepository.save(inventory);
+    inventoryRepository.save(inventory);
+
   }
 
 

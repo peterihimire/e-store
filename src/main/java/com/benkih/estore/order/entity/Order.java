@@ -1,5 +1,6 @@
 package com.benkih.estore.order.entity;
 
+import com.benkih.estore.allocation.entity.Allocation;
 import com.benkih.estore.user.entity.Address;
 import com.benkih.estore.common.enums.Currency;
 import com.benkih.estore.common.enums.OrderStatus;
@@ -93,6 +94,16 @@ public class Order {
       cascade = CascadeType.ALL
   )
   private List<Payment> payments = new ArrayList<>();
+
+  private LocalDateTime shippedAt;
+
+  private LocalDateTime deliveredAt;
+
+  private LocalDateTime paidAt;
+
+  private LocalDateTime cancelledAt;
+
+  private LocalDateTime completedAt;
 
   @PrePersist
   public void onCreate() {

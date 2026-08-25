@@ -90,6 +90,14 @@ public class Payment {
 
   private LocalDateTime paidAt;
 
+  @Column(
+      name = "processor_fee",
+      nullable = false,
+      precision = 18,
+      scale = 2
+  )
+  private BigDecimal processorFee = BigDecimal.ZERO;
+
   private String createdBy;
   private String updatedBy;
 

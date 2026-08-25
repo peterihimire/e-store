@@ -26,7 +26,10 @@ public class PaystackVerifyResponse {
 
     private String reference;
 
-    private Integer amount;
+    private Long amount;
+
+    @JsonProperty("fees")
+    private Long fees;
 
     @JsonProperty("gateway_response")
     private String gatewayResponse;

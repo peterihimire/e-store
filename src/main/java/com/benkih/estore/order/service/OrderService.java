@@ -5,8 +5,13 @@ import com.benkih.estore.business.repository.BusinessRepository;
 import com.benkih.estore.cart.entity.Cart;
 import com.benkih.estore.cart.entity.CartItem;
 import com.benkih.estore.cart.service.CartService;
+import com.benkih.estore.checkout.service.DiscountService;
+import com.benkih.estore.checkout.service.ShippingService;
+import com.benkih.estore.checkout.service.TaxService;
 import com.benkih.estore.common.enums.OrderStatus;
 import com.benkih.estore.common.enums.PaymentStatus;
+import com.benkih.estore.common.enums.ProductStatus;
+import com.benkih.estore.common.exceptions.BadRequestException;
 import com.benkih.estore.common.exceptions.DuplicatePaymentException;
 import com.benkih.estore.common.exceptions.PaymentException;
 import com.benkih.estore.common.exceptions.ResourceNotFoundException;
@@ -33,6 +38,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -50,14 +56,27 @@ public class OrderService implements IOrderService{
   private final CurrentUserService currentUserService;
   private final BusinessRepository businessRepository;
   private final OrderItemRepository orderItemRepository;
+  private final TaxService taxService;
+  private final DiscountService discountService;
+  private final ShippingService shippingService;
 
 
 
   @Override
   @Transactional
   public OrderResponseDto placeOrder(String userSlug) {
+
+//     Validate products belong to this business
+//     Validate inventory
+//     Calculate subtotal
+//     Calculate tax
+//     Calculate shipping
+//     Calculate total
     Cart cart = cartService.getCartByUserSlug(userSlug);
     System.out.println("Cart object = " + System.identityHashCode(cart));
+
+    validateCart(cart);
+    validateProducts(cart);
 
     cart.getItems().forEach(item ->
         System.out.println(
@@ -71,13 +90,38 @@ public class OrderService implements IOrderService{
     List<OrderItem> items = createOrderItems(order, cart);
 
     order.setOrderItems(items);
+    BigDecimal subtotal = calculateSubtotal(items);
 
-    order.setTotalAmount(calculateTotalAmount(items));
-    Order saved = orderRepository.save(order);
+    BigDecimal discountAmount = discountService.calculateDiscount(cart, subtotal);
+
+    BigDecimal taxableAmount = subtotal.subtract(discountAmount);
+
+    BigDecimal taxAmount = taxService.calculate(taxableAmount);
+
+    BigDecimal shippingFee = shippingService.calculateShipping(
+        cart,
+        order.getShippingAddress()
+    );
+
+    BigDecimal totalAmount = calculateTotal(
+            subtotal,
+            shippingFee,
+            taxAmount,
+            discountAmount
+        );
+
+    order.setSubTotal(subtotal);
+    order.setDiscountAmount(discountAmount);
+    order.setTaxAmount(taxAmount);
+    order.setShippingFee(shippingFee);
+    order.setTotalAmount(totalAmount);
+
+//    order.setTotalAmount(calculateTotalAmount(items));
+    Order savedOrder = orderRepository.save(order);
 
     cartService.clearCart(cart.getSlug());
 
-    Order fetched = orderRepository.findBySlug(saved.getSlug())
+    Order fetched = orderRepository.findBySlug(savedOrder.getSlug())
         .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
     return convertToDto(fetched);
@@ -103,15 +147,18 @@ public class OrderService implements IOrderService{
           cartItem.getQuantity()
       );
 
+      Product product = cartItem.getProduct();
+      BigDecimal price = product.getPrice();
+
       OrderItem item = new OrderItem(
           cartItem.getQuantity(),
-          cartItem.getUnitPrice(),
-          cartItem.getProduct().getName(),
-          cartItem.getProduct().getSku(),
-          cartItem.getProduct().getBrand(),
+          price,
+          product.getName(),
+          product.getSku(),
+          product.getBrand(),
           order,
-          cartItem.getProduct(),
-          cartItem.getProduct().getBusiness()
+          product,
+          product.getBusiness()
       );
 
       items.add(item);
@@ -507,6 +554,114 @@ public class OrderService implements IOrderService{
            CANCELLED,
            EXPIRED -> false;
     };
+  }
+
+  private void validateCart(Cart cart) {
+
+    if (cart == null) {
+      throw new ResourceNotFoundException("Cart not found");
+    }
+
+    if (cart.getItems() == null || cart.getItems().isEmpty()) {
+      throw new BadRequestException(
+          "Cannot place order with an empty cart"
+      );
+    }
+
+    for (CartItem item : cart.getItems()) {
+
+      if (item.getQuantity() <= 0) {
+        throw new BadRequestException(
+            "Cart item quantity must be greater than zero"
+        );
+      }
+
+      if (item.getUnitPrice() == null ||
+          item.getUnitPrice().compareTo(BigDecimal.ZERO) < 0) {
+        throw new BadRequestException(
+            "Cart item has an invalid price"
+        );
+      }
+
+      if (item.getProduct() == null) {
+        throw new BadRequestException(
+            "Cart contains an invalid product"
+        );
+      }
+    }
+  }
+
+  private void validateProducts(Cart cart) {
+
+    for (CartItem cartItem : cart.getItems()) {
+
+      Product product = cartItem.getProduct();
+
+      if (product == null) {
+        throw new BadRequestException(
+            "Cart contains an invalid product"
+        );
+      }
+
+      if (product.getStatus() != ProductStatus.ACTIVE) {
+        throw new BadRequestException(
+            "Product is no longer available: "
+                + product.getName()
+        );
+      }
+
+      if (product.getBusiness() == null) {
+        throw new BadRequestException(
+            "Product has no associated business: "
+                + product.getName()
+        );
+      }
+
+      if (product.getPrice() == null ||
+          product.getPrice().compareTo(BigDecimal.ZERO) < 0) {
+        throw new BadRequestException(
+            "Product '" + product.getName() +
+                "' has an invalid price"
+        );
+      }
+
+      if (cartItem.getQuantity() <= 0) {
+        throw new BadRequestException(
+            "Invalid quantity for product: "
+                + product.getName()
+        );
+      }
+    }
+  }
+
+  private BigDecimal calculateSubtotal(
+      List<OrderItem> items
+  ) {
+    return items.stream()
+        .map(item ->
+            item.getPrice()
+                .multiply(
+                    BigDecimal.valueOf(item.getQuantity())
+                )
+        )
+        .reduce(
+            BigDecimal.ZERO,
+            BigDecimal::add
+        )
+        .setScale(2, RoundingMode.HALF_UP);
+  }
+
+  private BigDecimal calculateTotal(
+      BigDecimal subtotal,
+      BigDecimal shippingFee,
+      BigDecimal taxAmount,
+      BigDecimal discountAmount
+  ) {
+    return subtotal
+        .subtract(discountAmount)
+        .add(taxAmount)
+        .add(shippingFee)
+        .setScale(2, RoundingMode.HALF_UP);
   }
 }
 //NEXT PHASE
