@@ -1,6 +1,6 @@
 package com.benkih.estore.refund.dto.response;
 
-import com.benkih.estore.common.enums.Currency;
+import com.benkih.estore.common.enums.CurrencyCode;
 import com.benkih.estore.common.enums.PaymentProvider;
 import com.benkih.estore.common.enums.RefundGatewayStatus;
 import com.benkih.estore.common.enums.RefundStatus;
@@ -27,7 +27,7 @@ public class RefundResponse {
 
   private BigDecimal amount;
 
-  private Currency currency;
+  private CurrencyCode currency;
 
   private RefundStatus refundStatus;
 

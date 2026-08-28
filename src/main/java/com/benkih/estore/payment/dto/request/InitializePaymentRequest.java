@@ -1,6 +1,6 @@
 package com.benkih.estore.payment.dto.request;
 
-import com.benkih.estore.common.enums.Currency;
+import com.benkih.estore.common.enums.CurrencyCode;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,7 +16,7 @@ public class InitializePaymentRequest {
 
   private BigDecimal amount;
 
-  private Currency currency;
+  private CurrencyCode currency;
 
   private String reference;
 

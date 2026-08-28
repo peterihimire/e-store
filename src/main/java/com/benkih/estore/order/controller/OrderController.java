@@ -1,6 +1,7 @@
 package com.benkih.estore.order.controller;
 
 import com.benkih.estore.common.response.ApiResponse;
+import com.benkih.estore.order.dto.request.PlaceOrderRequest;
 import com.benkih.estore.order.dto.request.UpdateOrderStatusRequest;
 import com.benkih.estore.order.dto.response.BusinessOrderItemResponseDto;
 import com.benkih.estore.order.dto.response.BusinessOrderResponseDto;
@@ -28,12 +29,20 @@ public class OrderController {
   private final TenantContext tenantContext;
 
   @PostMapping("/order/place-order")
-  public ResponseEntity<ApiResponse> createOrder(@AuthenticationPrincipal StoreUserDetails userDetails){
-      OrderResponseDto order = orderService.placeOrder(userDetails.getSlug()); // if error, this will throw error, now global error handler will process it
+  public ResponseEntity<ApiResponse> createOrder(
+      @AuthenticationPrincipal StoreUserDetails userDetails,
+      @RequestBody PlaceOrderRequest request){
+      OrderResponseDto order = orderService.placeOrder(
+          userDetails.getSlug(),
+          request.getCouponCode(),
+          request.getDeliveryMethod()); // if error, this will throw error, now global error handler will process it
       log.info("Here is the order data:{}", order);
   //      OrderResponseDto dto = orderService.convertToDto(order);
       return ResponseEntity.status(HttpStatus.CREATED)
-          .body(new ApiResponse("success","Order created success", order));
+          .body(new ApiResponse(
+              "success",
+              "Order created success",
+              order));
   }
 
   @GetMapping("/order/{orderSlug}")

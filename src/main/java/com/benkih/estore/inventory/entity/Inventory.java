@@ -5,6 +5,7 @@ import com.benkih.estore.common.exceptions.InsufficientReservedStockException;
 import com.benkih.estore.common.exceptions.InsufficientStockException;
 import com.benkih.estore.common.exceptions.InvalidInventoryQuantityException;
 import com.benkih.estore.product.entity.Product;
+import com.benkih.estore.product.entity.ProductVariant;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -52,11 +53,19 @@ public class Inventory {
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
 
-  @OneToOne(fetch = FetchType.LAZY,optional = false)// optional false means
-  // mandatory
-  @JoinColumn(name = "product_id",nullable = false, unique = true) // the owning side,
-  private Product product; // loading an inventory does not automatically
-  // load the products
+//  @OneToOne(fetch = FetchType.LAZY,optional = false)// optional false means
+//  // mandatory
+//  @JoinColumn(name = "product_id",nullable = false, unique = true) // the owning side,
+//  private Product product; // loading an inventory does not automatically
+//  // load the products
+
+  @OneToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(
+      name = "variant_id",
+      nullable = false,
+      unique = true
+  )
+  private ProductVariant variant;
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "business_id", nullable = false)

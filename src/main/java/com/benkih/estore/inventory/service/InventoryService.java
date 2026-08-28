@@ -7,6 +7,7 @@ import com.benkih.estore.inventory.dto.response.InventoryResponseDto;
 import com.benkih.estore.inventory.entity.Inventory;
 import com.benkih.estore.inventory.repository.InventoryRepository;
 import com.benkih.estore.product.entity.Product;
+import com.benkih.estore.product.entity.ProductVariant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -57,22 +58,28 @@ public class InventoryService implements IInventoryService{
 
 
   @Override
-  public Map<String, Inventory> getInventoriesByProductSlugs(Collection<String> productSlugs) {
-    return inventoryRepository.findByProductSlugIn(productSlugs)
+  public Map<String, Inventory> getInventoriesByVariantSlugs(Collection<String> variantSlugs) {
+    return inventoryRepository.findByVariantSlugIn(variantSlugs)
         .stream()
-        .collect(Collectors.toMap(inventory -> inventory.getProduct().getSlug(), Function.identity()));
+        .collect(Collectors.toMap(inventory -> inventory.getVariant().getSlug(), Function.identity()));
   }
 
 
+  //work
   @Transactional
   @Override
   public void reserve(
-      String productSlug,
+      String variantSlug,
       int quantity
   ) {
 
+    if (quantity <= 0) {
+      throw new BadRequestException("Quantity must be greater than zero");
+    }
+
     Inventory inventory =
-        inventoryRepository.findByProductSlugForUpdate(productSlug)
+        inventoryRepository.findByProductSlugForUpdate(variantSlug)//find by
+            // product variant slug
             .orElseThrow(() ->
                 new ResourceNotFoundException("Inventory not found")
             );
@@ -84,8 +91,11 @@ public class InventoryService implements IInventoryService{
 
   @Transactional
   @Override
-  public void release(String productSlug, int quantity) {
-    Inventory inventory =  inventoryRepository.findByProductSlug(productSlug)
+  public void release(String variantSlug, int quantity) {
+    if (quantity <= 0) {
+      throw new BadRequestException("Quantity must be greater than zero");
+    }
+    Inventory inventory =  inventoryRepository.findByVariantSlug(variantSlug)
         .orElseThrow(() -> new ResourceNotFoundException("Inventory not found"));
     inventory.release(quantity);
      inventoryRepository.save(inventory);
@@ -94,8 +104,11 @@ public class InventoryService implements IInventoryService{
 
   @Transactional
   @Override
-  public void fulfillReservation(String productSlug, int quantity) {
-    Inventory inventory =  inventoryRepository.findByProductSlug(productSlug)
+  public void fulfillReservation(String variantSlug, int quantity) {
+    if (quantity <= 0) {
+      throw new BadRequestException("Quantity must be greater than zero");
+    }
+    Inventory inventory =  inventoryRepository.findByVariantSlug(variantSlug)
         .orElseThrow(() -> new ResourceNotFoundException("Inventory not found"));
     inventory.fulfillReservation(quantity);
    inventoryRepository.save(inventory);
@@ -123,17 +136,18 @@ public class InventoryService implements IInventoryService{
 
 
   @Override
-  public Inventory createInventory(Product product) {
+  public Inventory createInventory(ProductVariant variant) {
 
-    if (inventoryRepository.existsByProductSlug(product.getSlug())) {
-      throw new AlreadyExistsException("Inventory already exists for product ");
+    if (inventoryRepository.existsByVariantSlug(variant.getSlug())) {
+      throw new AlreadyExistsException("Inventory already exists for variant ");
     }
 
     Inventory inventory = new Inventory();
-    inventory.setProduct(product);
-    inventory.setBusiness(product.getBusiness());
 
-    product.setInventory(inventory);
+    inventory.setVariant(variant);
+    inventory.setBusiness(variant.getBusiness());
+
+    variant.setInventory(inventory);
 
    return  inventoryRepository.save(inventory);
   }
@@ -152,7 +166,8 @@ public class InventoryService implements IInventoryService{
         inventory.needsReorder(),
         inventory.getReorderLevel(),
         inventory.getReorderQuantity(),
-        inventory.getProduct().getName()
+        inventory.getVariant().getSku(),
+        inventory.getVariant().getProduct().getName()
     );
   }
 }

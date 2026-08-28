@@ -1,8 +1,15 @@
 package com.benkih.estore.common.config;
 
+import com.benkih.estore.common.enums.AttributeType;
 import com.benkih.estore.common.enums.UserStatus;
 import com.benkih.estore.permission.entity.Permission;
 import com.benkih.estore.permission.repository.PermissionRepository;
+import com.benkih.estore.product.entity.AttributeValue;
+import com.benkih.estore.product.entity.Category;
+import com.benkih.estore.product.entity.CategoryAttribute;
+import com.benkih.estore.product.repository.AttributeValueRepository;
+import com.benkih.estore.product.repository.CategoryAttributeRepository;
+import com.benkih.estore.product.repository.CategoryRepository;
 import com.benkih.estore.role.entity.Role;
 import com.benkih.estore.role.repository.RoleRepository;
 import com.benkih.estore.user.entity.User;
@@ -33,6 +40,10 @@ public class DataSeeder implements CommandLineRunner {
   private final PasswordEncoder passwordEncoder;
   private final PermissionRepository permissionRepository;
 
+  private final CategoryRepository categoryRepository;
+  private final CategoryAttributeRepository categoryAttributeRepository;
+  private final AttributeValueRepository attributeValueRepository;
+
 
   @Override
   public void run(String... args) {
@@ -52,6 +63,7 @@ public class DataSeeder implements CommandLineRunner {
 //      seedPermissions();
 //      seedSystemRoles();
 //      createSuperAdmin();
+//      seedMarketplaceAttributes();
 
     } catch (Exception e) {
       log.error(" Error during data seeding: {}", e.getMessage(), e);
@@ -328,5 +340,598 @@ public class DataSeeder implements CommandLineRunner {
         "Created OWNER role with {} permissions.",
         permissions.size()
     );
+  }
+
+  private void seedMarketplaceAttributes() {
+
+    log.info("Seeding marketplace categories and attributes...");
+
+    // ============================================================
+    // CLOTHING
+    // ============================================================
+
+    Category clothing = getOrCreateCategory("Clothing");
+
+    CategoryAttribute clothingColor =
+        getOrCreateAttribute(clothing, "Color", AttributeType.SELECT, true, true, 1);
+
+    CategoryAttribute clothingSize =
+        getOrCreateAttribute(clothing, "Size", AttributeType.SELECT, true, true, 2);
+
+    CategoryAttribute clothingMaterial =
+        getOrCreateAttribute(clothing, "Material",AttributeType.SELECT, false, false, 3);
+
+    CategoryAttribute clothingGender =
+        getOrCreateAttribute(clothing, "Gender", AttributeType.SELECT, true, false, 4);
+
+    seedAttributeValues(
+        clothingColor,
+        "Black",
+        "White",
+        "Red",
+        "Blue",
+        "Green",
+        "Yellow",
+        "Grey",
+        "Brown",
+        "Orange",
+        "Purple",
+        "Pink"
+    );
+
+    seedAttributeValues(
+        clothingSize,
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL",
+        "XXL",
+        "XXXL"
+    );
+
+    seedAttributeValues(
+        clothingMaterial,
+        "Cotton",
+        "Polyester",
+        "Wool",
+        "Linen",
+        "Denim",
+        "Leather",
+        "Silk",
+        "Nylon",
+        "Rayon",
+        "Viscose"
+    );
+
+    seedAttributeValues(
+        clothingGender,
+        "Men",
+        "Women",
+        "Unisex",
+        "Boys",
+        "Girls"
+    );
+
+
+    // ============================================================
+    // SHOES
+    // ============================================================
+
+    Category shoes = getOrCreateCategory("Shoes");
+
+    CategoryAttribute shoesColor = getOrCreateAttribute(
+        shoes, "Color", AttributeType.SELECT, true, true, 1
+    );
+
+    CategoryAttribute shoesSize = getOrCreateAttribute(
+        shoes, "Size", AttributeType.SELECT, true, true, 2
+    );
+
+    CategoryAttribute shoesMaterial = getOrCreateAttribute(
+        shoes, "Material", AttributeType.SELECT, false, false, 3
+    );
+
+    CategoryAttribute shoesGender = getOrCreateAttribute(
+        shoes, "Gender", AttributeType.SELECT, true, false, 4
+    );
+
+    seedAttributeValues(
+        shoesColor,
+        "Black",
+        "White",
+        "Red",
+        "Blue",
+        "Green",
+        "Brown",
+        "Grey",
+        "Yellow",
+        "Orange",
+        "Purple"
+    );
+
+    seedAttributeValues(
+        shoesSize,
+        "36",
+        "37",
+        "38",
+        "39",
+        "40",
+        "41",
+        "42",
+        "43",
+        "44",
+        "45",
+        "46",
+        "47",
+        "48"
+    );
+
+    seedAttributeValues(
+        shoesMaterial,
+        "Leather",
+        "Suede",
+        "Canvas",
+        "Mesh",
+        "Synthetic",
+        "Rubber",
+        "Textile"
+    );
+
+    seedAttributeValues(
+        shoesGender,
+        "Men",
+        "Women",
+        "Unisex",
+        "Boys",
+        "Girls"
+    );
+
+
+    // ============================================================
+    // SMARTPHONES
+    // ============================================================
+
+    Category smartphones =
+        getOrCreateCategory("Smartphones");
+
+    CategoryAttribute smartphoneColor = getOrCreateAttribute(
+        smartphones, "Color", AttributeType.SELECT, true, true, 1
+    );
+
+    CategoryAttribute smartphoneStorage = getOrCreateAttribute(
+        smartphones, "Storage", AttributeType.SELECT, true, true, 2
+    );
+
+    CategoryAttribute smartphoneRam = getOrCreateAttribute(
+        smartphones, "RAM", AttributeType.SELECT, false, true, 3
+    );
+
+    CategoryAttribute smartphoneScreenSize = getOrCreateAttribute(
+        smartphones, "Screen Size", AttributeType.SELECT, true, false, 4
+    );
+
+    seedAttributeValues(
+        smartphoneColor,
+        "Black",
+        "White",
+        "Blue",
+        "Red",
+        "Green",
+        "Gold",
+        "Silver",
+        "Purple",
+        "Grey"
+    );
+
+    seedAttributeValues(
+        smartphoneStorage,
+        "32GB",
+        "64GB",
+        "128GB",
+        "256GB",
+        "512GB",
+        "1TB"
+    );
+
+    seedAttributeValues(
+        smartphoneRam,
+        "2GB",
+        "3GB",
+        "4GB",
+        "6GB",
+        "8GB",
+        "12GB",
+        "16GB",
+        "24GB"
+    );
+
+    seedAttributeValues(
+        smartphoneScreenSize,
+        "5.0 inches",
+        "5.5 inches",
+        "6.0 inches",
+        "6.1 inches",
+        "6.3 inches",
+        "6.5 inches",
+        "6.7 inches",
+        "6.9 inches"
+    );
+
+
+    // ============================================================
+    // LAPTOPS
+    // ============================================================
+
+    Category laptops =
+        getOrCreateCategory("Laptops");
+
+    CategoryAttribute laptopColor = getOrCreateAttribute(
+        laptops, "Color", AttributeType.SELECT, false, true, 1
+    );
+
+    CategoryAttribute laptopRam = getOrCreateAttribute(
+        laptops, "RAM", AttributeType.SELECT, true, true, 2
+    );
+
+    CategoryAttribute laptopStorage = getOrCreateAttribute(
+        laptops, "Storage", AttributeType.SELECT, true, true, 3
+    );
+
+    CategoryAttribute laptopProcessor = getOrCreateAttribute(
+        laptops, "Processor", AttributeType.SELECT, true, true, 4
+    );
+
+    CategoryAttribute laptopScreenSize = getOrCreateAttribute(
+        laptops, "Screen Size", AttributeType.SELECT, true, false, 5
+    );
+
+    seedAttributeValues(
+        laptopColor,
+        "Black",
+        "Silver",
+        "Grey",
+        "White",
+        "Blue"
+    );
+
+    seedAttributeValues(
+        laptopRam,
+        "4GB",
+        "8GB",
+        "16GB",
+        "32GB",
+        "64GB"
+    );
+
+    seedAttributeValues(
+        laptopStorage,
+        "128GB SSD",
+        "256GB SSD",
+        "512GB SSD",
+        "1TB SSD",
+        "2TB SSD",
+        "4TB SSD"
+    );
+
+    seedAttributeValues(
+        laptopProcessor,
+        "Intel Core i3",
+        "Intel Core i5",
+        "Intel Core i7",
+        "Intel Core i9",
+        "AMD Ryzen 3",
+        "AMD Ryzen 5",
+        "AMD Ryzen 7",
+        "AMD Ryzen 9",
+        "Apple M1",
+        "Apple M2",
+        "Apple M3",
+        "Apple M4",
+        "Apple M5"
+    );
+
+    seedAttributeValues(
+        laptopScreenSize,
+        "11.6 inches",
+        "13.3 inches",
+        "14 inches",
+        "15.6 inches",
+        "16 inches",
+        "17.3 inches"
+    );
+
+
+    // ============================================================
+    // CARS
+    // ============================================================
+
+    Category cars =
+        getOrCreateCategory("Cars");
+
+    CategoryAttribute carMake =
+        getOrCreateAttribute(cars, "Make", AttributeType.SELECT, true, false, 1);
+
+    CategoryAttribute carModel =
+        getOrCreateAttribute(cars, "Model", AttributeType.TEXT, true, false, 2);
+
+    CategoryAttribute carYear =
+        getOrCreateAttribute(cars, "Year", AttributeType.NUMBER, true, false, 3);
+
+    CategoryAttribute carColor = getOrCreateAttribute(
+        cars, "Color", AttributeType.SELECT, true, false, 4
+    );
+
+    CategoryAttribute carTransmission = getOrCreateAttribute(
+        cars, "Transmission", AttributeType.SELECT, true, false, 5
+    );
+
+    CategoryAttribute carFuelType = getOrCreateAttribute(
+        cars, "Fuel Type", AttributeType.SELECT, true, false, 6
+    );
+
+    CategoryAttribute carBodyType = getOrCreateAttribute(
+        cars, "Body Type", AttributeType.SELECT, true, false, 7
+    );
+
+    seedAttributeValues(
+        carMake,
+        "Toyota",
+        "Honda",
+        "Mercedes-Benz",
+        "BMW",
+        "Audi",
+        "Lexus",
+        "Ford",
+        "Hyundai",
+        "Kia",
+        "Nissan",
+        "Volkswagen",
+        "Mazda",
+        "Volvo",
+        "Peugeot",
+        "Land Rover",
+        "Porsche",
+        "Jeep"
+    );
+
+    /*
+     * Do not seed car models globally.
+     *
+     * Models depend on the selected manufacturer and are better
+     * represented as product data.
+     *
+     * Example:
+     *
+     * Toyota → Camry
+     * Toyota → Corolla
+     * Toyota → Highlander
+     * Honda  → Accord
+     * Honda  → Civic
+     *
+     * These belong to actual vehicle listings/products.
+     */
+
+    seedAttributeValues(
+        carYear,
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025",
+        "2026"
+    );
+
+    seedAttributeValues(
+        carColor,
+        "Black",
+        "White",
+        "Silver",
+        "Grey",
+        "Red",
+        "Blue",
+        "Brown",
+        "Green",
+        "Gold"
+    );
+
+    seedAttributeValues(
+        carTransmission,
+        "Automatic",
+        "Manual",
+        "CVT",
+        "DCT"
+    );
+
+    seedAttributeValues(
+        carFuelType,
+        "Petrol",
+        "Diesel",
+        "Hybrid",
+        "Electric",
+        "Plug-in Hybrid"
+    );
+
+    seedAttributeValues(
+        carBodyType,
+        "Sedan",
+        "SUV",
+        "Hatchback",
+        "Coupe",
+        "Convertible",
+        "Wagon",
+        "Pickup",
+        "Van",
+        "Minivan"
+    );
+
+
+    // ============================================================
+    // PROPERTIES
+    // ============================================================
+
+    Category properties =
+        getOrCreateCategory("Properties");
+
+    CategoryAttribute propertyType = getOrCreateAttribute(
+        properties, "Property Type", AttributeType.SELECT, true, false, 1
+    );
+
+    CategoryAttribute bedrooms = getOrCreateAttribute(
+        properties, "Bedrooms", AttributeType.SELECT, false, false, 2
+    );
+
+    CategoryAttribute bathrooms = getOrCreateAttribute(
+        properties, "Bathrooms", AttributeType.SELECT, false, false, 3
+    );
+
+    CategoryAttribute furnishing = getOrCreateAttribute(
+        properties, "Furnishing", AttributeType.SELECT, false, false, 4
+    );
+
+    CategoryAttribute parking = getOrCreateAttribute(
+        properties, "Parking", AttributeType.SELECT, false, false, 5
+    );
+
+    seedAttributeValues(
+        propertyType,
+        "Apartment",
+        "House",
+        "Duplex",
+        "Terrace",
+        "Bungalow",
+        "Penthouse",
+        "Villa",
+        "Townhouse",
+        "Land",
+        "Office",
+        "Shop",
+        "Warehouse"
+    );
+
+    seedAttributeValues(
+        bedrooms,
+        "Studio",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6+"
+    );
+
+    seedAttributeValues(
+        bathrooms,
+        "1",
+        "2",
+        "3",
+        "4",
+        "5+"
+    );
+
+    seedAttributeValues(
+        furnishing,
+        "Unfurnished",
+        "Semi-Furnished",
+        "Furnished"
+    );
+
+    seedAttributeValues(
+        parking,
+        "None",
+        "1",
+        "2",
+        "3",
+        "4+"
+    );
+
+    log.info(
+        "Marketplace categories and attributes seeded successfully."
+    );
+  }
+
+  private Category getOrCreateCategory(String name) {
+
+    return categoryRepository
+        .findByNameAndParentIsNull(name)
+        .orElseGet(() -> {
+
+          Category category = new Category(name);
+
+          category.setActive(true);
+          category.setDisplayOrder(0);
+
+          return categoryRepository.save(category);
+        });
+  }
+
+  private Category getOrCreateCategory(
+      String name,
+      Category parent
+  ) {
+
+    return categoryRepository
+        .findByNameAndParent(name, parent)
+        .orElseGet(() -> {
+
+          Category category = new Category(name);
+
+          category.setParent(parent);
+          category.setActive(true);
+          category.setDisplayOrder(0);
+
+          return categoryRepository.save(category);
+        });
+  }
+
+  private CategoryAttribute getOrCreateAttribute(
+      Category category,
+      String name,
+      AttributeType type,
+      boolean required,
+      boolean variantAttribute,
+      int displayOrder
+  ) {
+    CategoryAttribute attribute = categoryAttributeRepository
+        .findByCategoryAndName(category, name)
+        .orElseGet(CategoryAttribute::new);
+
+    attribute.setCategory(category);
+    attribute.setName(name);
+    attribute.setType(type);
+    attribute.setRequired(required);
+    attribute.setVariantAttribute(variantAttribute);
+    attribute.setActive(true);
+    attribute.setDisplayOrder(displayOrder);
+
+    return categoryAttributeRepository.save(attribute);
+  }
+
+  private void seedAttributeValues(
+      CategoryAttribute attribute,
+      String... values
+  ) {
+    for (int index = 0; index < values.length; index++) {
+      String value = values[index];
+
+      AttributeValue attributeValue = attributeValueRepository
+          .findByAttributeAndValue(attribute, value)
+          .orElseGet(AttributeValue::new);
+
+      attributeValue.setAttribute(attribute);
+      attributeValue.setValue(value);
+      attributeValue.setDisplayName(value);
+      attributeValue.setActive(true);
+      attributeValue.setDisplayOrder(index + 1);
+
+      attributeValueRepository.save(attributeValue);
+
+      log.info(
+          "Seeded attribute value: {} → {}",
+          attribute.getName(),
+          value
+      );
+    }
   }
 }

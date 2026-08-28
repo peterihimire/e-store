@@ -1,5 +1,6 @@
 package com.benkih.estore.order.service;
 
+import com.benkih.estore.common.enums.DeliveryMethod;
 import com.benkih.estore.common.enums.OrderStatus;
 import com.benkih.estore.order.dto.response.BusinessOrderItemResponseDto;
 import com.benkih.estore.order.dto.response.BusinessOrderResponseDto;
@@ -11,7 +12,7 @@ import java.util.List;
 
 public interface IOrderService {
   //  Order placeOrder(String orderSlug);
-  OrderResponseDto placeOrder(String userSlug);
+  OrderResponseDto placeOrder(String userSlug, String couponCode, DeliveryMethod deliveryMethod);
 
   Order getOrder(String orderSlug);
 

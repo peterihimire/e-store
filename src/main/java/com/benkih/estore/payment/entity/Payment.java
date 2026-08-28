@@ -1,7 +1,6 @@
 package com.benkih.estore.payment.entity;
 
-import com.benkih.estore.business.entity.Business;
-import com.benkih.estore.common.enums.Currency;
+import com.benkih.estore.common.enums.CurrencyCode;
 import com.benkih.estore.common.enums.PaymentProvider;
 import com.benkih.estore.common.enums.PaymentMethod;
 import com.benkih.estore.common.enums.PaymentStatus;
@@ -39,7 +38,7 @@ public class Payment {
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
-  private Currency currency = Currency.NGN;
+  private CurrencyCode currency = CurrencyCode.NGN;
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)

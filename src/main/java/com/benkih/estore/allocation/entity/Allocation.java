@@ -3,8 +3,7 @@ package com.benkih.estore.allocation.entity;
 import com.benkih.estore.business.entity.Business;
 import com.benkih.estore.common.entity.BaseEntity;
 import com.benkih.estore.common.enums.AllocationStatus;
-import com.benkih.estore.common.enums.Currency;
-import com.benkih.estore.order.entity.Order;
+import com.benkih.estore.common.enums.CurrencyCode;
 import com.benkih.estore.order.entity.OrderItem;
 import com.benkih.estore.payment.entity.Payment;
 import jakarta.persistence.*;
@@ -131,5 +130,5 @@ public class Allocation extends BaseEntity {
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false, length = 3)
-  private Currency currency = Currency.NGN;
+  private CurrencyCode currency = CurrencyCode.NGN;
 }

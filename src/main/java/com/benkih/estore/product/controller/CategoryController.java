@@ -42,10 +42,10 @@ public class CategoryController {
     }
   }
 
-  @GetMapping("/category/{id}/id")
-  public ResponseEntity<ApiResponse> getCategoryById(@PathVariable String id){
+  @GetMapping("/category/{slug}")
+  public ResponseEntity<ApiResponse> getCategoryBySlug(@PathVariable String slug){
     try {
-      Category category = categoryService.getCategoryById(id);
+      Category category = categoryService.getCategoryBySlug(slug);
       return ResponseEntity.ok(new ApiResponse("success","Category returned", category));
     } catch (ResourceNotFoundException e) {
      return ResponseEntity.status(NOT_FOUND).body(new ApiResponse("fail",e.getMessage(), null));
@@ -54,9 +54,8 @@ public class CategoryController {
 
   @GetMapping("/category/{name}/name")
   public ResponseEntity<ApiResponse> getCategoryByName(@PathVariable String name){
-    Long businessId = tenantContext.getBusinessId();
     try {
-      Category category = categoryService.getCategoryByName(name, businessId);
+      Category category = categoryService.getCategoryByName(name);
       return ResponseEntity.ok(new ApiResponse("success","Category returned", category));
     } catch (ResourceNotFoundException e) {
       return ResponseEntity.status(NOT_FOUND).body(new ApiResponse("fail",e.getMessage(), null));
@@ -66,7 +65,7 @@ public class CategoryController {
   @DeleteMapping("/category/{slug}/delete")
   public ResponseEntity<ApiResponse> deleteCategory(@PathVariable String slug){
     try {
-      categoryService.deleteCategoryById(slug);
+      categoryService.deleteCategoryBySlug(slug);
       return ResponseEntity.ok(new ApiResponse("success","Image deleted", null));
     } catch (ResourceNotFoundException e) {
       return ResponseEntity.status(NOT_FOUND).body(new ApiResponse("fail",e.getMessage(), null));

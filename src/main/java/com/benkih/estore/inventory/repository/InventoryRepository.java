@@ -47,4 +47,22 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long> {
   Optional<Inventory> findByProductSlugForUpdate(
       @Param("productSlug") String productSlug
   );
+
+
+  Optional<Inventory> findByVariantSlug(String variantSlug);
+
+  List<Inventory> findByVariantSlugIn(Collection<String> variantSlugs);
+
+  boolean existsByVariantSlug(String variantSlug);
+
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query("""
+    SELECT i
+    FROM Inventory i
+    JOIN i.variant pv
+    WHERE pv.slug = :variantSlug
+""")
+  Optional<Inventory> findByVariantSlugForUpdate(
+      @Param("variantSlug") String variantSlug
+  );
 }

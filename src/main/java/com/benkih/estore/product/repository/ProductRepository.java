@@ -16,7 +16,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
   Optional<Product> findBySlug(String slug);
 
   @EntityGraph(attributePaths = {"images", "category", "inventory"})
-  Optional<Product> findByBusinessSlugAndSlug(String businessSlug, String slug);
+  Optional<Product> findBySlugAndBusinessId( String slug, Long businessId);
 
   @EntityGraph(attributePaths = {"images", "category", "inventory"})
   List<Product> findByCategoryName(String category);

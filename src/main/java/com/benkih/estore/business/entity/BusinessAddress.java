@@ -2,6 +2,7 @@ package com.benkih.estore.business.entity;
 
 import com.benkih.estore.business.entity.Business;
 import com.benkih.estore.common.entity.BaseEntity;
+import com.benkih.estore.common.enums.BusinessAddressType;
 import com.benkih.estore.common.enums.Country;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -42,6 +43,14 @@ public class BusinessAddress extends BaseEntity {
 
   @Column(nullable = false)
   private boolean defaultAddress = false;
+
+  @Enumerated(EnumType.STRING)
+
+  @Column(nullable = false, length = 30)
+  private BusinessAddressType type;
+
+  @Column(nullable = false)
+  private boolean active = true;
 
   private String createdBy;
   private String updatedBy;

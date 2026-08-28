@@ -1,7 +1,7 @@
 package com.benkih.estore.business.entity;
 
 import com.benkih.estore.common.entity.BaseEntity;
-import com.benkih.estore.common.enums.Currency;
+import com.benkih.estore.common.enums.CurrencyCode;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,7 +20,7 @@ public class BusinessSetting extends BaseEntity {
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
-  private Currency currency = Currency.NGN;
+  private CurrencyCode currency = CurrencyCode.NGN;
 
   private String timezone;
 

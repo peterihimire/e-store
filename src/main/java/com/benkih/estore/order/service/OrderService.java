@@ -5,9 +5,13 @@ import com.benkih.estore.business.repository.BusinessRepository;
 import com.benkih.estore.cart.entity.Cart;
 import com.benkih.estore.cart.entity.CartItem;
 import com.benkih.estore.cart.service.CartService;
+import com.benkih.estore.checkout.dto.DiscountQuote;
+import com.benkih.estore.checkout.dto.ShippingQuote;
+import com.benkih.estore.checkout.dto.TaxQuote;
 import com.benkih.estore.checkout.service.DiscountService;
 import com.benkih.estore.checkout.service.ShippingService;
 import com.benkih.estore.checkout.service.TaxService;
+import com.benkih.estore.common.enums.DeliveryMethod;
 import com.benkih.estore.common.enums.OrderStatus;
 import com.benkih.estore.common.enums.PaymentStatus;
 import com.benkih.estore.common.enums.ProductStatus;
@@ -28,6 +32,7 @@ import com.benkih.estore.order.entity.OrderItem;
 import com.benkih.estore.order.repository.OrderItemRepository;
 import com.benkih.estore.order.repository.OrderRepository;
 import com.benkih.estore.product.entity.Product;
+import com.benkih.estore.product.entity.ProductVariant;
 import com.benkih.estore.product.repository.ProductRepository;
 import com.benkih.estore.product.service.ProductService;
 import com.benkih.estore.security.user.CurrentUserService;
@@ -64,14 +69,11 @@ public class OrderService implements IOrderService{
 
   @Override
   @Transactional
-  public OrderResponseDto placeOrder(String userSlug) {
+  public OrderResponseDto placeOrder(
+      String userSlug,
+      String couponCode,
+      DeliveryMethod deliveryMethod) {
 
-//     Validate products belong to this business
-//     Validate inventory
-//     Calculate subtotal
-//     Calculate tax
-//     Calculate shipping
-//     Calculate total
     Cart cart = cartService.getCartByUserSlug(userSlug);
     System.out.println("Cart object = " + System.identityHashCode(cart));
 
@@ -92,28 +94,53 @@ public class OrderService implements IOrderService{
     order.setOrderItems(items);
     BigDecimal subtotal = calculateSubtotal(items);
 
-    BigDecimal discountAmount = discountService.calculateDiscount(cart, subtotal);
-
-    BigDecimal taxableAmount = subtotal.subtract(discountAmount);
-
-    BigDecimal taxAmount = taxService.calculate(taxableAmount);
-
-    BigDecimal shippingFee = shippingService.calculateShipping(
+    DiscountQuote discountQuote = discountService.quote(
         cart,
+        subtotal,
+        couponCode,
+        userSlug
+    );
+
+    BigDecimal discountAmount = discountQuote.getAmount();
+
+    TaxQuote taxQuote = taxService.quote(
+        items,
+        discountAmount,
         order.getShippingAddress()
     );
 
+    BigDecimal taxAmount = taxQuote.getAmount();
+
+    ShippingQuote shippingQuote = shippingService.quote(
+        cart,
+        order.getShippingAddress(),
+        deliveryMethod
+    );
+
+    BigDecimal shippingAmount = shippingQuote.getAmount();
+
     BigDecimal totalAmount = calculateTotal(
-            subtotal,
-            shippingFee,
-            taxAmount,
-            discountAmount
-        );
+        subtotal,
+        shippingAmount,
+        taxAmount,
+        discountAmount
+    );
+
+//    BigDecimal discountAmount = discountService.calculateDiscount(cart, subtotal);
+//
+//    BigDecimal taxableAmount = subtotal.subtract(discountAmount);
+//
+//    BigDecimal taxAmount = taxService.calculate(taxableAmount);
+//
+//    BigDecimal shippingFee = shippingService.calculateShipping(
+//        cart,
+//        order.getShippingAddress()
+//    );
 
     order.setSubTotal(subtotal);
     order.setDiscountAmount(discountAmount);
     order.setTaxAmount(taxAmount);
-    order.setShippingFee(shippingFee);
+    order.setShippingFee(shippingAmount);
     order.setTotalAmount(totalAmount);
 
 //    order.setTotalAmount(calculateTotalAmount(items));
@@ -142,20 +169,49 @@ public class OrderService implements IOrderService{
     List<OrderItem> items = new ArrayList<>();
 
     for (CartItem cartItem : cart.getItems()) {
+//      inventoryService.reserve(
+//          cartItem.getProduct().getSlug(),
+//          cartItem.getQuantity()
+//      );
+
+      Product product = cartItem.getProduct();
+      ProductVariant variant = cartItem.getVariant();
+
+      if (product == null) {
+        throw new BadRequestException(
+            "Cart item has no product"
+        );
+      }
+
+      if (variant == null) {
+        throw new BadRequestException(
+            "Cart item has no product variant"
+        );
+      }
+
+      if (!variant.isActive()) {
+        throw new BadRequestException(
+            "Product variant is no longer available: "
+                + variant.getSku()
+        );
+      }
+
+      // Reserve the exact variant, not the product.
       inventoryService.reserve(
-          cartItem.getProduct().getSlug(),
+          variant.getSlug(),
           cartItem.getQuantity()
       );
 
-      Product product = cartItem.getProduct();
-      BigDecimal price = product.getPrice();
+      BigDecimal price = variant.getPrice();
 
       OrderItem item = new OrderItem(
           cartItem.getQuantity(),
           price,
           product.getName(),
-          product.getSku(),
+          variant.getSku(),
           product.getBrand(),
+          variant.getCurrency(),
+          product.getTaxCategory(),
           order,
           product,
           product.getBusiness()
@@ -596,6 +652,7 @@ public class OrderService implements IOrderService{
     for (CartItem cartItem : cart.getItems()) {
 
       Product product = cartItem.getProduct();
+      ProductVariant  variant = cartItem.getVariant();
 
       if (product == null) {
         throw new BadRequestException(
@@ -617,8 +674,8 @@ public class OrderService implements IOrderService{
         );
       }
 
-      if (product.getPrice() == null ||
-          product.getPrice().compareTo(BigDecimal.ZERO) < 0) {
+      if (variant.getPrice() == null ||
+          variant.getPrice().compareTo(BigDecimal.ZERO) < 0) {
         throw new BadRequestException(
             "Product '" + product.getName() +
                 "' has an invalid price"

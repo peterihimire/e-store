@@ -11,7 +11,6 @@ import com.benkih.estore.payment.dto.response.InitializePaymentResponse;
 import com.benkih.estore.payment.dto.response.PaymentResponse;
 import com.benkih.estore.order.entity.Order;
 import com.benkih.estore.order.repository.OrderRepository;
-import com.benkih.estore.payment.dto.response.RefundPaymentResponse;
 import com.benkih.estore.payment.dto.response.VerifyPaymentResponse;
 import com.benkih.estore.payment.dto.webhook.PaymentWebhookEvent;
 import com.benkih.estore.payment.entity.Payment;
@@ -23,7 +22,6 @@ import com.benkih.estore.payment.provider.PaymentWebhookHandlerFactory;
 import com.benkih.estore.payment.repository.PaymentEventRepository;
 import com.benkih.estore.payment.repository.PaymentRepository;
 import com.benkih.estore.refund.service.IRefundService;
-import com.benkih.estore.refund.service.RefundService;
 import com.benkih.estore.security.user.CurrentUserService;
 import com.benkih.estore.user.entity.User;
 import lombok.RequiredArgsConstructor;
@@ -330,7 +328,7 @@ public class PaymentService implements IPaymentService {
     Payment payment = new Payment();
     payment.setReference(generateReference()); // Use proper reference generation
     payment.setAmount(order.getTotalAmount());
-    payment.setCurrency(order.getCurrency() != null ? order.getCurrency() : Currency.NGN);
+    payment.setCurrency(order.getCurrency() != null ? order.getCurrency() : CurrencyCode.NGN);
     payment.setOrder(order);
     payment.setUser(order.getUser());
     payment.setPaymentMethod(request.getPaymentMethod());

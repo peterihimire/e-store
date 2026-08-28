@@ -1,6 +1,6 @@
 package com.benkih.estore.common.enums;
 
-public enum Currency {
+public enum CurrencyCode {
   NGN,
   USD,
   GBP,

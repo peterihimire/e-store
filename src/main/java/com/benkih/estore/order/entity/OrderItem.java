@@ -2,7 +2,10 @@ package com.benkih.estore.order.entity;
 
 import com.benkih.estore.allocation.entity.Allocation;
 import com.benkih.estore.business.entity.Business;
+import com.benkih.estore.common.enums.CurrencyCode;
+import com.benkih.estore.common.enums.TaxCategory;
 import com.benkih.estore.product.entity.Product;
+import com.benkih.estore.product.entity.ProductVariant;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -28,6 +31,10 @@ public class OrderItem {
 
   private int quantity;
 
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "variant_id")
+  private ProductVariant variant;
+
   @Column(nullable = false, precision = 18, scale = 2)
   private BigDecimal price;
 
@@ -38,6 +45,26 @@ public class OrderItem {
   private String sku;
 
   private String brand;
+
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false, length = 3)
+  private CurrencyCode currency;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "tax_category", nullable = false)
+  private TaxCategory taxCategory;
+
+  @Column(name = "tax_rate", nullable = false, precision = 8, scale = 5)
+  private BigDecimal taxRate;
+
+  @Column(name = "discount_amount", nullable = false, precision = 19, scale = 2)
+  private BigDecimal discountAmount = BigDecimal.ZERO;
+
+  @Column(name = "tax_amount", nullable = false, precision = 19, scale = 2)
+  private BigDecimal taxAmount = BigDecimal.ZERO;
+
+  @Column(nullable = false, precision = 19, scale = 2)
+  private BigDecimal subtotal;
 
   private String createdBy;
   private String updatedBy;
@@ -55,13 +82,15 @@ public class OrderItem {
   private Product product;
 
   public OrderItem(int quantity, BigDecimal price, String name,
-                   String sku, String brand, Order order,
+                   String sku, String brand, CurrencyCode currency, TaxCategory taxCategory, Order order,
                    Product product, Business business) {
     this.quantity = quantity;
     this.price = price;
     this.name = name;
     this.sku = sku;
     this.brand = brand;
+    this.currency = currency;
+    this.taxCategory = taxCategory;
     this.order = order;
     this.product = product;
     this.business = business;

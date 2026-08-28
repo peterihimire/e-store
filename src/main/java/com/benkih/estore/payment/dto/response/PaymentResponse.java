@@ -1,6 +1,6 @@
 package com.benkih.estore.payment.dto.response;
 
-import com.benkih.estore.common.enums.Currency;
+import com.benkih.estore.common.enums.CurrencyCode;
 import com.benkih.estore.common.enums.PaymentMethod;
 import com.benkih.estore.common.enums.PaymentProvider;
 import com.benkih.estore.common.enums.PaymentStatus;
@@ -23,7 +23,7 @@ public class PaymentResponse {
 
   private BigDecimal amount;
 
-  private Currency currency;
+  private CurrencyCode currency;
 
   private PaymentMethod paymentMethod;
 

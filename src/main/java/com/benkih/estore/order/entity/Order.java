@@ -1,8 +1,7 @@
 package com.benkih.estore.order.entity;
 
-import com.benkih.estore.allocation.entity.Allocation;
 import com.benkih.estore.user.entity.Address;
-import com.benkih.estore.common.enums.Currency;
+import com.benkih.estore.common.enums.CurrencyCode;
 import com.benkih.estore.common.enums.OrderStatus;
 import com.benkih.estore.common.enums.PaymentStatus;
 import com.benkih.estore.payment.entity.Payment;
@@ -50,7 +49,7 @@ public class Order {
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
-  private Currency currency = Currency.NGN;
+  private CurrencyCode currency = CurrencyCode.NGN;
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)

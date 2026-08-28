@@ -26,5 +26,7 @@ public class InventoryResponseDto {
 
   private Integer reorderQuantity;
 
+  private String sku;
+
   private String productName;
 }

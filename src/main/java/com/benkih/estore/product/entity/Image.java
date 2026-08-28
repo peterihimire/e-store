@@ -30,6 +30,18 @@ public class Image {
     private String filePath;
     private String downloadUrl;
 
+    @Column(nullable = false)
+    private String storageKey;
+
+    @Column(length = 255)
+    private String altText;
+
+    @Column(nullable = false)
+    private Integer displayOrder = 0;
+
+    @Column(nullable = false)
+    private boolean primaryImage = false;
+
     private String createdBy;
     private String updatedBy;
 
@@ -38,7 +50,7 @@ public class Image {
     private LocalDateTime updatedAt;
 
     @ManyToOne
-    @JoinColumn(name = "product_id")
+    @JoinColumn(name = "product_id", nullable = false)
     @JsonIgnore
     private Product product;
 
