@@ -132,13 +132,11 @@ public class OrderPdfGenerator {
     for (OrderItem item : order.getOrderItems()) {
 
       BigDecimal total =
-          item.getProduct()
-              .getPrice()
-              .multiply(BigDecimal.valueOf(item.getQuantity()));
+          item.getVariant().getPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
 
       table.addCell(bodyCell(item.getProduct().getName()));
       table.addCell(bodyCell(String.valueOf(item.getQuantity())));
-      table.addCell(bodyCell(formatMoney(item.getProduct().getPrice())));
+      table.addCell(bodyCell(formatMoney(item.getVariant().getPrice())));
       table.addCell(bodyCell(formatMoney(total)));
     }
 

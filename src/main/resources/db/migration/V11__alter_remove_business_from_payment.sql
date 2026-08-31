@@ -1,5 +1,0 @@
-ALTER TABLE payments
-DROP CONSTRAINT IF EXISTS fkhx8yyee84j5wcdd9ls1wwbm29;
-
-ALTER TABLE payments
-DROP COLUMN IF EXISTS business_id;

@@ -1,2 +1,0 @@
-ALTER TABLE payments
-    ADD COLUMN processor_fee NUMERIC(18, 2) NOT NULL DEFAULT 0.00;

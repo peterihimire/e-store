@@ -10,6 +10,6 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class VariantAttributeResponseDto {
-  private String name;
+  private String attributeName;
   private String value;
 }

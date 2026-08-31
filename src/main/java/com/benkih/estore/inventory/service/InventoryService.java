@@ -29,8 +29,8 @@ public class InventoryService implements IInventoryService{
 
 
   @Override
-  public Inventory getByProductSlug(String productSlug) {
-    return inventoryRepository.findByProductSlug(productSlug)
+  public Inventory getByProductSlug(String variantSlug) {
+    return inventoryRepository.findByVariantSlug(variantSlug)
         .orElseThrow(() -> new ResourceNotFoundException("Inventory not found for product."));
   }
 
@@ -78,7 +78,7 @@ public class InventoryService implements IInventoryService{
     }
 
     Inventory inventory =
-        inventoryRepository.findByProductSlugForUpdate(variantSlug)//find by
+        inventoryRepository.findByVariantSlugForUpdate(variantSlug)//find by
             // product variant slug
             .orElseThrow(() ->
                 new ResourceNotFoundException("Inventory not found")

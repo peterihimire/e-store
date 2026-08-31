@@ -20,8 +20,8 @@ public interface PromotionRepository extends JpaRepository<Promotion, Long> {
       AND p.active = true
       AND p.startsAt <= :now
       AND (
-          p.endsAt IS NULL
-          OR p.endsAt >= :now
+          p.expiresAt IS NULL
+          OR p.expiresAt >= :now
       )
     """)
   Optional<Promotion> findActive(

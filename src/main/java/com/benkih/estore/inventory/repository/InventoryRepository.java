@@ -23,30 +23,30 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long> {
   @EntityGraph(attributePaths = {"product"})
   Optional<Inventory> findBySlug(String slug);
 
-  @EntityGraph(attributePaths = {"product"})
-  Optional<Inventory> findByBusinessSlugAndSlug(
-      String businessSlug,
-      String slug
-  );
+//  @EntityGraph(attributePaths = {"product"})
+//  Optional<Inventory> findByBusinessSlugAndSlug(
+//      String businessSlug,
+//      String slug
+//  );
 
-  Page<Inventory> findAllByBusinessId(Pageable pageable,  Long businessid);
+  Page<Inventory> findAllByBusinessId(Pageable pageable,  Long businessId);
 
-  Optional<Inventory> findByProductSlug(String productSlug);
+//  Optional<Inventory> findByProductSlug(String productSlug);
 
-  List<Inventory> findByProductSlugIn(Collection<String> productSlugs);
+//  List<Inventory> findByProductSlugIn(Collection<String> productSlugs);
+//
+//  boolean existsByProductSlug(String productSlug);
 
-  boolean existsByProductSlug(String productSlug);
-
-  @Lock(LockModeType.PESSIMISTIC_WRITE)
-  @Query("""
-    SELECT i
-    FROM Inventory i
-    JOIN i.product p
-    WHERE p.slug = :productSlug
-""")
-  Optional<Inventory> findByProductSlugForUpdate(
-      @Param("productSlug") String productSlug
-  );
+//  @Lock(LockModeType.PESSIMISTIC_WRITE)
+//  @Query("""
+//    SELECT i
+//    FROM Inventory i
+//    JOIN i.product p
+//    WHERE p.slug = :productSlug
+//""")
+//  Optional<Inventory> findByProductSlugForUpdate(
+//      @Param("productSlug") String productSlug
+//  );
 
 
   Optional<Inventory> findByVariantSlug(String variantSlug);

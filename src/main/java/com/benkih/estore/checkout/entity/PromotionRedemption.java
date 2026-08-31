@@ -1,5 +1,6 @@
 package com.benkih.estore.checkout.entity;
 
+import com.benkih.estore.common.entity.BaseEntity;
 import com.benkih.estore.order.entity.Order;
 import com.benkih.estore.user.entity.User;
 import jakarta.persistence.*;
@@ -17,7 +18,7 @@ import java.time.Instant;
         )
     }
 )
-public class PromotionRedemption {
+public class PromotionRedemption extends BaseEntity {
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "promotion_id", nullable = false)

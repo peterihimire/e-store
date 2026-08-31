@@ -9,7 +9,9 @@ import com.benkih.estore.cart.repository.CartItemRepository;
 import com.benkih.estore.common.exceptions.ResourceNotFoundException;
 import com.benkih.estore.inventory.entity.Inventory;
 import com.benkih.estore.inventory.service.IInventoryService;
+import com.benkih.estore.product.dto.response.VariantAttributeResponseDto;
 import com.benkih.estore.product.entity.Product;
+import com.benkih.estore.product.entity.ProductVariant;
 import com.benkih.estore.product.service.IProductService;
 import com.benkih.estore.security.user.StoreUserDetails;
 import com.benkih.estore.user.entity.User;
@@ -67,22 +69,42 @@ public class CartService  implements ICartService{
   @Override
   public CartResponseDto getConvertedCart(Cart cart) {
 
-    List<Product> products = cart.getItems()
-        .stream()
-        .map(CartItem::getProduct)
-        .toList();
+//    List<Product> products = cart.getItems()
+//        .stream()
+//        .map(CartItem::getProduct)
+//        .toList();
 
     List<CartItemResponseDto> items = cart.getItems()
         .stream()
         .map(item -> {
 
-          Product product = item.getProduct();
+          ProductVariant variant = item.getVariant();
+          Product product = variant.getProduct();
+
+          List<VariantAttributeResponseDto> selectedAttributes =
+              variant.getAttributes()
+                  .stream()
+                  .map(attribute -> {
+                    String value = attribute.getAttributeValue() != null
+                        ? attribute.getAttributeValue().getDisplayName()
+                        : attribute.getCustomValue();
+
+                    return new VariantAttributeResponseDto(
+                        attribute.getAttribute().getName(),
+                        value
+                    );
+                  })
+                  .toList();
 
           return new CartItemResponseDto(
+              item.getSlug(),
               item.getQuantity(),
               item.getUnitPrice(),
               item.getTotalPrice(),
-              productService.convertToDto(product)
+              variant.getSlug(),
+              variant.getSku(),
+              productService.convertToDto(product),
+              selectedAttributes
           );
         })
         .toList();

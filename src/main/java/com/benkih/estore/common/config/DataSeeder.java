@@ -49,17 +49,6 @@ public class DataSeeder implements CommandLineRunner {
   public void run(String... args) {
     try {
       log.info("Starting data seeding...");
-//
-//      // Always create roles if they don't exist
-//      createDefaultRoles();
-//
-//      // Only create users if none exist
-//      if (userRepository.count() == 0) {
-//        createUsers();
-//        log.info("Data seeding completed successfully!");
-//      } else {
-//        log.info("Users already exist. Skipping user creation.");
-//      }
 //      seedPermissions();
 //      seedSystemRoles();
 //      createSuperAdmin();

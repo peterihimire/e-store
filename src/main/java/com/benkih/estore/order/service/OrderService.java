@@ -84,7 +84,7 @@ public class OrderService implements IOrderService{
         System.out.println(
             "CartItem id=" + item.getId()
                 + " hash=" + System.identityHashCode(item)
-                + " product=" + item.getProduct().getName()
+                + " product=" + item.getVariant().getProduct().getName()
         )
     );
     Order order = createOrder(cart);
@@ -174,7 +174,7 @@ public class OrderService implements IOrderService{
 //          cartItem.getQuantity()
 //      );
 
-      Product product = cartItem.getProduct();
+      Product product = cartItem.getVariant().getProduct();
       ProductVariant variant = cartItem.getVariant();
 
       if (product == null) {
@@ -639,7 +639,7 @@ public class OrderService implements IOrderService{
         );
       }
 
-      if (item.getProduct() == null) {
+      if (item.getVariant().getProduct() == null) {
         throw new BadRequestException(
             "Cart contains an invalid product"
         );
@@ -651,7 +651,7 @@ public class OrderService implements IOrderService{
 
     for (CartItem cartItem : cart.getItems()) {
 
-      Product product = cartItem.getProduct();
+      Product product = cartItem.getVariant().getProduct();
       ProductVariant  variant = cartItem.getVariant();
 
       if (product == null) {

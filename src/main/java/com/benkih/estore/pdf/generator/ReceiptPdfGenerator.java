@@ -198,10 +198,9 @@ public class ReceiptPdfGenerator {
     return ReceiptItemDocument.builder()
         .productName(item.getProduct().getName())
         .quantity(item.getQuantity())
-        .unitPrice(item.getProduct().getPrice())
+        .unitPrice(item.getVariant().getPrice())
         .totalPrice(
-            item.getProduct()
-                .getPrice()
+            item.getVariant().getPrice()
                 .multiply(BigDecimal.valueOf(item.getQuantity()))
         )
         .build();
