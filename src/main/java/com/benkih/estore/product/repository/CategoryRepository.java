@@ -24,6 +24,7 @@
 package com.benkih.estore.product.repository;
 
 import com.benkih.estore.product.entity.Category;
+import com.benkih.estore.product.entity.CategoryAttribute;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -58,4 +59,6 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
   );
 
   boolean existsByParentId(Long parentId);
+
+
 }

@@ -45,4 +45,9 @@ public interface CategoryAttributeRepository
       Long categoryId,
       String name
   );
+
+  List<CategoryAttribute>
+  findByCategoryAndActiveTrueAndVariantAttributeFalseAndRequiredTrue(
+      Category category
+  );
 }

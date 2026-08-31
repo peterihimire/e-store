@@ -8,8 +8,7 @@ import com.benkih.estore.common.exceptions.BadRequestException;
 import com.benkih.estore.inventory.entity.Inventory;
 import com.benkih.estore.inventory.repository.InventoryRepository;
 import com.benkih.estore.inventory.service.IInventoryService;
-import com.benkih.estore.product.dto.request.CreateProductVariantRequest;
-import com.benkih.estore.product.dto.request.VariantAttributeRequest;
+import com.benkih.estore.product.dto.request.*;
 import com.benkih.estore.product.dto.response.ProductVariantResponseDto;
 import com.benkih.estore.product.dto.response.VariantAttributeResponseDto;
 import com.benkih.estore.product.entity.*;
@@ -17,8 +16,6 @@ import com.benkih.estore.product.repository.*;
 import com.benkih.estore.common.exceptions.AlreadyExistsException;
 import com.benkih.estore.common.exceptions.ResourceNotFoundException;
 import com.benkih.estore.product.dto.response.ImageDto;
-import com.benkih.estore.product.dto.request.AddProductRequest;
-import com.benkih.estore.product.dto.request.UpdateProductRequest;
 import com.benkih.estore.product.dto.response.ProductResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -61,21 +58,20 @@ public class ProductService implements IProductService{
         .orElseThrow(() ->
             new ResourceNotFoundException("Business not found")
         );
-//    Category category = categoryRepository.findByName(request.getCategory())
-//        .orElseThrow(() ->
-//          new ResourceNotFoundException("Category not found"));
+
     Category category =
-        categoryRepository.findByNameAndParentIsNull(request.getCategorySlug().trim())
+        categoryRepository.findBySlug(request.getCategorySlug().trim())
         .orElseThrow(() ->
             new ResourceNotFoundException("Category not found"));
 
     Product product = createProduct(request, category, business);
 
-//     populateAndValidateProductAttributes(
-//         product,
-//         request.getProductAttributes(),
-//         category
-//     );
+    populateAndValidateProductAttributes(
+        product,
+        request.getProductAttributes(),
+        category
+    );
+
     product = productRepository.save(product);
 
     for (CreateProductVariantRequest variantRequest : request.getVariants()) {
@@ -93,16 +89,6 @@ public class ProductService implements IProductService{
       productVariantRepository.save(variant);
       inventoryService.createInventory(variant);
     }
-
-//    ProductVariant variant = createVariant(request, product, business);
-//
-//    variant.setSku(generateSku(product));
-//    variant.setPrice(request.getPrice());
-//    variant.setCurrency(Currency.NGN);
-//    variant = productVariantRepository.save(variant);
-//
-//    inventoryService.createInventory(variant);
-
     return product;
   }
 
@@ -229,14 +215,10 @@ public class ProductService implements IProductService{
 
     return new ProductResponseDto(
         product.getSlug(),
-//        product.getSku(),
         product.getStatus(),
         product.getName(),
         product.getBrand(),
         product.getDescription(),
-//        product.getPrice(),
-//        product.getInventory().getAvailableStock(),
-//        product.getInventory().getAvailableStock() > 0,
         product.getCategory() != null ? product.getCategory().getName() : null,
         imageDtos,
         variantDtos
@@ -364,16 +346,16 @@ public class ProductService implements IProductService{
         4
     );
 
-    String productCode = skuToken(
-        product.getBrand() + "-" + product.getName(),
-        10
-    );
+    String brandCode = skuToken(product.getBrand(), 5);
+
+    String productCode = skuToken(product.getName(), 8);
 
     String variantCode = variantCode(variant);
 
     return String.format(
-        "%s-%s-%s-%06d",
+        "%s-%s-%s-%s-%06d",
         businessCode,
+        brandCode,
         productCode,
         variantCode,
         sequence
@@ -654,6 +636,132 @@ public class ProductService implements IProductService{
       if (!requestedAttributeSlugs.contains(attribute.getSlug())) {
         throw new BadRequestException(
             "Variant attribute '" + attribute.getName()
+                + "' is required."
+        );
+      }
+    }
+  }
+
+  private void populateAndValidateProductAttributes(
+      Product product,
+      List<ProductAttributeRequest> requests,
+      Category category
+  ) {
+    List<ProductAttributeRequest> attributeRequests =
+        requests == null ? List.of() : requests;
+
+    Set<String> requestedAttributeSlugs = new HashSet<>();
+
+    for (ProductAttributeRequest request : attributeRequests) {
+      String attributeSlug = request.getAttributeSlug().trim();
+
+      if (!requestedAttributeSlugs.add(attributeSlug)) {
+        throw new BadRequestException(
+            "Duplicate product attribute: " + attributeSlug
+        );
+      }
+
+      CategoryAttribute attribute = categoryAttributeRepository
+          .findByCategoryAndSlug(category, attributeSlug)
+          .orElseThrow(() -> new BadRequestException(
+              "Attribute does not belong to category: " + attributeSlug
+          ));
+
+      if (!attribute.isActive()) {
+        throw new BadRequestException(
+            "Attribute is inactive: " + attribute.getName()
+        );
+      }
+
+      if (attribute.isVariantAttribute()) {
+        throw new BadRequestException(
+            "Attribute '" + attribute.getName()
+                + "' must be supplied on a product variant."
+        );
+      }
+
+      ProductAttribute productAttribute =
+          createProductAttribute(product, attribute, request);
+
+      product.getAttributes().add(productAttribute);
+    }
+
+    validateRequiredProductAttributes(
+        category,
+        requestedAttributeSlugs
+    );
+  }
+
+  private ProductAttribute createProductAttribute(
+      Product product,
+      CategoryAttribute attribute,
+      ProductAttributeRequest request
+  ) {
+    boolean hasValueSlug =
+        request.getAttributeValueSlug() != null
+            && !request.getAttributeValueSlug().isBlank();
+
+    boolean hasCustomValue =
+        request.getCustomValue() != null
+            && !request.getCustomValue().isBlank();
+
+    if (hasValueSlug == hasCustomValue) {
+      throw new BadRequestException(
+          "Provide either attributeValueSlug or customValue for '"
+              + attribute.getName() + "'."
+      );
+    }
+
+    ProductAttribute productAttribute = new ProductAttribute();
+
+    productAttribute.setProduct(product);
+    productAttribute.setAttribute(attribute);
+
+    if (hasValueSlug) {
+      AttributeValue attributeValue = attributeValueRepository
+          .findByAttributeAndSlug(
+              attribute,
+              request.getAttributeValueSlug().trim()
+          )
+          .orElseThrow(() -> new BadRequestException(
+              "Invalid value for attribute: " + attribute.getName()
+          ));
+
+      if (!attributeValue.isActive()) {
+        throw new BadRequestException(
+            "Selected value is inactive for: " + attribute.getName()
+        );
+      }
+
+      productAttribute.setAttributeValue(attributeValue);
+      return productAttribute;
+    }
+
+    if (attribute.getType() != AttributeType.TEXT) {
+      throw new BadRequestException(
+          "Custom values are not permitted for: "
+              + attribute.getName()
+      );
+    }
+
+    productAttribute.setCustomValue(
+        request.getCustomValue().trim()
+    );
+
+    return productAttribute;
+  }
+
+  private void validateRequiredProductAttributes(
+      Category category,
+      Set<String> requestedAttributeSlugs
+  ) {
+    List<CategoryAttribute> requiredAttributes =
+        categoryAttributeRepository.findByCategoryAndActiveTrueAndVariantAttributeFalseAndRequiredTrue(category);
+
+    for (CategoryAttribute attribute : requiredAttributes) {
+      if (!requestedAttributeSlugs.contains(attribute.getSlug())) {
+        throw new BadRequestException(
+            "Product attribute '" + attribute.getName()
                 + "' is required."
         );
       }

@@ -9,6 +9,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -29,6 +30,9 @@ public class AddProductRequest {
 
   @NotNull(message = "Currency is required")
   private CurrencyCode currency = CurrencyCode.NGN;
+
+  @Valid
+  private List<ProductAttributeRequest> productAttributes = new ArrayList<>();
 
   @NotEmpty(message = "At least one product variant is required")
   @Valid

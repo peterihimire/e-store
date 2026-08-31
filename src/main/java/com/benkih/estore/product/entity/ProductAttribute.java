@@ -2,6 +2,9 @@ package com.benkih.estore.product.entity;
 
 import com.benkih.estore.common.entity.BaseEntity;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(
@@ -11,6 +14,9 @@ import jakarta.persistence.*;
         columnNames = {"product_id", "attribute_id"}
     )
 )
+@Getter
+@Setter
+@NoArgsConstructor
 public class ProductAttribute extends BaseEntity {
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
