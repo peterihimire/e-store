@@ -60,8 +60,8 @@ public class ProductController {
 @GetMapping("/{slug}")
 public ResponseEntity<ApiResponse> getProductBySlug(@PathVariable String slug) {
   try {
-    Product product = productService.getProductBySlug(slug);
-    ProductResponseDto productDto = productService.convertToDto(product);
+    ProductResponseDto productDto  = productService.getProductBySlug(slug);
+//    ProductResponseDto productDto = productService.convertToDto(product);
 
     return ResponseEntity.ok(
         new ApiResponse("success", "product returned", productDto)

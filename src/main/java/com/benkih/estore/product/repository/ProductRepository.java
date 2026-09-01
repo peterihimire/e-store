@@ -13,32 +13,42 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
-  @EntityGraph(attributePaths = {"images", "category", "inventory"})
+  @EntityGraph(attributePaths = {
+//      "images",
+      "category",
+//      "variants",
+      "brand"
+  })
   Optional<Product> findBySlug(String slug);
 
-  @EntityGraph(attributePaths = {"images", "category", "inventory"})
+  @EntityGraph(attributePaths = {"images", "category", "variants","brand"})
   Optional<Product> findBySlugAndBusinessId( String slug, Long businessId);
 
-  @EntityGraph(attributePaths = {"images", "category", "inventory"})
+  @EntityGraph(attributePaths = {"images", "category", "variants","brand"})
   List<Product> findByCategoryName(String category);
 
-  @EntityGraph(attributePaths = {"images", "category", "inventory"})
+  @EntityGraph(attributePaths = {"images", "category", "variants","brand"})
   List<Product> findByBrandSlug(String brand);
 
-  @EntityGraph(attributePaths = {"images", "category", "inventory"})
+  @EntityGraph(attributePaths = {"images", "category", "variants","brand"})
   List<Product> findByCategoryNameAndBrandSlug(String category, String brand);
 
-  @EntityGraph(attributePaths = {"images", "category", "inventory"})
+  @EntityGraph(attributePaths = {"images", "category", "variants","brand"})
   List<Product> findByName(String name);
 
-  @EntityGraph(attributePaths = {"images", "category", "inventory"})
+  @EntityGraph(attributePaths = {"images", "category", "variants","brand"})
   Page<Product> findByBrandSlugAndName(String brand, String name,
                                    Pageable pageable);
 
   Long countByBrandSlugAndName(String brand, String name);
 
-  @EntityGraph(attributePaths = {"images", "category", "inventory"})
-  List<Product> findAll();
+  @EntityGraph(attributePaths = {
+      "images",
+      "category",
+      "variants",
+      "brand"
+  })
+  Page<Product> findAll(Pageable pageable);
 
   boolean existsByNameAndBrandAndBusinessId(String name, Brand brand, Long businessId);
 

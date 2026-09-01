@@ -5,9 +5,11 @@ import com.benkih.estore.common.enums.UserStatus;
 import com.benkih.estore.permission.entity.Permission;
 import com.benkih.estore.permission.repository.PermissionRepository;
 import com.benkih.estore.product.entity.AttributeValue;
+import com.benkih.estore.product.entity.Brand;
 import com.benkih.estore.product.entity.Category;
 import com.benkih.estore.product.entity.CategoryAttribute;
 import com.benkih.estore.product.repository.AttributeValueRepository;
+import com.benkih.estore.product.repository.BrandRepository;
 import com.benkih.estore.product.repository.CategoryAttributeRepository;
 import com.benkih.estore.product.repository.CategoryRepository;
 import com.benkih.estore.role.entity.Role;
@@ -44,6 +46,7 @@ public class DataSeeder implements CommandLineRunner {
   private final CategoryRepository categoryRepository;
   private final CategoryAttributeRepository categoryAttributeRepository;
   private final AttributeValueRepository attributeValueRepository;
+  private final BrandRepository brandRepository;
 
 
   @Override
@@ -53,78 +56,12 @@ public class DataSeeder implements CommandLineRunner {
 //      seedPermissions();
 //      seedSystemRoles();
 //      createSuperAdmin();
+
 //      seedMarketplaceAttributes();
+//      seedBrands();
 
     } catch (Exception e) {
       log.error(" Error during data seeding: {}", e.getMessage(), e);
-    }
-  }
-
-  private void createDefaultRoles() {
-    Set<String> defaultRoles = Set.of("ADMIN", "CUSTOMER", "MANAGER");
-
-    defaultRoles.forEach(roleName -> {
-      if (roleRepository.findByName(roleName).isEmpty()) {
-        Role role = new Role();
-        role.setName(roleName);
-        role.setCreatedAt(Instant.now());
-        role.setUpdatedAt(Instant.now());
-        roleRepository.save(role);
-        log.info("Created role: {}", roleName);
-      }
-    });
-  }
-
-  private void createUsers() {
-    // Admin user
-    createUser(
-        "Peter",
-        "Ihimire",
-        "peter@example.com",
-        Set.of("ADMIN", "CUSTOMER", "MANAGER")
-    );
-
-    // Customer users
-    createUser("John", "Doe", "john@example.com", Set.of("CUSTOMER"));
-    createUser("Jane", "Doe", "jane@example.com", Set.of("CUSTOMER"));
-    createUser("Michael", "Smith", "michael@example.com", Set.of("MANAGER"));
-    createUser("Sarah", "Jones", "sarah@example.com", Set.of("CUSTOMER"));
-    createUser("Robert", "Wilson", "robert@example.com", Set.of("CUSTOMER"));
-    createUser("Emily", "Brown", "emily@example.com", Set.of("CUSTOMER"));
-  }
-
-  private void createUser(String firstName, String lastName, String email, Set<String> roleNames) {
-    try {
-      // Check if user already exists
-      if (userRepository.findByEmail(email).isPresent()) {
-        log.warn("User with email {} already exists. Skipping.", email);
-        return;
-      }
-
-      // Create user
-      User user = new User();
-      user.setFirstName(firstName);
-      user.setLastName(lastName);
-      user.setEmail(email);
-      user.setPassword(passwordEncoder.encode("password123"));
-      user.setCreatedAt(Instant.now());
-      user.setUpdatedAt(Instant.now());
-
-      // Assign roles
-      Set<Role> roles = new HashSet<>();
-      roleNames.forEach(roleName -> {
-        Role role = roleRepository.findByName(roleName)
-            .orElseThrow(() -> new RuntimeException("Role not found: " + roleName));
-        roles.add(role);
-      });
-      user.setRoles(roles);
-
-      userRepository.save(user);
-      log.info(" Created user: {} {} (email: {}) with roles: {}",
-          firstName, lastName, email, roleNames);
-
-    } catch (Exception e) {
-      log.error(" Failed to create user {}: {}", email, e.getMessage());
     }
   }
 
@@ -223,25 +160,6 @@ public class DataSeeder implements CommandLineRunner {
 
       seedSuperAdminRole(allPermissions);
       seedOwnerRole(allPermissions);
-
-//    if (roleRepository.findByName("SUPER_ADMIN").isPresent()) {
-//      return;
-//    }
-//
-//    Role role = new Role();
-//
-//    role.setName("SUPER_ADMIN");
-//    role.setSystemRole(true);
-//    role.setActive(true);
-//    role.setCreatedAt(LocalDateTime.now());
-//
-//    Set<Permission> permissions = new HashSet<>(permissionRepository.findAll());
-//
-//    role.setPermissions(permissions);
-//
-//    roleRepository.save(role);
-//
-//    log.info("Created SUPER_ADMIN role.");
   }
 
   private void createSuperAdmin() {
@@ -923,5 +841,137 @@ public class DataSeeder implements CommandLineRunner {
           value
       );
     }
+  }
+
+  private void seedBrands() {
+
+    log.info("Seeding brands...");
+
+    createBrand("Apple", "https://www.apple.com");
+
+    createBrand("Samsung", "https://www.samsung.com");
+
+    createBrand("Sony", "https://www.sony.com");
+
+    createBrand("LG", "https://www.lg.com");
+
+    createBrand("Hisense", "https://www.hisense.com");
+
+    createBrand("TCL", "https://www.tcl.com");
+
+    createBrand("Panasonic", "https://www.panasonic.com");
+
+    createBrand("Philips", "https://www.philips.com");
+
+    createBrand("Dell", "https://www.dell.com");
+
+    createBrand("HP", "https://www.hp.com");
+
+    createBrand("Lenovo", "https://www.lenovo.com");
+
+    createBrand("ASUS", "https://www.asus.com");
+
+    createBrand("Acer", "https://www.acer.com");
+
+    createBrand("Microsoft", "https://www.microsoft.com");
+
+    createBrand("MSI", "https://www.msi.com");
+
+    createBrand("Xiaomi", "https://www.mi.com");
+
+    createBrand("OnePlus", "https://www.oneplus.com");
+
+    createBrand("Oppo", "https://www.oppo.com");
+
+    createBrand("Vivo", "https://www.vivo.com");
+
+    createBrand("Tecno", "https://www.tecno-mobile.com");
+
+    createBrand("Infinix", "https://www.infinixmobility.com");
+
+    createBrand("Nokia", "https://www.nokia.com");
+
+    createBrand("JBL", "https://www.jbl.com");
+
+    createBrand("Bose", "https://www.bose.com");
+
+    createBrand("Sennheiser", "https://www.sennheiser.com");
+
+    createBrand("Marshall", "https://www.marshall.com");
+
+    createBrand("Anker", "https://www.anker.com");
+
+    createBrand("Canon", "https://www.canon.com");
+
+    createBrand("Nikon", "https://www.nikon.com");
+
+    createBrand("Fujifilm", "https://www.fujifilm.com");
+
+    createBrand("GoPro", "https://gopro.com");
+
+    createBrand("TP-Link", "https://www.tp-link.com");
+
+    createBrand("D-Link", "https://www.dlink.com");
+
+    createBrand("Netgear", "https://www.netgear.com");
+
+    createBrand("Ubiquiti", "https://ui.com");
+
+    createBrand("Tenda", "https://www.tenda.com.cn");
+
+    createBrand("Bosch", "https://www.bosch.com");
+
+    createBrand("Whirlpool", "https://www.whirlpool.com");
+
+    createBrand("Haier", "https://www.haier.com");
+
+    createBrand("Midea", "https://www.midea.com");
+
+    createBrand("Nike", "https://www.nike.com");
+
+    createBrand("Adidas", "https://www.adidas.com");
+
+    createBrand("Puma", "https://www.puma.com");
+
+    createBrand("Reebok", "https://www.reebok.com");
+
+    createBrand("Levi's", "https://www.levi.com");
+
+    createBrand("New Balance", "https://www.newbalance.com");
+
+    createBrand("Logitech", "https://www.logitech.com");
+
+    createBrand("Razer", "https://www.razer.com");
+
+    createBrand("Belkin", "https://www.belkin.com");
+
+    createBrand("UGREEN", "https://www.ugreen.com");
+
+    createBrand("Baseus", "https://www.baseus.com");
+
+    createBrand("Spigen", "https://www.spigen.com");
+
+    log.info("Finished seeding brands.");
+
+  }
+
+  private void createBrand(String name, String websiteUrl) {
+    String normalizedName = name.trim().toLowerCase();
+
+    if (brandRepository.existsByNormalizedName(normalizedName)) {
+      log.info("Brand already exists: {}", name);
+      return;
+    }
+
+    Brand brand = new Brand();
+    brand.setName(name);
+    brand.setNormalizedName(normalizedName);
+    brand.setActive(true);
+    brand.setVerified(true);
+    brand.setWebsiteUrl(websiteUrl);
+
+    brandRepository.save(brand);
+
+    log.info("Created brand: {}", name);
   }
 }

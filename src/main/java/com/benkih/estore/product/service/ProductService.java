@@ -9,14 +9,11 @@ import com.benkih.estore.inventory.entity.Inventory;
 import com.benkih.estore.inventory.repository.InventoryRepository;
 import com.benkih.estore.inventory.service.IInventoryService;
 import com.benkih.estore.product.dto.request.*;
-import com.benkih.estore.product.dto.response.ProductVariantResponseDto;
-import com.benkih.estore.product.dto.response.VariantAttributeResponseDto;
+import com.benkih.estore.product.dto.response.*;
 import com.benkih.estore.product.entity.*;
 import com.benkih.estore.product.repository.*;
 import com.benkih.estore.common.exceptions.AlreadyExistsException;
 import com.benkih.estore.common.exceptions.ResourceNotFoundException;
-import com.benkih.estore.product.dto.response.ImageDto;
-import com.benkih.estore.product.dto.response.ProductResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -179,10 +176,10 @@ public class ProductService implements IProductService{
   }
 
 
-  @Override
-  public List<Product> getAllProducts() {
-    return productRepository.findAll();
-  }
+//  @Override
+//  public List<Product> getAllProducts() {
+//    return productRepository.findAll();
+//  }
 
 
   @Transactional(readOnly = true)
@@ -205,7 +202,7 @@ public class ProductService implements IProductService{
     return convertProducts(products);
   }
 
-  @Transactional(readOnly = true)
+//  @Transactional(readOnly = true)
   @Override
   public ProductResponseDto convertToDto(Product product) {
     List<ImageDto> imageDtos = Optional.ofNullable(product.getImages())
@@ -218,8 +215,6 @@ public class ProductService implements IProductService{
         ))
         .toList();
 
-
-
     List<ProductVariantResponseDto> variantDtos =
         Optional.ofNullable(product.getVariants())
             .orElse(List.of())
@@ -227,15 +222,24 @@ public class ProductService implements IProductService{
             .map(this::convertVariantToDto)
             .toList();
 
+    BrandResponseDto brandDto = Optional.ofNullable(product.getBrand())
+        .map(brand -> new BrandResponseDto(
+            brand.getSlug(),
+            brand.getName(),
+            brand.getLogoUrl(),
+            brand.getWebsiteUrl()
+        ))
+        .orElse(null);
+
     return new ProductResponseDto(
         product.getSlug(),
         product.getStatus(),
         product.getName(),
-        product.getBrand(),
         product.getDescription(),
         product.getCategory() != null ? product.getCategory().getName() : null,
         imageDtos,
-        variantDtos
+        variantDtos,
+        brandDto
     );
   }
 
@@ -298,6 +302,7 @@ public class ProductService implements IProductService{
   }
 
 
+  @Transactional(readOnly = true)
   @Override
   public List<Product> getProductsByName(String name) {
     return productRepository.findByName(name);
@@ -310,12 +315,13 @@ public class ProductService implements IProductService{
   }
 
 
+  @Transactional(readOnly = true)
   @Override
-  public Product getProductBySlug(String slug) {
+  public ProductResponseDto getProductBySlug(String slug) {
     Product product = productRepository.findBySlug(slug)
         .orElseThrow(()-> new ResourceNotFoundException("Product not found!"));
 
-    return product;
+    return convertToDto(product);
   }
 
 
@@ -360,7 +366,7 @@ public class ProductService implements IProductService{
         4
     );
 
-    String brandCode = skuToken(String.valueOf(product.getBrand()), 5);
+    String brandCode = skuToken(String.valueOf(product.getBrand().getName()), 5);
 
     String productCode = skuToken(product.getName(), 8);
 

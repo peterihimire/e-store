@@ -13,10 +13,8 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 public class PackageDimensions {
-  @NotNull
   @PositiveOrZero
   @Column(
-      nullable = false,
       precision = 10,
       scale = 3
   )

@@ -14,7 +14,7 @@ import java.util.List;
 // Here is abstract class for product service
 public interface IProductService {
   Product addProduct(AddProductRequest product, Long businessId);
-  List<Product> getAllProducts();
+//  List<Product> getAllProducts();
 
   //  @Override
   //  public List<Product> getAllProducts() {
@@ -38,7 +38,7 @@ public interface IProductService {
   List<Product> getProductsByBrandAndName(String brand, String name);
   //  Product getProductById(Long id);
   @EntityGraph(attributePaths = "images")
-  Product getProductBySlug(String slug);
+  ProductResponseDto getProductBySlug(String slug);
   Product updateProduct(UpdateProductRequest product, String slug, Long businessId);
   void deleteProductById(String slug);
   Long countProductByBrandAndName(String brand, String name);
