@@ -2,6 +2,7 @@ package com.benkih.estore.checkout.entity;
 
 //package com.benkih.estore.tax.entity;
 
+import com.benkih.estore.common.entity.AuditableEntity;
 import com.benkih.estore.common.entity.BaseEntity;
 import com.benkih.estore.common.enums.Country;
 import com.benkih.estore.common.enums.TaxCategory;
@@ -11,6 +12,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Getter
@@ -26,7 +28,7 @@ import java.time.LocalDateTime;
         )
     }
 )
-public class TaxRule extends BaseEntity {
+public class TaxRule extends AuditableEntity {
 
   @Column(
       nullable = false,
@@ -75,12 +77,12 @@ public class TaxRule extends BaseEntity {
       name = "effective_from",
       nullable = false
   )
-  private LocalDateTime effectiveFrom;
+  private Instant effectiveFrom;
 
   @Column(
       name = "effective_to"
   )
-  private LocalDateTime effectiveTo;
+  private Instant effectiveTo;
 
   @Column(
       nullable = false

@@ -35,6 +35,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
@@ -102,7 +104,7 @@ public class UserInvitationService implements IUserInvitationService{
     invitation.setInvitedBy(currentUserService.getCurrentUser());
     invitation.setDepartments(departments);
     invitation.setTokenHash(passwordEncoder.encode(plainToken));
-    invitation.setExpiresAt(LocalDateTime.now().plusDays(7));
+    invitation.setExpiresAt(Instant.now().plus(Duration.ofDays(7)));
     invitation.setBusiness(business);
     invitation = userInvitationRepository.save(invitation);
 
@@ -154,7 +156,7 @@ public class UserInvitationService implements IUserInvitationService{
 
     String plainToken = UUID.randomUUID().toString();
     invitation.setTokenHash(passwordEncoder.encode(plainToken));
-    invitation.setExpiresAt(LocalDateTime.now().plusDays(7));
+    invitation.setExpiresAt(Instant.now().plus(Duration.ofDays(7)));
     invitation.setStatus(InvitationStatus.PENDING);
 
     userInvitationRepository.save(invitation);

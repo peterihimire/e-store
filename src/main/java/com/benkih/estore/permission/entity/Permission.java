@@ -37,9 +37,6 @@ public class Permission extends BaseEntity {
   @Column(nullable = false)
   private String action;
 
-  private String createdBy;
-  private String updatedBy;
-
   @ManyToMany(mappedBy = "permissions")
   private Set<Role> roles = new HashSet<>();
 

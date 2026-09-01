@@ -1,6 +1,7 @@
 package com.benkih.estore.checkout.entity;
 
 import com.benkih.estore.cart.entity.Cart;
+import com.benkih.estore.common.entity.AuditableEntity;
 import com.benkih.estore.common.entity.BaseEntity;
 import com.benkih.estore.common.enums.PromotionType;
 import com.benkih.estore.common.exceptions.BadRequestException;
@@ -27,7 +28,7 @@ import java.time.Instant;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Promotion extends BaseEntity {
+public class Promotion extends AuditableEntity {
 
   @Column(nullable = false, unique = true)
   private String code;

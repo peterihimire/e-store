@@ -1,8 +1,12 @@
 package com.benkih.estore.inventory.entity;
 
+import com.benkih.estore.common.entity.AuditableEntity;
 import com.benkih.estore.common.entity.BaseEntity;
 import com.benkih.estore.common.enums.ReservationStatus;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.Instant;
 
@@ -20,7 +24,10 @@ import java.time.Instant;
         )
     }
 )
-public class InventoryReservation extends BaseEntity {
+@Getter
+@Setter
+@NoArgsConstructor
+public class InventoryReservation extends AuditableEntity {
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "inventory_id", nullable = false)
@@ -43,6 +50,4 @@ public class InventoryReservation extends BaseEntity {
   @Column(nullable = false)
   private Instant expiresAt;
 
-  @Column(nullable = false, updatable = false)
-  private Instant createdAt;
 }

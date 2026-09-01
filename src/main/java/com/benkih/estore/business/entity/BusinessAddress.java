@@ -1,6 +1,7 @@
 package com.benkih.estore.business.entity;
 
 import com.benkih.estore.business.entity.Business;
+import com.benkih.estore.common.entity.AuditableEntity;
 import com.benkih.estore.common.entity.BaseEntity;
 import com.benkih.estore.common.enums.BusinessAddressType;
 import com.benkih.estore.common.enums.Country;
@@ -17,7 +18,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Entity
 @Table(name = "business_addresses")
-public class BusinessAddress extends BaseEntity {
+public class BusinessAddress extends AuditableEntity {
 
   @Column(nullable = false)
   private String addressName;
@@ -51,9 +52,6 @@ public class BusinessAddress extends BaseEntity {
 
   @Column(nullable = false)
   private boolean active = true;
-
-  private String createdBy;
-  private String updatedBy;
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "business_id", nullable = false)

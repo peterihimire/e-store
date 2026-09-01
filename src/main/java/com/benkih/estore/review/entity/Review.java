@@ -1,6 +1,7 @@
 package com.benkih.estore.review.entity;
 
 import com.benkih.estore.business.entity.Business;
+import com.benkih.estore.common.entity.AuditableEntity;
 import com.benkih.estore.product.entity.Product;
 import com.benkih.estore.user.entity.User;
 import jakarta.persistence.*;
@@ -34,14 +35,7 @@ import java.util.UUID;
         )
     }
 )
-public class Review {
-
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
-
-  @Column(nullable = false, unique = true, updatable = false)
-  private String slug;
+public class Review extends AuditableEntity {
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "user_id", nullable = false)
@@ -64,27 +58,4 @@ public class Review {
   @Column(nullable = false)
   private Boolean verifiedPurchase = false;
 
-  private String createdBy;
-  private String updatedBy;
-
-  @Column(nullable = false, updatable = false)
-  private LocalDateTime createdAt;
-
-  private LocalDateTime updatedAt;
-
-  @PrePersist
-  public void onCreate() {
-    if (slug == null) {
-      slug = UUID.randomUUID().toString();
-    }
-
-    if (createdAt == null) {
-      createdAt = LocalDateTime.now();
-    }
-  }
-
-  @PreUpdate
-  public void onUpdate() {
-    updatedAt = LocalDateTime.now();
-  }
 }

@@ -1,6 +1,7 @@
 package com.benkih.estore.role.entity;
 
 import com.benkih.estore.business.entity.Business;
+import com.benkih.estore.common.entity.BaseEntity;
 import com.benkih.estore.permission.entity.Permission;
 import com.benkih.estore.user.entity.User;
 import jakarta.persistence.*;
@@ -29,13 +30,7 @@ import java.util.*;
         )
     }
 )
-public class Role {
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
-
-  @Column(nullable = false, unique = true, updatable = false)
-  private String slug;
+public class Role extends BaseEntity {
 
   @Column(nullable = false)
   private String name;
@@ -48,13 +43,6 @@ public class Role {
 
   @Column(nullable = false)
   private boolean active = true;
-
-  private String createdBy;
-  private String updatedBy;
-
-  @Column(nullable = false,updatable = false)
-  private LocalDateTime createdAt;
-  private LocalDateTime updatedAt;
 
   /*
    * System roles are associated with users through this relationship.
@@ -83,21 +71,5 @@ public class Role {
 
   public Role(String name) { //manual arg constructor
     this.name = name;
-  }
-
-  @PrePersist
-  public void onCreate() {
-
-    if (this.slug == null) {
-      this.slug = UUID.randomUUID().toString();
-    }
-    if (this.createdAt == null) {
-      this.createdAt = LocalDateTime.now();
-    }
-  }
-
-  @PreUpdate
-  public void onUpdate() {
-    this.updatedAt = LocalDateTime.now();
   }
 }

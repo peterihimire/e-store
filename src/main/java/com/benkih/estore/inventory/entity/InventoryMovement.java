@@ -1,8 +1,12 @@
 package com.benkih.estore.inventory.entity;
 
+import com.benkih.estore.common.entity.AuditableEntity;
 import com.benkih.estore.common.entity.BaseEntity;
 import com.benkih.estore.common.enums.InventoryMovementType;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.Instant;
 
@@ -20,7 +24,10 @@ import java.time.Instant;
         )
     }
 )
-public class InventoryMovement extends BaseEntity {
+@Getter
+@Setter
+@NoArgsConstructor
+public class InventoryMovement extends AuditableEntity {
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "inventory_id", nullable = false)
@@ -42,6 +49,4 @@ public class InventoryMovement extends BaseEntity {
   @Column(length = 500)
   private String reason;
 
-  @Column(nullable = false, updatable = false)
-  private Instant createdAt;
 }

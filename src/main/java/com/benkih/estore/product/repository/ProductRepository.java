@@ -1,5 +1,6 @@
 package com.benkih.estore.product.repository;
 
+import com.benkih.estore.product.entity.Brand;
 import com.benkih.estore.product.entity.Category;
 import com.benkih.estore.product.entity.Product;
 import org.springframework.data.domain.Page;
@@ -22,24 +23,24 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
   List<Product> findByCategoryName(String category);
 
   @EntityGraph(attributePaths = {"images", "category", "inventory"})
-  List<Product> findByBrand(String brand);
+  List<Product> findByBrandSlug(String brand);
 
   @EntityGraph(attributePaths = {"images", "category", "inventory"})
-  List<Product> findByCategoryNameAndBrand(String category, String brand);
+  List<Product> findByCategoryNameAndBrandSlug(String category, String brand);
 
   @EntityGraph(attributePaths = {"images", "category", "inventory"})
   List<Product> findByName(String name);
 
   @EntityGraph(attributePaths = {"images", "category", "inventory"})
-  Page<Product> findByBrandAndName(String brand, String name,
+  Page<Product> findByBrandSlugAndName(String brand, String name,
                                    Pageable pageable);
 
-  Long countByBrandAndName(String brand, String name);
+  Long countByBrandSlugAndName(String brand, String name);
 
   @EntityGraph(attributePaths = {"images", "category", "inventory"})
   List<Product> findAll();
 
-  boolean existsByNameAndBrandAndBusinessId(String name, String brand, Long businessId);
+  boolean existsByNameAndBrandAndBusinessId(String name, Brand brand, Long businessId);
 
   Page<Product> findByBusinessSlug(String businessSlug, Pageable pageable);
 

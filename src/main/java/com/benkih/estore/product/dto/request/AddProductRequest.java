@@ -1,6 +1,7 @@
 package com.benkih.estore.product.dto.request;
 
 import com.benkih.estore.common.enums.CurrencyCode;
+import com.benkih.estore.product.entity.Brand;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
@@ -20,7 +21,7 @@ public class AddProductRequest {
   private String name;
 
   @NotBlank(message = "Product brand is required")
-  private String brand;
+  private String brandSlug;
 
   @NotBlank(message = "Product description is required")
   private String description;

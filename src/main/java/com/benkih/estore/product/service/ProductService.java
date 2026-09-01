@@ -43,15 +43,26 @@ public class ProductService implements IProductService{
   private final ProductVariantRepository productVariantRepository;
   private final CategoryAttributeRepository categoryAttributeRepository;
   private final AttributeValueRepository attributeValueRepository;
+  private final BrandRepository brandRepository;
 
 
   @Transactional
   @Override
   public Product addProduct(AddProductRequest request, Long businessId) {
 
-    if(productExists(request.getName(), request.getBrand(), businessId)){
+    Brand brand = brandRepository.findBySlug(request.getBrandSlug())
+        .orElseThrow(() ->
+            new ResourceNotFoundException("Brand not found")
+        );
+
+    if(productExists(
+        request.getName(),
+        brand,
+        businessId
+    )){
       throw new AlreadyExistsException(
-          request.getBrand() + " " + request.getName() + " already exists, you may update this product instead." );
+          brand.getName() + " " + request.getName() + " already exists, you may " +
+              "update this product instead." );
     }
 
     Business business = businessRepository.findById(businessId)
@@ -64,7 +75,7 @@ public class ProductService implements IProductService{
         .orElseThrow(() ->
             new ResourceNotFoundException("Category not found"));
 
-    Product product = createProduct(request, category, business);
+    Product product = createProduct(request, category, business, brand);
 
     populateAndValidateProductAttributes(
         product,
@@ -129,7 +140,7 @@ public class ProductService implements IProductService{
         .replaceAll("(^-+|-+$)", "");
   }
 
-  private boolean productExists(String name, String brand, Long businessId ){
+  private boolean productExists(String name, Brand brand, Long businessId ){
     return productRepository.existsByNameAndBrandAndBusinessId(
         name,
         brand,
@@ -139,10 +150,13 @@ public class ProductService implements IProductService{
   private Product createProduct(
       AddProductRequest request,
       Category category,
-      Business business){
+      Business business,
+      Brand brand
+  ){
+
     return new Product(
         request.getName(),
-        request.getBrand(),
+       brand,
         request.getDescription(),
         category,
         business
@@ -273,14 +287,14 @@ public class ProductService implements IProductService{
 
 
   @Override
-  public List<Product> getProductsByBrand(String brand) {
-    return productRepository.findByBrand(brand);
+  public List<Product> getProductsByBrand(String brandSlug) {
+    return productRepository.findByBrandSlug(brandSlug);
   }
 
 
   @Override
   public List<Product> getProductsByCategoryAndBrand(String category, String brand) {
-    return productRepository.findByCategoryNameAndBrand(category, brand);
+    return productRepository.findByCategoryNameAndBrandSlug(category, brand);
   }
 
 
@@ -324,7 +338,7 @@ public class ProductService implements IProductService{
 
   private String generateSku(Product product) {
     long sequence = skuSequenceRepository.nextSkuNumber();
-    String brandCode = abbreviate(product.getBrand());
+    String brandCode = abbreviate(String.valueOf(product.getBrand()));
     String productCode = abbreviate(product.getName());
 
     return String.format(
@@ -346,7 +360,7 @@ public class ProductService implements IProductService{
         4
     );
 
-    String brandCode = skuToken(product.getBrand(), 5);
+    String brandCode = skuToken(String.valueOf(product.getBrand()), 5);
 
     String productCode = skuToken(product.getName(), 8);
 
@@ -437,7 +451,7 @@ public class ProductService implements IProductService{
 
   @Override
   public Long countProductByBrandAndName(String brand, String name) {
-    return productRepository.countByBrandAndName(brand, name);
+    return productRepository.countByBrandSlugAndName(brand, name);
   }
 
 
@@ -464,11 +478,13 @@ public class ProductService implements IProductService{
 
   @Override
   public Page<ProductResponseDto> getProductsByBrandAndName(
-      String brand,
+      String brandSlug,
       String name,
       Pageable pageable) {
 //    log.info("Fetching products with page: {}, size: {}", pageable.getPageNumber(), pageable.getPageSize());
-      Page<Product> productPage = productRepository.findByBrandAndName(brand, name, pageable);
+      Page<Product> productPage =
+          productRepository.findByBrandSlugAndName(brandSlug
+          , name, pageable);
 
       if (productPage.isEmpty()) {
 //        log.info("No products found for brand: {} and name: {}", brand, name);

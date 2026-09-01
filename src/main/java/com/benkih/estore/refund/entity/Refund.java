@@ -1,5 +1,6 @@
 package com.benkih.estore.refund.entity;
 
+import com.benkih.estore.common.entity.AuditableEntity;
 import com.benkih.estore.common.entity.BaseEntity;
 import com.benkih.estore.common.enums.CurrencyCode;
 import com.benkih.estore.common.enums.PaymentProvider;
@@ -13,6 +14,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,10 +25,10 @@ import java.util.UUID;
 @NoArgsConstructor
 @Entity
 @Table(name = "refunds")
-public class Refund extends BaseEntity {
+public class Refund extends AuditableEntity {
 
-  @Column(nullable = false, unique = true, updatable = false)
-  private String slug = UUID.randomUUID().toString();
+//  @Column(nullable = false, unique = true, updatable = false)
+//  private String slug = UUID.randomUUID().toString();
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "user_id", nullable = false)
@@ -93,7 +95,7 @@ public class Refund extends BaseEntity {
   private String accountNumber;
   private String accountName;
 
-  private LocalDateTime refundedAt;
+  private Instant refundedAt;
 
   @OneToMany(
       mappedBy = "refund",

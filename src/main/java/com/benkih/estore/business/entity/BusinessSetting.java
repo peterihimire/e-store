@@ -1,5 +1,6 @@
 package com.benkih.estore.business.entity;
 
+import com.benkih.estore.common.entity.AuditableEntity;
 import com.benkih.estore.common.entity.BaseEntity;
 import com.benkih.estore.common.enums.CurrencyCode;
 import jakarta.persistence.*;
@@ -12,7 +13,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class BusinessSetting extends BaseEntity {
+public class BusinessSetting extends AuditableEntity {
 
   @OneToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "business_id", nullable = false, unique = true)

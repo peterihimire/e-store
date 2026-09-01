@@ -4,7 +4,9 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
@@ -26,7 +28,15 @@ public class PdfFormatter {
         .format(amount);
   }
 
-  public static String formatDate(LocalDateTime date) {
-    return date.format(DateTimeFormatter.ofPattern("dd MMM yyyy hh:mm a"));
+  public static String formatDate(Instant date) {
+    if (date == null) {
+      return "";
+    }
+
+    return DateTimeFormatter
+        .ofPattern("dd MMM yyyy hh:mm a")
+        .withZone(ZoneId.of("Africa/Lagos"))
+        .format(date);
+//    return date.format(DateTimeFormatter.ofPattern("dd MMM yyyy hh:mm a"));
   }
 }

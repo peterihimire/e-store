@@ -37,6 +37,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -246,7 +247,7 @@ public class RefundService implements IRefundService{
 
     if (response.getStatus() == RefundGatewayStatus.PROCESSED ||
         response.getStatus() == RefundGatewayStatus.SUCCESS) {
-      refund.setRefundedAt(LocalDateTime.now());
+      refund.setRefundedAt(Instant.now());
     }
 
     refundRepository.save(refund);
@@ -307,7 +308,7 @@ public void markSuccessful(PaymentWebhookEvent event) {
   }
 
   refund.setGatewayStatus(RefundGatewayStatus.PROCESSED);
-  refund.setRefundedAt(LocalDateTime.now());
+  refund.setRefundedAt(Instant.now());
 
   refundRepository.flush(); // see note below
 

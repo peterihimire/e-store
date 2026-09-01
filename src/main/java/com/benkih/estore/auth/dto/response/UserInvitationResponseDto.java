@@ -7,6 +7,7 @@ import com.benkih.estore.role.dto.response.RoleResponseDto;
 import com.benkih.estore.user.dto.response.UserSummaryResponseDto;
 import lombok.*;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -28,9 +29,9 @@ public class UserInvitationResponseDto {
 
   private InvitationStatus status;
 
-  private LocalDateTime expiresAt;
+  private Instant expiresAt;
 
-  private LocalDateTime acceptedAt;
+  private Instant acceptedAt;
 
   private UserSummaryResponseDto invitedBy;
 

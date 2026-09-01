@@ -24,6 +24,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -71,7 +72,7 @@ public class StoreConfig {
               response.setContentType("application/json");
               response.setStatus(HttpServletResponse.SC_FORBIDDEN);
               Map<String, Object> errorResponse = new HashMap<>();
-              errorResponse.put("timestamp", LocalDateTime.now().toString());
+              errorResponse.put("timestamp", Instant.now().toString());
               errorResponse.put("status", HttpServletResponse.SC_FORBIDDEN);
               errorResponse.put("error", "Forbidden");
               errorResponse.put("message", accessDeniedException.getMessage());

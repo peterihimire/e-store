@@ -1,11 +1,13 @@
 package com.benkih.estore.order.dto.response;
 
 
+import com.benkih.estore.product.entity.Brand;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Data
@@ -20,7 +22,7 @@ public class BusinessOrderItemResponseDto {
   private String productSlug;
   private String productName;
   private String productSku;
-  private String productBrand;
+  private Brand productBrand;
 
   private int quantity;
   private BigDecimal price;
@@ -29,5 +31,5 @@ public class BusinessOrderItemResponseDto {
   private String orderStatus;
   private String paymentStatus;
 
-  private LocalDateTime orderDate;
+  private Instant orderDate;
 }

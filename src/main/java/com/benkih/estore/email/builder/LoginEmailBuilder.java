@@ -5,6 +5,7 @@ import com.benkih.estore.email.service.EmailTemplateService;
 import com.benkih.estore.user.entity.User;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,7 +23,7 @@ public class LoginEmailBuilder {
     Map<String, Object> vars = new HashMap<>();
     vars.put("name", user.getFirstName());
     vars.put("email", user.getEmail());
-    vars.put("loginTime", LocalDateTime.now());
+    vars.put("loginTime", Instant.now());
     vars.put("ipAddress", "10.199.212.2");
     vars.put("device", "apple device mac");
     //  vars.put("ipAddress", ipAddress);

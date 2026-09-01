@@ -50,6 +50,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Optional;
@@ -134,7 +135,7 @@ public class AuthService implements IAuthService {
       throw new BadRequestException("Invalid verification code.");
     }
 
-    verification.setUsedAt(LocalDateTime.now());
+    verification.setUsedAt(Instant.now());
 
     user.setPassword(passwordEncoder.encode(request.getPassword()));
     user.setEmailVerified(true);
@@ -277,7 +278,7 @@ public LoginResponse login(LoginRequest request, HttpServletRequest httpRequest)
     user.setPassword(passwordEncoder.encode(request.getNewPassword()));
     userRepository.save(user);
 
-    resetToken.setUsedAt(LocalDateTime.now());
+    resetToken.setUsedAt(Instant.now());
     passwordResetTokenRepository.save(resetToken);
 
     refreshTokenService.revokeAllUserTokens(user);

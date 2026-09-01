@@ -1,5 +1,6 @@
 package com.benkih.estore.audit.entity;
 
+import com.benkih.estore.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,14 +14,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Entity
 @Table(name = "audit_logs")
-public class AuditLog {
-
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
-
-  @Column(nullable = false, unique = true, updatable = false)
-  private String slug;
+public class AuditLog extends BaseEntity {
 
   /**
    * User that performed the action.
@@ -128,29 +122,4 @@ public class AuditLog {
 
   @Column(length = 1000)
   private String userAgent;
-
-  private String createdBy;
-
-  private String updatedBy;
-
-  @Column(nullable = false, updatable = false)
-  private LocalDateTime createdAt;
-
-  private LocalDateTime updatedAt;
-
-  @PrePersist
-  public void onCreate() {
-    if (slug == null) {
-      slug = UUID.randomUUID().toString();
-    }
-
-    if (createdAt == null) {
-      createdAt = LocalDateTime.now();
-    }
-  }
-
-  @PreUpdate
-  public void onUpdate() {
-    updatedAt = LocalDateTime.now();
-  }
 }

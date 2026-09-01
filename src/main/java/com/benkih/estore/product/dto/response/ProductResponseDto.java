@@ -1,6 +1,7 @@
 package com.benkih.estore.product.dto.response;
 
 import com.benkih.estore.common.enums.ProductStatus;
+import com.benkih.estore.product.entity.Brand;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,7 +17,7 @@ public class ProductResponseDto {
 //  private String sku;
   private ProductStatus status;
   private String name;
-  private String brand;
+  private Brand brand;
   private String description;
 //  private BigDecimal price;
 //  private int inventory;

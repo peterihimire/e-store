@@ -1,11 +1,13 @@
 package com.benkih.estore.auth.entity;
 
+import com.benkih.estore.common.entity.BaseEntity;
 import com.benkih.estore.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -14,14 +16,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @NoArgsConstructor
-public class EmailVerification {
-
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
-
-  @Column(nullable = false, unique = true, updatable = false)
-  private String slug;
+public class EmailVerification extends BaseEntity {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "user_id", nullable = false)
@@ -31,35 +26,16 @@ public class EmailVerification {
   private String token;
 
   @Column(nullable = false)
-  private LocalDateTime expiresAt;
+  private Instant expiresAt;
 
-  private LocalDateTime usedAt;
-
-  @Column(nullable = false,updatable = false)
-  private LocalDateTime createdAt;
-  private LocalDateTime updatedAt;
+  private Instant usedAt;
 
   public boolean isExpired() {
-    return expiresAt.isBefore(LocalDateTime.now());
+    return expiresAt.isBefore(Instant.now());
   }
 
   public boolean isUsed() {
     return usedAt != null;
   }
 
-  @PrePersist
-  public void onCreate() {
-    if (this.slug == null) {
-      this.slug = UUID.randomUUID().toString();
-    }
-
-    if (this.createdAt == null) {
-      this.createdAt = LocalDateTime.now();
-    }
-  }
-
-  @PreUpdate
-  public void onUpdate() {
-    this.updatedAt = LocalDateTime.now();
-  }
 }

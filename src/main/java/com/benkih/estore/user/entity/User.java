@@ -2,6 +2,7 @@ package com.benkih.estore.user.entity;
 
 import com.benkih.estore.business.entity.BusinessMember;
 import com.benkih.estore.cart.entity.Cart;
+import com.benkih.estore.common.entity.BaseEntity;
 import com.benkih.estore.common.enums.AccountType;
 import com.benkih.estore.common.enums.UserStatus;
 import com.benkih.estore.department.entity.Department;
@@ -23,13 +24,7 @@ import java.util.*;
 @Entity
 //@ToString
 @Table(name = "users")
-public class User {
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
-
-  @Column(nullable = false, unique = true, updatable = false)
-  private String slug;
+public class User extends BaseEntity {
 
   @Column(nullable = false)
   private String firstName;
@@ -77,9 +72,6 @@ public class User {
   @OneToMany(mappedBy = "user")
   private List<Payment> payments = new ArrayList<>();
 
-  private String createdBy;
-  private String updatedBy;
-
   @OneToOne(
       mappedBy = "user",
       cascade = CascadeType.ALL,
@@ -126,26 +118,8 @@ public class User {
   )
   private BusinessMember businessMember;
 
-  @Column(nullable = false,updatable = false)
-  private LocalDateTime createdAt;
-  private LocalDateTime updatedAt;
-
-  @PrePersist
-  public void onCreate() {
-    if (this.slug == null) {
-      this.slug = UUID.randomUUID().toString();
-    }
-    if (this.createdAt == null) {
-      this.createdAt = LocalDateTime.now();
-    }
-  }
 
   public String getFullName() {
     return firstName + " " + lastName;
-  }
-
-  @PreUpdate
-  public void onUpdate() {
-    this.updatedAt = LocalDateTime.now();
   }
 }

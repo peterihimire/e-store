@@ -2,8 +2,10 @@ package com.benkih.estore.order.entity;
 
 import com.benkih.estore.allocation.entity.Allocation;
 import com.benkih.estore.business.entity.Business;
+import com.benkih.estore.common.entity.BaseEntity;
 import com.benkih.estore.common.enums.CurrencyCode;
 import com.benkih.estore.common.enums.TaxCategory;
+import com.benkih.estore.product.entity.Brand;
 import com.benkih.estore.product.entity.Product;
 import com.benkih.estore.product.entity.ProductVariant;
 import jakarta.persistence.*;
@@ -21,13 +23,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Entity
 @Table(name = "order_items")
-public class OrderItem {
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
-
-  @Column(nullable = false, unique = true, updatable = false)
-  private String slug;
+public class OrderItem extends BaseEntity {
 
   private int quantity;
 
@@ -44,7 +40,9 @@ public class OrderItem {
   @Column(nullable = false)
   private String sku;
 
-  private String brand;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "brand_id")
+  private Brand brand;
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false, length = 3)
@@ -66,13 +64,6 @@ public class OrderItem {
   @Column(nullable = false, precision = 19, scale = 2)
   private BigDecimal subtotal;
 
-  private String createdBy;
-  private String updatedBy;
-
-  @Column(nullable = false,updatable = false)
-  private LocalDateTime createdAt;
-  private LocalDateTime updatedAt;
-
   @ManyToOne
   @JoinColumn(name = "order_id")
   private Order order;
@@ -82,7 +73,7 @@ public class OrderItem {
   private Product product;
 
   public OrderItem(int quantity, BigDecimal price, String name,
-                   String sku, String brand, CurrencyCode currency, TaxCategory taxCategory, Order order,
+                   String sku, Brand brand, CurrencyCode currency, TaxCategory taxCategory, Order order,
                    Product product, Business business) {
     this.quantity = quantity;
     this.price = price;
@@ -107,18 +98,4 @@ public class OrderItem {
   )
   private List<Allocation> allocations = new ArrayList<>();
 
-  @PrePersist
-  public void onCreate() {
-    if (this.slug == null) {
-      this.slug = UUID.randomUUID().toString();
-    }
-    if (this.createdAt == null) {
-      this.createdAt = LocalDateTime.now();
-    }
-  }
-
-  @PreUpdate
-  public void onUpdate() {
-    this.updatedAt = LocalDateTime.now();
-  }
 }

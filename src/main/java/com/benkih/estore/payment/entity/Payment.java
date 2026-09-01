@@ -1,5 +1,7 @@
 package com.benkih.estore.payment.entity;
 
+import com.benkih.estore.common.entity.AuditableEntity;
+import com.benkih.estore.common.entity.BaseEntity;
 import com.benkih.estore.common.enums.CurrencyCode;
 import com.benkih.estore.common.enums.PaymentProvider;
 import com.benkih.estore.common.enums.PaymentMethod;
@@ -12,6 +14,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,13 +25,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Entity
 @Table(name = "payments")
-public class Payment {
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
-
-  @Column(nullable = false, unique = true, updatable = false)
-  private String slug;
+public class Payment extends AuditableEntity {
 
   @Column(nullable = false, unique = true)
   private String reference;
@@ -87,7 +84,7 @@ public class Payment {
   @Column(columnDefinition = "TEXT")
   private String failureReason;
 
-  private LocalDateTime paidAt;
+  private Instant paidAt;
 
   @Column(
       name = "processor_fee",
@@ -96,14 +93,6 @@ public class Payment {
       scale = 2
   )
   private BigDecimal processorFee = BigDecimal.ZERO;
-
-  private String createdBy;
-  private String updatedBy;
-
-  @Column(nullable = false, updatable = false)
-  private LocalDateTime createdAt;
-
-  private LocalDateTime updatedAt;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "user_id")
@@ -120,20 +109,4 @@ public class Payment {
   @JoinColumn(name = "order_id", nullable = false)
   private Order order;
 
-
-  @PrePersist
-  public void onCreate() {
-    if (slug == null) {
-      slug = UUID.randomUUID().toString();
-    }
-
-    if (createdAt == null) {
-      createdAt = LocalDateTime.now();
-    }
-  }
-
-  @PreUpdate
-  public void onUpdate() {
-    updatedAt = LocalDateTime.now();
-  }
 }

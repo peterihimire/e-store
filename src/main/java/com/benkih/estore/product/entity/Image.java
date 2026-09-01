@@ -1,6 +1,7 @@
 package com.benkih.estore.product.entity;
 
 import com.benkih.estore.business.entity.Business;
+import com.benkih.estore.common.entity.AuditableEntity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
@@ -13,15 +14,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Entity
 @Table(name = "images")
-//@AllArgsConstructor
-//@Builder
-public class Image {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(nullable = false, unique = true, updatable = false)
-    private String slug;
+public class Image extends AuditableEntity {
 
     private String fileName;
     private String fileType;
@@ -42,13 +35,6 @@ public class Image {
     @Column(nullable = false)
     private boolean primaryImage = false;
 
-    private String createdBy;
-    private String updatedBy;
-
-    @Column(nullable = false,updatable = false)
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-
     @ManyToOne
     @JoinColumn(name = "product_id", nullable = false)
     @JsonIgnore
@@ -57,21 +43,4 @@ public class Image {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "business_id", nullable = false)
     private Business business;
-
-    @PrePersist
-    public void onCreate() {
-        // this.slug = UUID.randomUUID().toString();
-
-        if (this.slug == null) {
-            this.slug = UUID.randomUUID().toString();
-        }
-        if (this.createdAt == null) {
-            this.createdAt = LocalDateTime.now();
-        }
-    }
-
-    @PreUpdate
-    public void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
 }

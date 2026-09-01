@@ -1,5 +1,6 @@
 package com.benkih.estore.product.entity;
 
+import com.benkih.estore.common.entity.AuditableEntity;
 import com.benkih.estore.common.entity.BaseEntity;
 import com.benkih.estore.common.enums.AttributeType;
 import jakarta.persistence.*;
@@ -27,7 +28,7 @@ import java.util.List;
         )
     }
 )
-public class CategoryAttribute extends BaseEntity {
+public class CategoryAttribute extends AuditableEntity {
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(

@@ -1,6 +1,7 @@
 package com.benkih.estore.auth.entity;
 
 import com.benkih.estore.business.entity.Business;
+import com.benkih.estore.common.entity.AuditableEntity;
 import com.benkih.estore.common.entity.BaseEntity;
 import com.benkih.estore.common.enums.InvitationStatus;
 import com.benkih.estore.department.entity.Department;
@@ -11,6 +12,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -29,7 +31,7 @@ import java.util.Set;
         @Index(name = "idx_invitation_business_id", columnList = "business_id")
     }
 )
-public class UserInvitation extends BaseEntity {
+public class UserInvitation extends AuditableEntity {
 
   @Column(nullable = false)
   private String email;
@@ -64,12 +66,9 @@ public class UserInvitation extends BaseEntity {
   private InvitationStatus status = InvitationStatus.PENDING;
 
   @Column(nullable = false)
-  private LocalDateTime expiresAt;
+  private Instant expiresAt;
 
-  private LocalDateTime acceptedAt;
-
-  private String createdBy;
-  private String updatedBy;
+  private Instant acceptedAt;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "invited_by")
@@ -80,7 +79,7 @@ public class UserInvitation extends BaseEntity {
   private Business business;
 
   public boolean isExpired() {
-    return !expiresAt.isAfter(LocalDateTime.now());
+    return !expiresAt.isAfter(Instant.now());
   }
 
   public boolean isPending() {
@@ -101,7 +100,7 @@ public class UserInvitation extends BaseEntity {
     }
 
     status = InvitationStatus.ACCEPTED;
-    acceptedAt = LocalDateTime.now();
+    acceptedAt = Instant.now();
   }
 
   public void revoke() {

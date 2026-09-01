@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Getter
@@ -35,7 +36,7 @@ public class PaystackVerifyResponse {
     private String gatewayResponse;
 
     @JsonProperty("paid_at")
-    private LocalDateTime paidAt;
+    private Instant paidAt;
 
     private Authorization authorization;
   }

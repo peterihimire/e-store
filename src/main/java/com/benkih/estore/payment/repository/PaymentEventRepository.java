@@ -6,6 +6,7 @@ import com.benkih.estore.payment.entity.PaymentEvent;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -24,6 +25,6 @@ public interface PaymentEventRepository extends JpaRepository<PaymentEvent, Long
   List<PaymentEvent> findByPaymentAndEventTypeInOrderByCreatedAtDesc(Payment payment, List<PaymentEventType> eventTypes);
 
   //  Find events older than a date (for cleanup)
-  List<PaymentEvent> findByEventTypeAndCreatedAtBefore(PaymentEventType eventType, LocalDateTime dateTime);
+  List<PaymentEvent> findByEventTypeAndCreatedAtBefore(PaymentEventType eventType, Instant dateTime);
 
 }

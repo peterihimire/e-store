@@ -50,7 +50,7 @@ public class ShippingService implements  IShippingService{
 
     String zone = ShippingZone.from(address).code();
     BigDecimal cartWeightKg = cart.getItems().stream()
-        .map(item -> item.getVariant().getProduct().getWeightKg()
+        .map(item -> item.getVariant().getProduct().getPackageDimensions().getWeightKg()
             .multiply(BigDecimal.valueOf(item.getQuantity())))
         .reduce(BigDecimal.ZERO, BigDecimal::add);
 

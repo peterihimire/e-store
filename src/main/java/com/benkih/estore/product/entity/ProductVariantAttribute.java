@@ -1,5 +1,6 @@
 package com.benkih.estore.product.entity;
 
+import com.benkih.estore.common.entity.AuditableEntity;
 import com.benkih.estore.common.entity.BaseEntity;
 import com.benkih.estore.common.exceptions.BadRequestException;
 import jakarta.persistence.*;
@@ -23,7 +24,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class ProductVariantAttribute extends BaseEntity {
+public class ProductVariantAttribute extends AuditableEntity {
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(

@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
@@ -39,7 +40,7 @@ public class RefreshTokenService implements IRefreshTokenService{
 //    refreshToken.setTokenHash(passwordEncoder.encode(plainToken));
     refreshToken.setDevice(device);
     refreshToken.setIpAddress(ipAddress);
-    refreshToken.setExpiresAt(expiration.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
+    refreshToken.setExpiresAt(expiration.toInstant().atZone(ZoneId.systemDefault()).toInstant());
     refreshTokenRepository.save(refreshToken);
 
     return plainToken;
@@ -69,7 +70,7 @@ public class RefreshTokenService implements IRefreshTokenService{
       throw new IllegalArgumentException("Invalid refresh token");
     }
 
-    token.setLastUsedAt(LocalDateTime.now());
+    token.setLastUsedAt(Instant.now());
 
     return refreshTokenRepository.save(token);
   }
@@ -80,7 +81,7 @@ public class RefreshTokenService implements IRefreshTokenService{
     RefreshToken existing = validateRefreshToken(plainToken);
 
     existing.setRevoked(true);
-    existing.setRevokedAt(LocalDateTime.now());
+    existing.setRevokedAt(Instant.now());
     existing.setRevokedReason(RevocationReason.ROTATED);
     refreshTokenRepository.save(existing);
 
@@ -104,7 +105,7 @@ public class RefreshTokenService implements IRefreshTokenService{
 
       if (!token.isRevoked()) {
         token.setRevoked(true);
-        token.setRevokedAt(LocalDateTime.now());
+        token.setRevokedAt(Instant.now());
         token.setRevokedReason(RevocationReason.LOGOUT);
         refreshTokenRepository.save(token);
       }
@@ -120,7 +121,7 @@ public class RefreshTokenService implements IRefreshTokenService{
     refreshTokenRepository.findByUser(user)
         .forEach(token -> {
           token.setRevoked(true);
-          token.setRevokedAt(LocalDateTime.now());
+          token.setRevokedAt(Instant.now());
           token.setRevokedReason(RevocationReason.LOGOUT_ALL_DEVICES);
         });
   }

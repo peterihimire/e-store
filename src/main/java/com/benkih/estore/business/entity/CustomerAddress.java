@@ -1,6 +1,7 @@
 package com.benkih.estore.business.entity;
 
 
+import com.benkih.estore.common.entity.AuditableEntity;
 import com.benkih.estore.common.entity.BaseEntity;
 import com.benkih.estore.common.enums.Country;
 import jakarta.persistence.*;
@@ -16,7 +17,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Entity
 @Table(name = "customer_addresses")
-public class CustomerAddress extends BaseEntity {
+public class CustomerAddress extends AuditableEntity {
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
@@ -42,8 +43,5 @@ public class CustomerAddress extends BaseEntity {
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "customer_id", nullable = false)
   private Customer customer;
-
-  private String createdBy;
-  private String updatedBy;
 
 }

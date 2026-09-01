@@ -1,5 +1,6 @@
 package com.benkih.estore.cart.entity;
 
+import com.benkih.estore.common.entity.BaseEntity;
 import com.benkih.estore.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -14,13 +15,7 @@ import java.util.*;
 @NoArgsConstructor
 @Entity
 @Table(name = "carts")
-public class Cart {
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
-
-  @Column(nullable = false, unique = true, updatable = false)
-  private String slug;
+public class Cart extends BaseEntity {
 
   private BigDecimal totalAmount = BigDecimal.ZERO;
 
@@ -42,14 +37,6 @@ public class Cart {
     updateTotalAmount();
   }
 
-  //  public void addItem(CartItem item) {
-  //    if (!items.contains(item)) {
-  //      items.add(item);
-  //    }
-  //    item.setCart(this);
-  //    updateTotalAmount();
-  //  }
-
   public void removeItem(CartItem item){
     this.items.remove(item);
     item.setCart(null);
@@ -64,30 +51,6 @@ public class Cart {
       }
       return unitPrice.multiply(BigDecimal.valueOf(item.getQuantity()));
     }).reduce(BigDecimal.ZERO, BigDecimal::add);
-  }
-
-  private String createdBy;
-  private String updatedBy;
-
-  @Column(nullable = false,updatable = false)
-  private LocalDateTime createdAt;
-  private LocalDateTime updatedAt;
-
-  @PrePersist
-  public void onCreate() {
-    // this.slug = UUID.randomUUID().toString();
-
-    if (this.slug == null) {
-      this.slug = UUID.randomUUID().toString();
-    }
-    if (this.createdAt == null) {
-      this.createdAt = LocalDateTime.now();
-    }
-  }
-
-  @PreUpdate
-  public void onUpdate() {
-    this.updatedAt = LocalDateTime.now();
   }
 
 }

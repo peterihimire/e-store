@@ -1,6 +1,7 @@
 package com.benkih.estore.product.entity;
 
 import com.benkih.estore.business.entity.Business;
+import com.benkih.estore.common.entity.AuditableEntity;
 import com.benkih.estore.common.entity.BaseEntity;
 import com.benkih.estore.common.enums.CurrencyCode;
 import com.benkih.estore.inventory.entity.Inventory;
@@ -32,7 +33,7 @@ import java.util.List;
         )
     }
 )
-public class ProductVariant  extends BaseEntity {
+public class ProductVariant  extends AuditableEntity {
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "product_id", nullable = false)
@@ -63,6 +64,12 @@ public class ProductVariant  extends BaseEntity {
       scale = 2
   )
   private BigDecimal price;
+
+  @Column(length = 50)
+  private String barcode;
+
+  @Column(length = 14)
+  private String gtin;
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false, length = 3)

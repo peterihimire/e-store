@@ -44,6 +44,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -159,7 +160,7 @@ public class OrderService implements IOrderService{
     Order order = new Order();
     order.setUser(cart.getUser());
     order.setOrderStatus(OrderStatus.PENDING);
-    order.setOrderDate(LocalDateTime.now());
+    order.setOrderDate(Instant.now());
 
     return order;
   }

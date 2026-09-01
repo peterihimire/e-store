@@ -2,6 +2,7 @@ package com.benkih.estore.business.entity;
 
 import com.benkih.estore.business.enums.BusinessMemberRole;
 import com.benkih.estore.business.enums.MemberStatus;
+import com.benkih.estore.common.entity.AuditableEntity;
 import com.benkih.estore.common.entity.BaseEntity;
 import com.benkih.estore.department.entity.Department;
 import com.benkih.estore.role.entity.Role;
@@ -18,10 +19,6 @@ import java.util.Set;
 @Table(
     name = "business_members",
     uniqueConstraints = {
-//        @UniqueConstraint(
-//            name = "uk_business_user",
-//            columnNames = {"business_id", "user_id"}
-//        ),
         @UniqueConstraint(
             name = "uk_business_member_user",
             columnNames = {"user_id"}
@@ -31,7 +28,7 @@ import java.util.Set;
 @Getter
 @Setter
 @NoArgsConstructor
-public class BusinessMember extends BaseEntity {
+public class BusinessMember extends AuditableEntity {
 
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -42,9 +39,6 @@ public class BusinessMember extends BaseEntity {
   @JoinColumn(name = "user_id", nullable = false,unique = true)
   private User user;
 
-//  @Enumerated(EnumType.STRING)
-//  @Column(nullable = false)
-//  private BusinessMemberRole role;
 @ManyToMany(fetch = FetchType.LAZY)
 @JoinTable(
     name = "business_member_roles",
@@ -53,9 +47,6 @@ public class BusinessMember extends BaseEntity {
 )
 private Set<Role> roles = new HashSet<>();
 
-//  @ManyToOne(fetch = FetchType.LAZY, optional = false)
-//  @JoinColumn(name = "role_id", nullable = false)
-//  private Role role;
 @ManyToMany(fetch = FetchType.LAZY)
 @JoinTable(
     name = "business_member_departments",
@@ -63,10 +54,6 @@ private Set<Role> roles = new HashSet<>();
     inverseJoinColumns = @JoinColumn(name = "department_id")
 )
 private Set<Department> departments = new HashSet<>();
-
-//  @ManyToOne(fetch = FetchType.LAZY)
-//  @JoinColumn(name = "department_id")
-//  private Department department;
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)

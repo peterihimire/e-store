@@ -1,6 +1,7 @@
 package com.benkih.estore.business.entity;
 
 
+import com.benkih.estore.common.entity.AuditableEntity;
 import com.benkih.estore.common.entity.BaseEntity;
 import com.benkih.estore.user.entity.Address;
 import com.benkih.estore.user.entity.User;
@@ -17,7 +18,7 @@ import java.util.List;
   @Getter
   @Setter
   @NoArgsConstructor
-  public class Customer extends BaseEntity {
+  public class Customer extends AuditableEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "business_id", nullable = false)

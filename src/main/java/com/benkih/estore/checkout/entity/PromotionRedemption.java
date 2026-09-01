@@ -4,6 +4,9 @@ import com.benkih.estore.common.entity.BaseEntity;
 import com.benkih.estore.order.entity.Order;
 import com.benkih.estore.user.entity.User;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -18,6 +21,9 @@ import java.time.Instant;
         )
     }
 )
+@Getter
+@Setter
+@NoArgsConstructor
 public class PromotionRedemption extends BaseEntity {
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)

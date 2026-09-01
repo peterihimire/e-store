@@ -23,6 +23,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
@@ -66,8 +67,8 @@ public class DataSeeder implements CommandLineRunner {
       if (roleRepository.findByName(roleName).isEmpty()) {
         Role role = new Role();
         role.setName(roleName);
-        role.setCreatedAt(LocalDateTime.now());
-        role.setUpdatedAt(LocalDateTime.now());
+        role.setCreatedAt(Instant.now());
+        role.setUpdatedAt(Instant.now());
         roleRepository.save(role);
         log.info("Created role: {}", roleName);
       }
@@ -106,8 +107,8 @@ public class DataSeeder implements CommandLineRunner {
       user.setLastName(lastName);
       user.setEmail(email);
       user.setPassword(passwordEncoder.encode("password123"));
-      user.setCreatedAt(LocalDateTime.now());
-      user.setUpdatedAt(LocalDateTime.now());
+      user.setCreatedAt(Instant.now());
+      user.setUpdatedAt(Instant.now());
 
       // Assign roles
       Set<Role> roles = new HashSet<>();
@@ -209,7 +210,7 @@ public class DataSeeder implements CommandLineRunner {
     permission.setResource(resource);
     permission.setAction(action);
     permission.setDescription(name.replace("_", " "));
-    permission.setCreatedAt(LocalDateTime.now());
+    permission.setCreatedAt(Instant.now());
 
     permissionRepository.save(permission);
 
@@ -257,7 +258,7 @@ public class DataSeeder implements CommandLineRunner {
     user.setEmailVerified(true);
     user.setStatus(UserStatus.ACTIVE);
 
-    user.setCreatedAt(LocalDateTime.now());
+    user.setCreatedAt(Instant.now());
 
     Role superAdmin = roleRepository.findByName("SUPER_ADMIN")
         .orElseThrow();
@@ -280,7 +281,7 @@ public class DataSeeder implements CommandLineRunner {
     role.setName("SUPER_ADMIN");
     role.setSystemRole(true);
     role.setActive(true);
-    role.setCreatedAt(LocalDateTime.now());
+    role.setCreatedAt(Instant.now());
 
     role.setPermissions(new HashSet<>(permissions));
 
@@ -320,7 +321,7 @@ public class DataSeeder implements CommandLineRunner {
     role.setName("OWNER");
     role.setSystemRole(true);
     role.setActive(true);
-    role.setCreatedAt(LocalDateTime.now());
+    role.setCreatedAt(Instant.now());
     role.setPermissions(permissions);
 
     roleRepository.save(role);

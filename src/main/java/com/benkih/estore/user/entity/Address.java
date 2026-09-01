@@ -1,5 +1,6 @@
 package com.benkih.estore.user.entity;
 
+import com.benkih.estore.common.entity.AuditableEntity;
 import com.benkih.estore.common.enums.Country;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -14,13 +15,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Entity
 @Table(name = "addresses")
-public class Address {
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
-
-  @Column(nullable = false, unique = true, updatable = false)
-  private String slug;
+public class Address extends AuditableEntity {
 
   @Column(nullable = false) // need to update this to use first and last names
   private String firstName;
@@ -50,32 +45,8 @@ public class Address {
   @Column(nullable = false)
   private boolean defaultAddress;
 
-  private String createdBy;
-
-  private String updatedBy;
-
-  @Column(nullable = false, updatable = false)
-  private LocalDateTime createdAt;
-
-  private LocalDateTime updatedAt;
-
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "user_id", nullable = false)
   private User user;
 
-  @PrePersist
-  public void onCreate() {
-    if (slug == null) {
-      slug = UUID.randomUUID().toString();
-    }
-
-    if (createdAt == null) {
-      createdAt = LocalDateTime.now();
-    }
-  }
-
-  @PreUpdate
-  public void onUpdate() {
-    updatedAt = LocalDateTime.now();
-  }
 }

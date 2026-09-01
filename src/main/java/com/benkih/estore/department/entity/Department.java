@@ -1,6 +1,7 @@
 package com.benkih.estore.department.entity;
 
 import com.benkih.estore.business.entity.Business;
+import com.benkih.estore.common.entity.AuditableEntity;
 import com.benkih.estore.common.entity.BaseEntity;
 import com.benkih.estore.user.entity.User;
 import jakarta.persistence.*;
@@ -30,7 +31,7 @@ import java.util.UUID;
         @Index(name = "idx_departments_business_name", columnList = "business_id, name")
     }
 )
-public class Department  extends BaseEntity {
+public class Department  extends AuditableEntity {
 
   @Column(nullable = false)
   private String name;
@@ -43,7 +44,4 @@ public class Department  extends BaseEntity {
 
   @ManyToMany(mappedBy = "departments")
   private Set<User> users = new HashSet<>();
-
-  private String createdBy;
-  private String updatedBy;
 }

@@ -2,6 +2,7 @@ package com.benkih.estore.business.entity;
 
 import com.benkih.estore.business.enums.BusinessStatus;
 import com.benkih.estore.business.enums.BusinessType;
+import com.benkih.estore.common.entity.AuditableEntity;
 import com.benkih.estore.common.entity.BaseEntity;
 import com.benkih.estore.user.entity.Address;
 import jakarta.persistence.*;
@@ -16,7 +17,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Entity
 @Table(name = "businesses")
-public class Business extends BaseEntity {
+public class Business extends AuditableEntity {
 
   @Column(nullable = false)
   private String name;

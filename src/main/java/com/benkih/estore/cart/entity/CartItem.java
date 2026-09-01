@@ -1,5 +1,6 @@
 package com.benkih.estore.cart.entity;
 
+import com.benkih.estore.common.entity.BaseEntity;
 import com.benkih.estore.common.exceptions.BadRequestException;
 import com.benkih.estore.product.entity.Product;
 import com.benkih.estore.product.entity.ProductVariant;
@@ -17,20 +18,14 @@ import java.util.UUID;
 @Getter
 @Setter
 @NoArgsConstructor
-@EqualsAndHashCode(of = "id")
+//@EqualsAndHashCode(of = "id")
 @Entity
 @Table(name = "cart_items",
     uniqueConstraints = @UniqueConstraint(
         name = "uk_cart_variant",
         columnNames = {"cart_id", "variant_id"}
     ))
-public class CartItem {
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
-
-  @Column(nullable = false, unique = true, updatable = false)
-  private String slug;
+public class CartItem extends BaseEntity {
 
   @NotNull
   @Min(1)
@@ -47,21 +42,10 @@ public class CartItem {
   @Column(nullable = false, precision = 19, scale = 2)
   private BigDecimal totalPrice;
 
-  private String createdBy;
-  private String updatedBy;
-
-  @Column(nullable = false,updatable = false)
-  private LocalDateTime createdAt;
-  private LocalDateTime updatedAt;
-
   // @JsonIgnore     - using CartItemResponseDto fixed the circular injection
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "cart_id", nullable = false)
   private Cart cart;
-
-//  @ManyToOne
-//  @JoinColumn(name = "product_id")
-//  private Product product;
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "variant_id", nullable = false)
@@ -97,21 +81,6 @@ public class CartItem {
     this.totalPrice = unitPrice
         .multiply(BigDecimal.valueOf(quantity))
         .setScale(2, RoundingMode.HALF_UP);
-  }
-
-  @PrePersist
-  public void onCreate() {
-    if (this.slug == null) {
-      this.slug = UUID.randomUUID().toString();
-    }
-    if (this.createdAt == null) {
-      this.createdAt = LocalDateTime.now();
-    }
-  }
-
-  @PreUpdate
-  public void onUpdate() {
-    this.updatedAt = LocalDateTime.now();
   }
 
 }

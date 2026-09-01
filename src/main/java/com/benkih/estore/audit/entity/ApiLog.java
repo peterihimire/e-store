@@ -1,5 +1,6 @@
 package com.benkih.estore.audit.entity;
 
+import com.benkih.estore.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,14 +14,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Entity
 @Table(name = "api_logs")
-public class ApiLog {
-
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
-
-  @Column(nullable = false, unique = true, updatable = false)
-  private String slug;
+public class ApiLog extends BaseEntity {
 
   private String userSlug;
 
@@ -34,9 +28,6 @@ public class ApiLog {
 
   private Integer statusCode;
 
-  /**
-   * Duration in milliseconds
-   */
   private Long durationMs;
 
   private String requestIp;
@@ -56,29 +47,4 @@ public class ApiLog {
   @Column(columnDefinition = "TEXT")
   private String exceptionMessage;
 
-  private String createdBy;
-
-  private String updatedBy;
-
-  @Column(nullable = false, updatable = false)
-  private LocalDateTime createdAt;
-
-  private LocalDateTime updatedAt;
-
-  @PrePersist
-  public void onCreate() {
-
-    if (slug == null) {
-      slug = UUID.randomUUID().toString();
-    }
-
-    if (createdAt == null) {
-      createdAt = LocalDateTime.now();
-    }
-  }
-
-  @PreUpdate
-  public void onUpdate() {
-    updatedAt = LocalDateTime.now();
-  }
 }

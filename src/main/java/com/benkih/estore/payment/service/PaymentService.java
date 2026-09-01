@@ -30,6 +30,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
@@ -238,7 +240,7 @@ public class PaymentService implements IPaymentService {
           );
         }
 
-        if (payment.getCreatedAt().isBefore(LocalDateTime.now().minusMinutes(paymentTimeoutMinutes))) {
+        if (payment.getCreatedAt().isBefore(Instant.now().minus(Duration.ofMinutes(paymentTimeoutMinutes)))) {
           log.warn("Pending payment {} expired", payment.getReference());
           payment.setPaymentStatus(PaymentStatus.EXPIRED);
           payment.setFailureReason("Payment attempt expired");

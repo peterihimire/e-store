@@ -2,6 +2,7 @@ package com.benkih.estore.checkout.entity;
 
 //package com.benkih.estore.shipping.entity;
 
+import com.benkih.estore.common.entity.AuditableEntity;
 import com.benkih.estore.common.entity.BaseEntity;
 import com.benkih.estore.common.enums.CurrencyCode;
 import jakarta.persistence.*;
@@ -25,7 +26,7 @@ import java.time.Instant;
         )
     }
 )
-public class ShippingRate extends BaseEntity {
+public class ShippingRate extends AuditableEntity {
 
   @Column(
       nullable = false,

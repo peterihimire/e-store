@@ -1,5 +1,7 @@
 package com.benkih.estore.payment.entity;
 
+import com.benkih.estore.common.entity.AuditableEntity;
+import com.benkih.estore.common.entity.BaseEntity;
 import com.benkih.estore.common.enums.PaymentEventType;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -14,14 +16,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Entity
 @Table(name = "payment_events")
-public class PaymentEvent {
-
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
-
-  @Column(nullable = false, unique = true, updatable = false)
-  private String slug;
+public class PaymentEvent extends AuditableEntity {
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "payment_id", nullable = false)
@@ -31,34 +26,8 @@ public class PaymentEvent {
   @Column(nullable = false)
   private PaymentEventType eventType;
 
-  /**
-   * JSON payload received from Paystack.
-   */
+ // JSON payload received from Paystack.
   @Lob
   @Column(columnDefinition = "TEXT")
   private String payload;
-
-  private String createdBy;
-  private String updatedBy;
-
-  @Column(nullable = false, updatable = false)
-  private LocalDateTime createdAt;
-
-  private LocalDateTime updatedAt;
-
-  @PrePersist
-  public void onCreate() {
-    if (slug == null) {
-      slug = UUID.randomUUID().toString();
-    }
-
-    if (createdAt == null) {
-      createdAt = LocalDateTime.now();
-    }
-  }
-
-  @PreUpdate
-  public void onUpdate() {
-    updatedAt = LocalDateTime.now();
-  }
 }

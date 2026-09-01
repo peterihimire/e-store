@@ -1,6 +1,7 @@
 package com.benkih.estore.allocation.entity;
 
 import com.benkih.estore.business.entity.Business;
+import com.benkih.estore.common.entity.AuditableEntity;
 import com.benkih.estore.common.entity.BaseEntity;
 import com.benkih.estore.common.enums.AllocationStatus;
 import com.benkih.estore.common.enums.CurrencyCode;
@@ -19,7 +20,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @Entity
 @Table(name = "allocations")
-public class Allocation extends BaseEntity {
+public class Allocation extends AuditableEntity {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "payment_id", nullable = false)
@@ -35,9 +36,7 @@ public class Allocation extends BaseEntity {
   @JoinColumn(name = "business_id", nullable = false)
   private Business business;
 
-  /**
-   * Amount attributable to the business before deductions.
-   */
+// Amount attributable to the business before deductions.
   @Column(
       name = "gross_amount",
       nullable = false,
@@ -46,9 +45,7 @@ public class Allocation extends BaseEntity {
   )
   private BigDecimal grossAmount = BigDecimal.ZERO;
 
-  /**
-   * Benkih's platform commission.
-   */
+// Benkih's platform commission.
   @Column(
       name = "platform_fee",
       nullable = false,
@@ -57,9 +54,7 @@ public class Allocation extends BaseEntity {
   )
   private BigDecimal platformFee = BigDecimal.ZERO;
 
-  /**
-   * Payment processor fee attributable to this allocation.
-   */
+ // Payment processor fee attributable to this allocation.
   @Column(
       name = "payment_fee",
       nullable = false,

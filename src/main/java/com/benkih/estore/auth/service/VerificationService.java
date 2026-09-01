@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Service
@@ -30,7 +31,7 @@ public class VerificationService implements IVerificationService {
     EmailVerification verification = new EmailVerification();
     verification.setUser(user);
     verification.setToken(passwordEncoder.encode(plainToken));
-    verification.setExpiresAt(LocalDateTime.now().plusMinutes(10));
+    verification.setExpiresAt(Instant.now().plusSeconds(10*60));
 
     verification = verificationRepository.save(verification);
 

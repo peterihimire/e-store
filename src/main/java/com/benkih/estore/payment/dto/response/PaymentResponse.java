@@ -7,6 +7,7 @@ import com.benkih.estore.common.enums.PaymentStatus;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Getter
@@ -35,5 +36,5 @@ public class PaymentResponse {
 
   private String gatewayResponse;
 
-  private LocalDateTime paidAt;
+  private Instant paidAt;
 }

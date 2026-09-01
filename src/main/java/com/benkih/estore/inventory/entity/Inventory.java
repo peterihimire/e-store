@@ -1,6 +1,7 @@
 package com.benkih.estore.inventory.entity;
 
 import com.benkih.estore.business.entity.Business;
+import com.benkih.estore.common.entity.AuditableEntity;
 import com.benkih.estore.common.exceptions.InsufficientReservedStockException;
 import com.benkih.estore.common.exceptions.InsufficientStockException;
 import com.benkih.estore.common.exceptions.InvalidInventoryQuantityException;
@@ -19,14 +20,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Entity
 @Table(name = "inventories")
-public class Inventory {
-
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
-
-  @Column(nullable = false, unique = true, updatable = false)
-  private String slug;
+public class Inventory extends AuditableEntity {
 
   @Column(nullable = false)
   private Integer totalStock = 0;
@@ -45,19 +39,6 @@ public class Inventory {
 
   @Version// for locking
   private Long version;
-
-  private String createdBy;
-  private String updatedBy;
-
-  @Column(nullable = false,updatable = false)
-  private LocalDateTime createdAt;
-  private LocalDateTime updatedAt;
-
-//  @OneToOne(fetch = FetchType.LAZY,optional = false)// optional false means
-//  // mandatory
-//  @JoinColumn(name = "product_id",nullable = false, unique = true) // the owning side,
-//  private Product product; // loading an inventory does not automatically
-//  // load the products
 
   @OneToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(
@@ -154,19 +135,4 @@ public class Inventory {
     return getAvailableStock() <= reorderLevel;
   }
 
-  @PrePersist
-  public void onCreate() {
-
-    if (this.slug == null) {
-      this.slug = UUID.randomUUID().toString();
-    }
-    if (this.createdAt == null) {
-      this.createdAt = LocalDateTime.now();
-    }
-  }
-
-  @PreUpdate
-  public void onUpdate() {
-    this.updatedAt = LocalDateTime.now();
-  }
 }

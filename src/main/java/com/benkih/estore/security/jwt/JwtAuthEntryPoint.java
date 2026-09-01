@@ -10,6 +10,7 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,7 +31,7 @@ public class JwtAuthEntryPoint implements AuthenticationEntryPoint {
 
     // Create error response body
     final Map<String, Object> errorResponse = new HashMap<>();
-    errorResponse.put("timestamp", LocalDateTime.now().toString());
+    errorResponse.put("timestamp", Instant.now().toString());
     errorResponse.put("status", HttpServletResponse.SC_UNAUTHORIZED);
     errorResponse.put("error", "Unauthorized");
     errorResponse.put("message", "You may login and try again!");

@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Slf4j
@@ -28,7 +30,7 @@ public class PasswordResetTokenService implements IPasswordResetTokenService {
     // Revoke previous unused tokens
     passwordResetTokenRepository.findByUserAndUsedAtIsNull(user)
         .forEach(token ->
-            token.setUsedAt(LocalDateTime.now())
+            token.setUsedAt(Instant.now())
         );
 
     String plainToken = generateOtp();
@@ -36,7 +38,7 @@ public class PasswordResetTokenService implements IPasswordResetTokenService {
     PasswordResetToken resetToken = new PasswordResetToken();
     resetToken.setUser(user);
     resetToken.setTokenHash(passwordEncoder.encode(plainToken));
-    resetToken.setExpiresAt(LocalDateTime.now().plusMinutes(15));
+    resetToken.setExpiresAt(Instant.now().plus(Duration.ofMinutes(15)));
 
    resetToken = passwordResetTokenRepository.save(resetToken);
 

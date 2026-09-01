@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -21,8 +22,8 @@ public abstract class BaseEntity {
   protected String slug;
 
   @Column(nullable = false, updatable = false)
-  protected LocalDateTime createdAt;
-  protected LocalDateTime updatedAt;
+  protected Instant createdAt;
+  protected Instant updatedAt;
 
   @PrePersist
   protected void onCreate() {
@@ -31,12 +32,12 @@ public abstract class BaseEntity {
     }
 
     if (createdAt == null) {
-      createdAt = LocalDateTime.now();
+      createdAt = Instant.now();
     }
   }
 
   @PreUpdate
   protected void onUpdate() {
-    updatedAt = LocalDateTime.now();
+    updatedAt = Instant.now();
   }
 }
