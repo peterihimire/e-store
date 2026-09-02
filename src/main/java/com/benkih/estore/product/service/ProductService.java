@@ -222,6 +222,22 @@ public class ProductService implements IProductService{
             .map(this::convertVariantToDto)
             .toList();
 
+    List<ProductAttributeResponseDto> attributeDtos =
+        Optional.ofNullable(product.getAttributes())
+            .orElse(List.of())
+            .stream()
+            .map(attribute -> new ProductAttributeResponseDto(
+                attribute.getAttribute().getSlug(),
+                attribute.getAttribute().getName(),
+                attribute.getAttributeValue() != null
+                    ? attribute.getAttributeValue().getSlug()
+                    : null,
+                attribute.getAttributeValue() != null
+                    ? attribute.getAttributeValue().getValue()
+                    : attribute.getCustomValue()
+            ))
+            .toList();
+
     BrandResponseDto brandDto = Optional.ofNullable(product.getBrand())
         .map(brand -> new BrandResponseDto(
             brand.getSlug(),
@@ -239,6 +255,7 @@ public class ProductService implements IProductService{
         product.getCategory() != null ? product.getCategory().getName() : null,
         imageDtos,
         variantDtos,
+        attributeDtos,
         brandDto
     );
   }

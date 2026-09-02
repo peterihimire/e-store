@@ -2,6 +2,7 @@ package com.benkih.estore.product.dto.response;
 
 import com.benkih.estore.common.enums.ProductStatus;
 import com.benkih.estore.product.entity.Brand;
+import com.benkih.estore.product.entity.ProductAttribute;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,6 +20,7 @@ public class ProductResponseDto {
   private String description;
   private String category;
   private List<ImageDto> images;
-  List<ProductVariantResponseDto> variants;
+  private List<ProductVariantResponseDto> variants;
+  private List<ProductAttributeResponseDto> attributes;
   private BrandResponseDto brand;
 }

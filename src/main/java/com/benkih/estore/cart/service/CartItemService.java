@@ -28,9 +28,7 @@ public class CartItemService implements ICartItemService {
   @Override
   public void addItemToCart(String cartSlug, String variantSlug, int quantity) {
     if (quantity <= 0) {
-      throw new BadRequestException(
-          "Quantity must be greater than zero."
-      );
+      throw new BadRequestException("Quantity must be greater than zero.");
     }
 
     Cart cart = cartService.getCart(cartSlug);
@@ -77,9 +75,9 @@ public class CartItemService implements ICartItemService {
 
   @Transactional
   @Override
-  public void removeItemFromCart(String cartSlug, String productSlug) {
+  public void removeItemFromCart(String cartSlug, String variantSlug) {
     Cart cart = cartService.getCart(cartSlug);
-    CartItem itemToRemove = getCartItem(cartSlug, productSlug);
+    CartItem itemToRemove = getCartItem(cartSlug, variantSlug);
     cart.removeItem(itemToRemove);
 
     cart.updateTotalAmount();

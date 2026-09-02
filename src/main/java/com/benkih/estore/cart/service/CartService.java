@@ -1,6 +1,7 @@
 package com.benkih.estore.cart.service;
 
 import com.benkih.estore.cart.dto.response.CartItemResponseDto;
+import com.benkih.estore.cart.dto.response.CartProductResponseDto;
 import com.benkih.estore.cart.dto.response.CartResponseDto;
 import com.benkih.estore.cart.entity.Cart;
 import com.benkih.estore.cart.entity.CartItem;
@@ -69,17 +70,20 @@ public class CartService  implements ICartService{
   @Override
   public CartResponseDto getConvertedCart(Cart cart) {
 
-//    List<Product> products = cart.getItems()
-//        .stream()
-//        .map(CartItem::getProduct)
-//        .toList();
-
     List<CartItemResponseDto> items = cart.getItems()
         .stream()
         .map(item -> {
 
           ProductVariant variant = item.getVariant();
           Product product = variant.getProduct();
+
+          CartProductResponseDto productDto = new CartProductResponseDto(
+              product.getSlug(),
+              product.getName(),
+              product.getImages() != null && !product.getImages().isEmpty()
+                  ? product.getImages().get(0).getDownloadUrl()
+                  : null
+          );
 
           List<VariantAttributeResponseDto> selectedAttributes =
               variant.getAttributes()
@@ -103,7 +107,7 @@ public class CartService  implements ICartService{
               item.getTotalPrice(),
               variant.getSlug(),
               variant.getSku(),
-              productService.convertToDto(product),
+              productDto,
               selectedAttributes
           );
         })

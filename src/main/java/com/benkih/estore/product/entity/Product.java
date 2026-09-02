@@ -98,7 +98,7 @@ public class Product extends AuditableEntity {
         cascade = CascadeType.ALL,
         orphanRemoval = true
     )
-    @OrderBy("displayOrder ASC")
+//    @OrderBy("displayOrder ASC")
     private List<ProductAttribute> attributes = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)

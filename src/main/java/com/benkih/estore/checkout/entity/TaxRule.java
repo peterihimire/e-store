@@ -1,9 +1,6 @@
 package com.benkih.estore.checkout.entity;
 
-//package com.benkih.estore.tax.entity;
-
 import com.benkih.estore.common.entity.AuditableEntity;
-import com.benkih.estore.common.entity.BaseEntity;
 import com.benkih.estore.common.enums.Country;
 import com.benkih.estore.common.enums.TaxCategory;
 import jakarta.persistence.*;
@@ -13,7 +10,6 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.LocalDateTime;
 
 @Getter
 @Setter

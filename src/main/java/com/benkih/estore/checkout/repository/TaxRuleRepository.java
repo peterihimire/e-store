@@ -9,11 +9,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
 public interface TaxRuleRepository
     extends JpaRepository<TaxRule, Long> {
+
+  boolean existsByCode(String code);
 
   @Query("""
         SELECT r
@@ -31,6 +34,6 @@ public interface TaxRuleRepository
   Optional<TaxRule> findApplicableRule(
       @Param("jurisdiction") String jurisdiction,
       @Param("taxCategory") TaxCategory taxCategory,
-      @Param("at") LocalDateTime at
+      @Param("at") Instant at
   );
 }

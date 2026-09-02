@@ -35,7 +35,8 @@ public class OrderController {
       OrderResponseDto order = orderService.placeOrder(
           userDetails.getSlug(),
           request.getCouponCode(),
-          request.getDeliveryMethod()); // if error, this will throw error, now global error handler will process it
+          request.getDeliveryMethod(),
+          request.getShippingAddressSlug()); // if error, this will throw error, now global error handler will process it
       log.info("Here is the order data:{}", order);
   //      OrderResponseDto dto = orderService.convertToDto(order);
       return ResponseEntity.status(HttpStatus.CREATED)

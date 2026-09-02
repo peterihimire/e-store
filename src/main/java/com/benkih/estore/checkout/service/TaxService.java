@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -90,7 +91,7 @@ public class TaxService implements ITaxService {
     TaxRule rule = taxRuleRepository.findApplicableRule(
         "NG",
         TaxCategory.STANDARD,
-        LocalDateTime.now()
+        Instant.now()
     ).orElseThrow(() ->
         new BadRequestException("No applicable tax rule found")
     );

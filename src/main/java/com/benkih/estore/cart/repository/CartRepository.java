@@ -12,9 +12,9 @@ public interface CartRepository extends JpaRepository<Cart, Long>{
   @EntityGraph(attributePaths = {
       "user",
       "items",
-      "items.product",
-//      "items.product.images",
-      "items.product.category"
+      "items.variant",
+      "items.variant.product",
+      "items.variant.product.category"
   })
   Optional<Cart> findBySlug(String slug);
 
@@ -25,11 +25,18 @@ public interface CartRepository extends JpaRepository<Cart, Long>{
   @EntityGraph(attributePaths = {
       "user",
       "items",
-      "items.product",
-//      "items.product.images",
-      "items.product.category"
+      "items.variant",
+      "items.variant.product",
+      "items.variant.product.category"
   })
   Optional<Cart> findByUserSlug(String slug); // Optional here means I can handle the exception and avoids returning null and makes API safer
 
+  @EntityGraph(attributePaths = {
+      "user",
+      "items",
+      "items.variant",
+      "items.variant.product",
+      "items.variant.product.category"
+  })
   Cart findByUser(User user);
 }

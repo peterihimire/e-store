@@ -36,7 +36,9 @@ import com.benkih.estore.product.entity.ProductVariant;
 import com.benkih.estore.product.repository.ProductRepository;
 import com.benkih.estore.product.service.ProductService;
 import com.benkih.estore.security.user.CurrentUserService;
+import com.benkih.estore.user.entity.Address;
 import com.benkih.estore.user.entity.User;
+import com.benkih.estore.user.repository.AddressRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -65,6 +67,7 @@ public class OrderService implements IOrderService{
   private final TaxService taxService;
   private final DiscountService discountService;
   private final ShippingService shippingService;
+  private final AddressRepository addressRepository;
 
 
 
@@ -73,13 +76,19 @@ public class OrderService implements IOrderService{
   public OrderResponseDto placeOrder(
       String userSlug,
       String couponCode,
-      DeliveryMethod deliveryMethod) {
+      DeliveryMethod deliveryMethod,
+      String shippingAddressSlug) {
 
     Cart cart = cartService.getCartByUserSlug(userSlug);
     System.out.println("Cart object = " + System.identityHashCode(cart));
 
     validateCart(cart);
     validateProducts(cart);
+    Address shippingAddress = addressRepository
+        .findBySlugAndUserSlug(shippingAddressSlug, userSlug)
+        .orElseThrow(() ->
+            new ResourceNotFoundException("Shipping address not found")
+        );
 
     cart.getItems().forEach(item ->
         System.out.println(
@@ -114,7 +123,7 @@ public class OrderService implements IOrderService{
 
     ShippingQuote shippingQuote = shippingService.quote(
         cart,
-        order.getShippingAddress(),
+        shippingAddress,
         deliveryMethod
     );
 

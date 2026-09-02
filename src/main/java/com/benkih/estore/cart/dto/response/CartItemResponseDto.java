@@ -16,13 +16,16 @@ public class CartItemResponseDto { // This helps in the formation of the cart re
   private String slug;
 
   private int quantity;
+
   private BigDecimal unitPrice;
+
   private BigDecimal totalPrice;
 
   private String variantSlug;
+
   private String sku;
 
-  private ProductResponseDto product;
+  private CartProductResponseDto product;
 
   private List<VariantAttributeResponseDto> selectedAttributes;
 }

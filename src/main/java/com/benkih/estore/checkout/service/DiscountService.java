@@ -38,7 +38,7 @@ public class DiscountService implements IDiscountService {
   public DiscountQuote quote(
       Cart cart, BigDecimal subtotal, String couponCode, String userSlug
   ) {
-    if (subtotal == null || subtotal.signum() <= 0 || couponCode == null) {
+    if (subtotal == null || subtotal.signum() <= 0 || couponCode == null || couponCode.isBlank()) {
       return new DiscountQuote(BigDecimal.ZERO, null, null);
     }
 

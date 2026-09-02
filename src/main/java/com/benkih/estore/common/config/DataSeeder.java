@@ -1,6 +1,10 @@
 package com.benkih.estore.common.config;
 
+import com.benkih.estore.checkout.entity.TaxRule;
+import com.benkih.estore.checkout.repository.TaxRuleRepository;
 import com.benkih.estore.common.enums.AttributeType;
+import com.benkih.estore.common.enums.Country;
+import com.benkih.estore.common.enums.TaxCategory;
 import com.benkih.estore.common.enums.UserStatus;
 import com.benkih.estore.permission.entity.Permission;
 import com.benkih.estore.permission.repository.PermissionRepository;
@@ -25,6 +29,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -47,6 +52,7 @@ public class DataSeeder implements CommandLineRunner {
   private final CategoryAttributeRepository categoryAttributeRepository;
   private final AttributeValueRepository attributeValueRepository;
   private final BrandRepository brandRepository;
+  private final TaxRuleRepository taxRuleRepository;
 
 
   @Override
@@ -59,6 +65,7 @@ public class DataSeeder implements CommandLineRunner {
 
 //      seedMarketplaceAttributes();
 //      seedBrands();
+//      seedTaxRules();
 
     } catch (Exception e) {
       log.error(" Error during data seeding: {}", e.getMessage(), e);
@@ -973,5 +980,78 @@ public class DataSeeder implements CommandLineRunner {
     brandRepository.save(brand);
 
     log.info("Created brand: {}", name);
+  }
+
+  private void seedTaxRules() {
+    log.info("Seeding tax rules...");
+
+    createTaxRule(
+        "NG-VAT-STANDARD-2026",
+        Country.NIGERIA,
+        "NG",
+        TaxCategory.STANDARD,
+        new BigDecimal("7.50000"),
+        "VAT",
+        Instant.parse("2026-01-01T00:00:00Z"),
+        null
+    );
+
+    createTaxRule(
+        "NG-VAT-ZERO-RATED-2026",
+        Country.NIGERIA,
+        "NG",
+        TaxCategory.ZERO_RATED,
+        new BigDecimal("0.00000"),
+        "VAT",
+        Instant.parse("2026-01-01T00:00:00Z"),
+        null
+    );
+
+    createTaxRule(
+        "NG-VAT-EXEMPT-2026",
+        Country.NIGERIA,
+        "NG",
+        TaxCategory.EXEMPT,
+        new BigDecimal("0.00000"),
+        "VAT",
+        Instant.parse("2026-01-01T00:00:00Z"),
+        null
+    );
+
+    log.info("Finished seeding tax rules.");
+  }
+
+
+
+  private void createTaxRule(
+      String code,
+      Country country,
+      String jurisdiction,
+      TaxCategory taxCategory,
+      BigDecimal rate,
+      String taxType,
+      Instant effectiveFrom,
+      Instant effectiveTo
+  ) {
+    if (taxRuleRepository.existsByCode(code)) {
+      log.info("Tax rule already exists: {}", code);
+      return;
+    }
+
+    TaxRule taxRule = new TaxRule();
+
+    taxRule.setCode(code);
+    taxRule.setCountry(country);
+    taxRule.setJurisdiction(jurisdiction);
+    taxRule.setTaxCategory(taxCategory);
+    taxRule.setRate(rate);
+    taxRule.setTaxType(taxType);
+    taxRule.setEffectiveFrom(effectiveFrom);
+    taxRule.setEffectiveTo(effectiveTo);
+    taxRule.setActive(true);
+
+    taxRuleRepository.save(taxRule);
+
+    log.info("Created tax rule: {}", code);
   }
 }

@@ -28,7 +28,7 @@ public class CartItemController {
   private final IUserService userService;
 
   @PostMapping("/item/add")
-    public ResponseEntity<ApiResponse> addItemToCart(@RequestParam String productSlug, @RequestParam Integer quantity){
+    public ResponseEntity<ApiResponse> addItemToCart(@RequestParam String variantSlug, @RequestParam Integer quantity){
   //    log.info("Entered addItemToCart endpoint");
   //    log.info("cartSlug={}, productSlug={}, quantity={}", productSlug, quantity);
     try {
@@ -36,7 +36,7 @@ public class CartItemController {
       log.info("Lets see info user email={}", user.getEmail());
       Cart cart = cartService.initializeNewCart(user);
 
-      cartItemService.addItemToCart(cart.getSlug(), productSlug, quantity);
+      cartItemService.addItemToCart(cart.getSlug(), variantSlug, quantity);
       return ResponseEntity.ok(new ApiResponse("success","Product added to cart",null));
     } catch (ResourceNotFoundException e) {
       return ResponseEntity.status(NOT_FOUND).body(new ApiResponse("fail",e.getMessage(), null));

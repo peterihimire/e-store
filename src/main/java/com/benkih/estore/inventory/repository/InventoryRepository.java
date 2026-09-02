@@ -17,10 +17,10 @@ import java.util.Optional;
 
 public interface InventoryRepository extends JpaRepository<Inventory, Long> {
 
-  @EntityGraph(attributePaths = {"product"})
+  @EntityGraph(attributePaths = {"variant", "variant.product"})
   List<Inventory> findAll();
 
-  @EntityGraph(attributePaths = {"product"})
+  @EntityGraph(attributePaths = {"variant", "variant.product"})
   Optional<Inventory> findBySlug(String slug);
 
 //  @EntityGraph(attributePaths = {"product"})

@@ -12,7 +12,7 @@ import java.util.List;
 
 public interface IOrderService {
   //  Order placeOrder(String orderSlug);
-  OrderResponseDto placeOrder(String userSlug, String couponCode, DeliveryMethod deliveryMethod);
+  OrderResponseDto placeOrder(String userSlug, String couponCode, DeliveryMethod deliveryMethod, String shippingAddressSlug);
 
   Order getOrder(String orderSlug);
 
