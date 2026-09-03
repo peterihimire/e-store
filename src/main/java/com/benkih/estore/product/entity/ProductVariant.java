@@ -50,6 +50,9 @@ public class ProductVariant  extends AuditableEntity {
   )
   private List<ProductVariantAttribute> attributes = new ArrayList<>();
 
+  @Embedded
+  private PackageDimensions packageDimensions;
+
   @Column(nullable = false, length = 100)
   private String sku;
 

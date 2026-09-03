@@ -27,8 +27,8 @@ public class OrderItem extends BaseEntity {
 
   private int quantity;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "variant_id")
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "variant_id", nullable = false)
   private ProductVariant variant;
 
   @Column(nullable = false, precision = 18, scale = 2)
@@ -68,13 +68,14 @@ public class OrderItem extends BaseEntity {
   @JoinColumn(name = "order_id")
   private Order order;
 
-  @ManyToOne
-  @JoinColumn(name = "product_id")
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "product_id", nullable = false)
   private Product product;
 
   public OrderItem(int quantity, BigDecimal price, String name,
                    String sku, Brand brand, CurrencyCode currency, TaxCategory taxCategory, Order order,
-                   Product product, Business business) {
+                   Product product, ProductVariant variant, Business business,
+                   BigDecimal subtotal) {
     this.quantity = quantity;
     this.price = price;
     this.name = name;
@@ -84,7 +85,9 @@ public class OrderItem extends BaseEntity {
     this.taxCategory = taxCategory;
     this.order = order;
     this.product = product;
+    this.variant = variant;
     this.business = business;
+    this.subtotal = subtotal;
   }
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)

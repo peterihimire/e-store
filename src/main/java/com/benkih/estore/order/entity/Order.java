@@ -95,7 +95,7 @@ public class Order extends AuditableEntity {
   private Instant completedAt;
 
   @PrePersist
-  public void onCreate() {
+  protected void initializeOrder() {
 
     if (orderNumber == null) {
       orderNumber = "ORD-" + System.currentTimeMillis();

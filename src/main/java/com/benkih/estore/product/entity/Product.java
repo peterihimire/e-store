@@ -73,8 +73,6 @@ public class Product extends AuditableEntity {
     )
     private TaxCategory taxCategory = TaxCategory.STANDARD;
 
-    @Embedded
-    private PackageDimensions packageDimensions;
 
     @Column(nullable = false)
     private boolean shippable = true;

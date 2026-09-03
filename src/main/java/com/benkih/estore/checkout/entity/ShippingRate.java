@@ -5,6 +5,8 @@ package com.benkih.estore.checkout.entity;
 import com.benkih.estore.common.entity.AuditableEntity;
 import com.benkih.estore.common.entity.BaseEntity;
 import com.benkih.estore.common.enums.CurrencyCode;
+import com.benkih.estore.common.enums.DeliveryMethod;
+import com.benkih.estore.product.entity.Category;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -41,16 +43,16 @@ public class ShippingRate extends AuditableEntity {
   )
   private String zone;
 
-  @Column(
-      name = "delivery_method",
-      nullable = false,
-      length = 50
-  )
-  private String deliveryMethod;
+  @Enumerated(EnumType.STRING)
+  @Column(name = "delivery_method", nullable = false, length = 50)
+  private DeliveryMethod deliveryMethod;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "category_id")
+  private Category category;
 
   @Column(
       name = "min_weight_kg",
-      nullable = false,
       precision = 10,
       scale = 2
   )

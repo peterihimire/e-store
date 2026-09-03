@@ -1,11 +1,10 @@
 package com.benkih.estore.common.config;
 
+import com.benkih.estore.checkout.entity.ShippingRate;
 import com.benkih.estore.checkout.entity.TaxRule;
+import com.benkih.estore.checkout.repository.ShippingRateRepository;
 import com.benkih.estore.checkout.repository.TaxRuleRepository;
-import com.benkih.estore.common.enums.AttributeType;
-import com.benkih.estore.common.enums.Country;
-import com.benkih.estore.common.enums.TaxCategory;
-import com.benkih.estore.common.enums.UserStatus;
+import com.benkih.estore.common.enums.*;
 import com.benkih.estore.permission.entity.Permission;
 import com.benkih.estore.permission.repository.PermissionRepository;
 import com.benkih.estore.product.entity.AttributeValue;
@@ -53,6 +52,7 @@ public class DataSeeder implements CommandLineRunner {
   private final AttributeValueRepository attributeValueRepository;
   private final BrandRepository brandRepository;
   private final TaxRuleRepository taxRuleRepository;
+  private final ShippingRateRepository shippingRateRepository;
 
 
   @Override
@@ -66,6 +66,7 @@ public class DataSeeder implements CommandLineRunner {
 //      seedMarketplaceAttributes();
 //      seedBrands();
 //      seedTaxRules();
+//      seedShippingRates();
 
     } catch (Exception e) {
       log.error(" Error during data seeding: {}", e.getMessage(), e);
@@ -990,7 +991,7 @@ public class DataSeeder implements CommandLineRunner {
         Country.NIGERIA,
         "NG",
         TaxCategory.STANDARD,
-        new BigDecimal("7.50000"),
+        new BigDecimal("0.07500"),
         "VAT",
         Instant.parse("2026-01-01T00:00:00Z"),
         null
@@ -1054,4 +1055,124 @@ public class DataSeeder implements CommandLineRunner {
 
     log.info("Created tax rule: {}", code);
   }
+
+  private void createShippingRate(
+      String code,
+      String zone,
+      DeliveryMethod deliveryMethod,
+      Category category,
+      BigDecimal minWeightKg,
+      BigDecimal maxWeightKg,
+      BigDecimal fee
+  ) {
+    if (shippingRateRepository.existsByCode(code)) {
+      log.info("Shipping rate already exists: {}", code);
+      return;
+    }
+
+    ShippingRate rate = new ShippingRate();
+
+    rate.setCode(code);
+    rate.setZone(zone);
+    rate.setDeliveryMethod(deliveryMethod);
+    rate.setCategory(category);
+    rate.setMinWeightKg(minWeightKg);
+    rate.setMaxWeightKg(maxWeightKg);
+    rate.setFee(fee);
+    rate.setCurrency(CurrencyCode.NGN);
+    rate.setEffectiveFrom(Instant.parse("2026-01-01T00:00:00Z"));
+    rate.setActive(true);
+
+    shippingRateRepository.save(rate);
+
+    log.info("Created shipping rate: {}", code);
+  }
+
+  private void seedShippingRates() {
+
+    log.info("Seeding shipping rates...");
+
+    createShippingRate(
+        "LAGOS-STANDARD",
+        ShippingZone.LAGOS.code(),
+        DeliveryMethod.STANDARD,
+        null,
+        null,
+        null,
+        new BigDecimal("2000")
+    );
+
+    createShippingRate(
+        "ABUJA-STANDARD",
+        ShippingZone.ABUJA.code(),
+        DeliveryMethod.STANDARD,
+        null,
+        null,
+        null,
+        new BigDecimal("3000")
+    );
+
+    createShippingRate(
+        "SOUTH-WEST-STANDARD",
+        ShippingZone.SOUTH_WEST.code(),
+        DeliveryMethod.STANDARD,
+        null,
+        null,
+        null,
+        new BigDecimal("3000")
+    );
+
+    createShippingRate(
+        "SOUTH-EAST-STANDARD",
+        ShippingZone.SOUTH_EAST.code(),
+        DeliveryMethod.STANDARD,
+        null,
+        null,
+        null,
+        new BigDecimal("3500")
+    );
+
+    createShippingRate(
+        "SOUTH-SOUTH-STANDARD",
+        ShippingZone.SOUTH_SOUTH.code(),
+        DeliveryMethod.STANDARD,
+        null,
+        null,
+        null,
+        new BigDecimal("3500")
+    );
+
+    createShippingRate(
+        "NORTH-CENTRAL-STANDARD",
+        ShippingZone.NORTH_CENTRAL.code(),
+        DeliveryMethod.STANDARD,
+        null,
+        null,
+        null,
+        new BigDecimal("4000")
+    );
+
+    createShippingRate(
+        "NORTH-EAST-STANDARD",
+        ShippingZone.NORTH_EAST.code(),
+        DeliveryMethod.STANDARD,
+        null,
+        null,
+        null,
+        new BigDecimal("5000")
+    );
+
+    createShippingRate(
+        "NORTH-WEST-STANDARD",
+        ShippingZone.NORTH_WEST.code(),
+        DeliveryMethod.STANDARD,
+        null,
+        null,
+        null,
+        new BigDecimal("5000")
+    );
+
+    log.info("Finished seeding shipping rates.");
+  }
+
 }

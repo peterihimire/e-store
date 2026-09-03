@@ -38,7 +38,6 @@ public class TaxService implements ITaxService {
 
 
   @Override
-
   public TaxQuote quote(
       List<OrderItem> items,
       BigDecimal discount,
@@ -68,6 +67,12 @@ public class TaxService implements ITaxService {
         );
 
     if (taxableSubtotal.signum() <= 0) {
+      // Make sure every item has a valid snapshot
+
+      items.forEach(item -> {
+        item.setTaxRate(BigDecimal.ZERO);
+        item.setTaxAmount(BigDecimal.ZERO);
+      });
 
       return new TaxQuote(
           BigDecimal.ZERO.setScale(2),
@@ -103,6 +108,35 @@ public class TaxService implements ITaxService {
             RoundingMode.HALF_UP
         );
 
+   //  Populate tax snapshot on each order item.
+
+    for (OrderItem item : items) {
+      if (!isTaxable(item)) {
+        item.setTaxRate(BigDecimal.ZERO);
+        item.setTaxAmount(BigDecimal.ZERO);
+        continue;
+      }
+
+      BigDecimal itemSubtotal = calculateItemSubtotal(item);
+      BigDecimal itemDiscount = allocateItemDiscount(
+          item,
+          taxableSubtotal,
+          taxableDiscount
+      );
+
+      BigDecimal taxableItemAmount = itemSubtotal
+          .subtract(itemDiscount)
+          .max(BigDecimal.ZERO);
+
+      BigDecimal itemTax = taxableItemAmount
+          .multiply(rule.getRate())
+          .setScale(2, RoundingMode.HALF_UP);
+
+      item.setTaxRate(rule.getRate());
+      item.setTaxAmount(itemTax);
+      item.setDiscountAmount(itemDiscount);
+    }
+
     return new TaxQuote(
         tax,
         rule.getRate(),
@@ -110,6 +144,31 @@ public class TaxService implements ITaxService {
         rule.getTaxType(),
         rule.getCode()
     );
+  }
+
+  private BigDecimal allocateItemDiscount(
+      OrderItem item,
+      BigDecimal taxableSubtotal,
+      BigDecimal taxableDiscount
+  ) {
+
+    BigDecimal itemSubtotal = calculateItemSubtotal(item);
+
+    if (taxableSubtotal.signum() <= 0 ||
+        taxableDiscount.signum() <= 0) {
+
+      return BigDecimal.ZERO.setScale(2);
+    }
+
+    return taxableDiscount
+        .multiply(itemSubtotal)
+        .divide(
+            taxableSubtotal,
+            2,
+            RoundingMode.HALF_UP
+        )
+        .min(itemSubtotal)
+        .setScale(2, RoundingMode.HALF_UP);
   }
 
 
@@ -163,9 +222,7 @@ public class TaxService implements ITaxService {
   }
 
   private boolean isTaxable(OrderItem item) {
-    return item.getProduct() != null
-        && item.getProduct().getTaxCategory()
-        == TaxCategory.STANDARD;
+    return item.getTaxCategory() == TaxCategory.STANDARD;
   }
 }
 

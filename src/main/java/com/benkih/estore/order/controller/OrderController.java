@@ -55,8 +55,8 @@ public class OrderController {
 
   @GetMapping("/order/user")
   public ResponseEntity<ApiResponse> getUserOrders(){
-    List<Order> orders = orderService.getUserOrders();
-    List<OrderResponseDto> orderData = orderService.getConvertedOrders(orders);
+    List<OrderResponseDto> orderData  = orderService.getUserOrders();
+//    List<OrderResponseDto> orderData = orderService.getConvertedOrders(orders);
     return ResponseEntity.ok(new ApiResponse(
         "success",
         "User orders returned success",

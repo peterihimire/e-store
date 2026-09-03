@@ -19,18 +19,14 @@ import com.benkih.estore.common.exceptions.BadRequestException;
 import com.benkih.estore.common.exceptions.DuplicatePaymentException;
 import com.benkih.estore.common.exceptions.PaymentException;
 import com.benkih.estore.common.exceptions.ResourceNotFoundException;
-import com.benkih.estore.inventory.entity.Inventory;
 import com.benkih.estore.inventory.service.IInventoryService;
 import com.benkih.estore.notification.INotificationService;
-import com.benkih.estore.notification.NotificationService;
-import com.benkih.estore.order.dto.response.BusinessOrderItemResponseDto;
-import com.benkih.estore.order.dto.response.BusinessOrderResponseDto;
-import com.benkih.estore.order.dto.response.OrderItemResponseDto;
-import com.benkih.estore.order.dto.response.OrderResponseDto;
+import com.benkih.estore.order.dto.response.*;
 import com.benkih.estore.order.entity.Order;
 import com.benkih.estore.order.entity.OrderItem;
 import com.benkih.estore.order.repository.OrderItemRepository;
 import com.benkih.estore.order.repository.OrderRepository;
+import com.benkih.estore.product.dto.response.VariantAttributeResponseDto;
 import com.benkih.estore.product.entity.Product;
 import com.benkih.estore.product.entity.ProductVariant;
 import com.benkih.estore.product.repository.ProductRepository;
@@ -47,7 +43,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -136,17 +131,6 @@ public class OrderService implements IOrderService{
         discountAmount
     );
 
-//    BigDecimal discountAmount = discountService.calculateDiscount(cart, subtotal);
-//
-//    BigDecimal taxableAmount = subtotal.subtract(discountAmount);
-//
-//    BigDecimal taxAmount = taxService.calculate(taxableAmount);
-//
-//    BigDecimal shippingFee = shippingService.calculateShipping(
-//        cart,
-//        order.getShippingAddress()
-//    );
-
     order.setSubTotal(subtotal);
     order.setDiscountAmount(discountAmount);
     order.setTaxAmount(taxAmount);
@@ -212,7 +196,12 @@ public class OrderService implements IOrderService{
           cartItem.getQuantity()
       );
 
-      BigDecimal price = variant.getPrice();
+//      BigDecimal price = variant.getPrice();
+      BigDecimal price = cartItem.getUnitPrice();
+
+      BigDecimal subtotal = price.multiply(
+          BigDecimal.valueOf(cartItem.getQuantity())
+      );
 
       OrderItem item = new OrderItem(
           cartItem.getQuantity(),
@@ -224,7 +213,9 @@ public class OrderService implements IOrderService{
           product.getTaxCategory(),
           order,
           product,
-          product.getBusiness()
+          variant,
+          product.getBusiness(),
+          subtotal
       );
 
       items.add(item);
@@ -262,18 +253,21 @@ public class OrderService implements IOrderService{
 
   @Transactional(readOnly = true)
   @Override
-  public List<Order> getUserOrders(){
+  public List<OrderResponseDto> getUserOrders(){
     User user = currentUserService.getCurrentUser();
 //    return orderRepository.findByUserSlug(user.getSlug());
     List<Order> orders = orderRepository.findByUserSlug(user.getSlug());
 
-    orders.forEach(order ->
-        order.getOrderItems().forEach(item ->
-            item.getProduct().getImages().size()
-        )
-    );
+//    orders.forEach(order ->
+//        order.getOrderItems().forEach(item ->
+//            item.getProduct().getImages().size()
+//        )
+//    );
 
-    return orders;
+//    return orders;
+    return orders.stream()
+        .map(this::convertToDto)
+        .toList();
   }
 
 
@@ -365,15 +359,38 @@ public class OrderService implements IOrderService{
         .map(item -> item.getProduct().getSlug())
         .toList();
 
+
+
     List<OrderItemResponseDto> items = order.getOrderItems()
         .stream()
         .map(item -> {
           Product product = item.getProduct();
+          ProductVariant variant = item.getVariant();
+
           return new OrderItemResponseDto(
               item.getSlug(),
-              productService.convertToDto(product),
+              convertToOrderItemProductDto(item),
+              item.getVariant().getSlug(),
+
+              item.getSku(),
+
+              variant.getAttributes()
+                  .stream()
+                  .map(attribute -> new VariantAttributeResponseDto(
+                      attribute.getAttribute().getName(),
+                      attribute.getAttributeValue().getValue()
+                  ))
+                  .toList(),
+
               item.getQuantity(),
-              item.getPrice()
+              item.getPrice(),
+              item.getSubtotal(),
+
+              item.getDiscountAmount(),
+
+              item.getTaxRate(),
+
+              item.getTaxAmount()
           );
         })
         .toList();
@@ -382,8 +399,13 @@ public class OrderService implements IOrderService{
         order.getSlug(),
         order.getUser().getSlug(),
         order.getOrderDate(),
+        order.getCurrency(),
+        order.getSubTotal(),
+        order.getDiscountAmount(),
+        order.getTaxAmount(),
+        order.getShippingFee(),
         order.getTotalAmount(),
-        order.getOrderStatus().name(),
+        order.getOrderStatus(),
         items
     );
   }
@@ -444,6 +466,30 @@ public class OrderService implements IOrderService{
         items,
         subtotal,
         subtotal
+    );
+  }
+
+  @Transactional(readOnly = true)
+  @Override
+  public OrderItemProductResponseDto convertToOrderItemProductDto(
+      OrderItem item
+  ) {
+    Product product = item.getProduct();
+
+
+    return new OrderItemProductResponseDto(
+        product.getSlug(),
+        product.getName(),
+        product.getBrand() != null
+            ? product.getBrand().getName()
+            : null,
+        product.getCategory() != null
+            ? product.getCategory().getName()
+            : null,
+        product.getImages().isEmpty()
+            ? null
+            : product.getImages().get(0).getDownloadUrl()
+
     );
   }
 
