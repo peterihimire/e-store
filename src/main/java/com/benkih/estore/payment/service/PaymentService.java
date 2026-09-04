@@ -1,5 +1,7 @@
 package com.benkih.estore.payment.service;
 
+import com.benkih.estore.allocation.service.AllocationService;
+import com.benkih.estore.allocation.service.IAllocationService;
 import com.benkih.estore.audit.service.ApiLogService;
 import com.benkih.estore.common.enums.*;
 import com.benkih.estore.common.exceptions.*;
@@ -59,6 +61,7 @@ public class PaymentService implements IPaymentService {
   private final ApiLogService apiLogService;
   private final INotificationService notificationService;
   private final IRefundService refundService;
+  private final IAllocationService allocationService;
 
 
   @Override
@@ -119,11 +122,9 @@ public class PaymentService implements IPaymentService {
     try {
       PaymentWebhookHandler handler = paymentWebhookHandlerFactory.get(provider);
 
-      handler.verifySignature(signature, payload);
+      handler.verifySignature(signature, payload); // comment 4 manual webhook
 
       PaymentWebhookEvent event = handler.parseWebhook(payload);
-      log.info("Here is the payload ={}", payload);
-      log.info("Here is the event ={}", event);
 
       switch (event.eventType()) {
 
@@ -356,6 +357,7 @@ public class PaymentService implements IPaymentService {
     Payment payment = getPayment(event.reference());
 
     if (isDuplicateWebhook(payment, event, payload)) {
+      log.info("Already done");
       return;
     }
 
@@ -432,7 +434,8 @@ public class PaymentService implements IPaymentService {
 
   private boolean isDuplicateWebhook(Payment payment, PaymentWebhookEvent event, String payload) {
     String reference = payment.getReference();
-    String transactionId = String.valueOf(payment.getTransactionId());
+    String transactionId = event.transactionId();
+//    String transactionId = String.valueOf(payment.getTransactionId());
 
     if (payment.getPaymentStatus() == PaymentStatus.SUCCESS) {
       log.info("Payment {} already successful", reference);
@@ -453,7 +456,10 @@ private void processOrder(Payment payment) {
   if (payment.getPaymentStatus() != PaymentStatus.SUCCESS) {
     return;
   }
-  orderService.processPaidOrder(payment.getOrder());
+
+  Order order = payment.getOrder();
+  orderService.processPaidOrder(order);
+  allocationService.allocatePayment(payment);
 }
 
   private void postPaymentProcessing(Payment payment) {

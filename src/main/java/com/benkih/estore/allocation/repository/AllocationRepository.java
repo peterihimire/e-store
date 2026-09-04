@@ -5,4 +5,6 @@ import com.benkih.estore.inventory.entity.Inventory;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface AllocationRepository extends JpaRepository<Allocation, Long> {
+  boolean existsByPaymentId(Long paymentId);
+
 }

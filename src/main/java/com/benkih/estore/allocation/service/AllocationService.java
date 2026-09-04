@@ -26,80 +26,143 @@ public class AllocationService implements IAllocationService{
   @Transactional
   @Override
   public void allocatePayment(Payment payment) {
+    if (payment == null) {
+      throw new IllegalArgumentException("Payment is required");
+    }
+
+    // Prevent duplicate allocations when a webhook is retried
+    if (allocationRepository.existsByPaymentId(payment.getId())) {
+      log.info(
+          "Allocations already exist for payment {}. Skipping allocation.",
+          payment.getReference()
+      );
+      return;
+    }
 
     Order order = payment.getOrder();
 
-    List<OrderItem> orderItems = order.getOrderItems();
+    if (order == null) {
+      throw new IllegalArgumentException("Payment is not associated with an order");
+    }
 
-    BigDecimal subtotal = order.getSubTotal();
+    List<OrderItem> orderItems = order.getOrderItems();
+    if (orderItems == null || orderItems.isEmpty()) {
+      log.warn(
+          "Order {} has no order items. Nothing to allocate.",
+          order.getOrderNumber()
+      );
+      return;
+    }
+
+    BigDecimal orderSubtotal = defaultZero(order.getSubTotal());
+    if (orderSubtotal.compareTo(BigDecimal.ZERO) <= 0) {
+      throw new IllegalArgumentException("Order subtotal must be greater than zero");
+    }
 
     for (OrderItem orderItem : orderItems) {
+      /*
+       * OrderItem.subtotal is the authoritative gross merchandise
+       * amount for this item:
+       *
+       * price × quantity
+       */
+      BigDecimal grossAmount = defaultZero(orderItem.getSubtotal());
+      /*
+       * Discount is already calculated at OrderItem level.
+       * Do NOT redistribute Order.discountAmount here.
+       */
+      BigDecimal discountAmount = defaultZero(orderItem.getDiscountAmount());
 
-      BigDecimal grossAmount = orderItem.getPrice()
-              .multiply(BigDecimal.valueOf(orderItem.getQuantity()));
+      /*
+       * Tax is already calculated at OrderItem level.
+       * Do NOT redistribute Order.taxAmount here.
+       */
 
-      BigDecimal itemRatio = grossAmount.divide(
-              subtotal,
-              10,
-              RoundingMode.HALF_UP
-          );
-
-      BigDecimal discountAmount = order.getDiscountAmount()
-              .multiply(itemRatio)
-              .setScale(2, RoundingMode.HALF_UP);
-
-      BigDecimal taxAmount = order.getTaxAmount()
-              .multiply(itemRatio)
-              .setScale(2, RoundingMode.HALF_UP);
+      BigDecimal taxAmount = defaultZero(orderItem.getTaxAmount());
+      /*
+       * Shipping exists at Order level, so it needs to be
+       * allocated across the order items.
+       */
 
       BigDecimal shippingAmount = calculateShippingAllocation(
               order,
-              orderItem
+              grossAmount,
+              orderSubtotal
           );
+
+      /*
+       * Benkih marketplace commission.
+       */
 
       BigDecimal platformFee = calculatePlatformFee(grossAmount);
 
-      BigDecimal paymentFee = calculatePaymentFee(
+      /*
+       * Paystack/payment processor fee exists at Payment level,
+       * so it needs to be allocated across the order items.
+       */
+
+      BigDecimal processorFee = calculatePaymentFee(
               grossAmount,
-              subtotal,
+              orderSubtotal,
               payment
           );
+      /*
+       * Seller's allocated amount.
+       *
+       * Tax is tracked separately because it is not necessarily
+       * seller revenue.
+       *
+       * Shipping is currently included because the existing
+       * allocation model treats allocated shipping as belonging
+       * to the business. If Benkih later owns the logistics
+       * revenue/cost separately, this should be adjusted.
+       */
 
       BigDecimal netAmount = calculateNetAmount(
               grossAmount,
               discountAmount,
-              shippingAmount,
+//              shippingAmount,
               platformFee,
-              paymentFee
+              processorFee
           );
 
       Allocation allocation = new Allocation();
-
       allocation.setPayment(payment);
       allocation.setOrderItem(orderItem);
       allocation.setBusiness(orderItem.getBusiness());
-
       allocation.setGrossAmount(grossAmount);
       allocation.setDiscountAmount(discountAmount);
       allocation.setTaxAmount(taxAmount);
       allocation.setShippingAmount(shippingAmount);
-
       allocation.setPlatformFee(platformFee);
-      allocation.setPaymentFee(paymentFee);
-
+      allocation.setPaymentFee(processorFee);
       allocation.setRefundAmount(BigDecimal.ZERO);
       allocation.setNetAmount(netAmount);
-
       allocation.setCurrency(order.getCurrency());
 
       allocationRepository.save(allocation);
+
+      log.info(
+          "Created allocation for payment={}, order={}, orderItem={}, business={}, gross={}, discount={}, tax={}, shipping={}, platformFee={}, processorFee={}, net={}",
+          payment.getReference(),
+          order.getOrderNumber(),
+          orderItem.getSlug(),
+          orderItem.getBusiness().getSlug(),
+          grossAmount,
+          discountAmount,
+          taxAmount,
+          shippingAmount,
+          platformFee,
+          processorFee,
+          netAmount
+      );
     }
   }
 
   private BigDecimal calculateNetAmount(
       BigDecimal grossAmount,
       BigDecimal discountAmount,
-      BigDecimal shippingAmount,
+//      BigDecimal shippingAmount,
       BigDecimal platformFee,
       BigDecimal paymentFee
   ) {
@@ -107,7 +170,7 @@ public class AllocationService implements IAllocationService{
         .subtract(discountAmount)
         .subtract(platformFee)
         .subtract(paymentFee)
-        .add(shippingAmount)
+//        .add(shippingAmount)
         .setScale(2, RoundingMode.HALF_UP);
   }
 
@@ -129,13 +192,15 @@ public class AllocationService implements IAllocationService{
       BigDecimal orderSubtotal,
       Payment payment
   ) {
-    if (payment.getProcessorFee() == null ||
-        payment.getProcessorFee().compareTo(BigDecimal.ZERO) <= 0) {
-      return BigDecimal.ZERO;
+    BigDecimal processorFee = defaultZero(payment.getProcessorFee());
+
+    if (processorFee.compareTo(BigDecimal.ZERO) <= 0) {
+      return BigDecimal.ZERO.setScale(2);
     }
 
-    if (orderSubtotal.compareTo(BigDecimal.ZERO) <= 0) {
-      return BigDecimal.ZERO;
+    if (orderSubtotal == null ||
+        orderSubtotal.compareTo(BigDecimal.ZERO) <= 0) {
+      return BigDecimal.ZERO.setScale(2);
     }
 
     BigDecimal ratio =
@@ -145,35 +210,42 @@ public class AllocationService implements IAllocationService{
             RoundingMode.HALF_UP
         );
 
-    return payment.getProcessorFee()
+    return processorFee
         .multiply(ratio)
         .setScale(2, RoundingMode.HALF_UP);
   }
 
   private BigDecimal calculateShippingAllocation(
       Order order,
-      OrderItem orderItem
+      BigDecimal grossAmount,
+      BigDecimal orderSubtotal
   ) {
-    if (order.getShippingFee() == null ||
-        order.getShippingFee().compareTo(BigDecimal.ZERO) <= 0) {
-      return BigDecimal.ZERO;
+
+    BigDecimal shippingFee = defaultZero(order.getShippingFee());
+
+    if (shippingFee.compareTo(BigDecimal.ZERO) <= 0) {
+      return BigDecimal.ZERO.setScale(2);
     }
 
-    BigDecimal itemGross =
-        orderItem.getPrice()
-            .multiply(
-                BigDecimal.valueOf(orderItem.getQuantity())
-            );
+    if (orderSubtotal == null ||
+        orderSubtotal.compareTo(BigDecimal.ZERO) <= 0) {
+      return BigDecimal.ZERO.setScale(2);
+    }
 
-    BigDecimal ratio =
-        itemGross.divide(
-            order.getSubTotal(),
+    BigDecimal ratio = grossAmount.divide(
+            orderSubtotal,
             10,
             RoundingMode.HALF_UP
         );
 
-    return order.getShippingFee()
+    return shippingFee
         .multiply(ratio)
         .setScale(2, RoundingMode.HALF_UP);
+  }
+
+  private BigDecimal defaultZero(BigDecimal value) {
+    return value != null
+        ? value
+        : BigDecimal.ZERO.setScale(2);
   }
 }

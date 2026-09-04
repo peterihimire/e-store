@@ -505,7 +505,7 @@ public class OrderService implements IOrderService{
 
     for (OrderItem item : order.getOrderItems()) {
       inventoryService.fulfillReservation(
-          item.getProduct().getSlug(),
+          item.getVariant().getSlug(),
           item.getQuantity()
       );
     }

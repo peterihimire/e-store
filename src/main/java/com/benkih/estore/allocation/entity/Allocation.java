@@ -19,7 +19,15 @@ import java.math.BigDecimal;
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name = "allocations")
+@Table(
+    name = "allocations",
+    uniqueConstraints = {
+        @UniqueConstraint(
+            name = "uk_allocation_payment_order_item",
+            columnNames = {"payment_id", "order_item_id"}
+        )
+    }
+)
 public class Allocation extends AuditableEntity {
 
   @ManyToOne(fetch = FetchType.LAZY)
