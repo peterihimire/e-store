@@ -1,0 +1,27 @@
+package com.benkih.estore.ledger.enums;
+
+public enum LedgerTransactionType {
+
+  PAYMENT_RECEIVED,
+
+  ALLOCATION_POSTED,
+
+  SETTLEMENT_RELEASE,
+
+  RESERVE_HOLD,
+  RESERVE_RELEASE,
+
+  REFUND,
+
+  PLATFORM_FEE,
+  PROCESSOR_FEE,
+
+  PAYOUT_INITIATED,
+  PAYOUT_COMPLETED,
+  PAYOUT_FAILED,
+
+  CHARGEBACK,
+
+  ADJUSTMENT,
+  REVERSAL
+}

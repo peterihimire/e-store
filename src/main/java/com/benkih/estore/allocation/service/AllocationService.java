@@ -77,13 +77,12 @@ public class AllocationService implements IAllocationService{
        * Tax is already calculated at OrderItem level.
        * Do NOT redistribute Order.taxAmount here.
        */
-
       BigDecimal taxAmount = defaultZero(orderItem.getTaxAmount());
+
       /*
        * Shipping exists at Order level, so it needs to be
        * allocated across the order items.
        */
-
       BigDecimal shippingAmount = calculateShippingAllocation(
               order,
               grossAmount,
@@ -93,19 +92,18 @@ public class AllocationService implements IAllocationService{
       /*
        * Benkih marketplace commission.
        */
-
       BigDecimal platformFee = calculatePlatformFee(grossAmount);
 
       /*
        * Paystack/payment processor fee exists at Payment level,
        * so it needs to be allocated across the order items.
        */
-
       BigDecimal processorFee = calculatePaymentFee(
               grossAmount,
               orderSubtotal,
               payment
           );
+
       /*
        * Seller's allocated amount.
        *
@@ -117,7 +115,6 @@ public class AllocationService implements IAllocationService{
        * to the business. If Benkih later owns the logistics
        * revenue/cost separately, this should be adjusted.
        */
-
       BigDecimal netAmount = calculateNetAmount(
               grossAmount,
               discountAmount,

@@ -1,0 +1,17 @@
+package com.benkih.estore.ledger.enums;
+
+public enum LedgerEntryType {
+
+  SELLER_PENDING,
+  SELLER_AVAILABLE,
+  SELLER_RESERVED,
+
+  PLATFORM_REVENUE,
+  PAYMENT_PROCESSING_FEE,
+  SHIPPING_REVENUE,
+
+  TAX_PAYABLE,
+  REFUND_PAYABLE,
+
+  PAYOUT_PROCESSING
+}
