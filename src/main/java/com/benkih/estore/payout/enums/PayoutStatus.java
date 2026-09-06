@@ -1,7 +1,7 @@
 package com.benkih.estore.payout.enums;
 
 public enum PayoutStatus {
-  PENDING,
+  REQUESTED,
   PROCESSING,
   SUCCESS,
   FAILED,

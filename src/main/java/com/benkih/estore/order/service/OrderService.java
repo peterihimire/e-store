@@ -106,7 +106,8 @@ public class OrderService implements IOrderService{
         userSlug
     );
 
-    BigDecimal discountAmount = discountQuote.getAmount();
+//    BigDecimal discountAmount = discountQuote.getAmount();
+    BigDecimal discountAmount = discountQuote.amount();
 
     TaxQuote taxQuote = taxService.quote(
         items,
@@ -114,7 +115,8 @@ public class OrderService implements IOrderService{
         order.getShippingAddress()
     );
 
-    BigDecimal taxAmount = taxQuote.getAmount();
+//    BigDecimal taxAmount = taxQuote.getAmount();
+    BigDecimal taxAmount = taxQuote.amount();
 
     ShippingQuote shippingQuote = shippingService.quote(
         cart,
@@ -122,7 +124,8 @@ public class OrderService implements IOrderService{
         deliveryMethod
     );
 
-    BigDecimal shippingAmount = shippingQuote.getAmount();
+//    BigDecimal shippingAmount = shippingQuote.getAmount();
+    BigDecimal shippingAmount = shippingQuote.amount();
 
     BigDecimal totalAmount = calculateTotal(
         subtotal,

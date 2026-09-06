@@ -14,6 +14,8 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -93,18 +95,40 @@ public class Payout extends AuditableEntity {
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false, length = 20)
-  private PayoutStatus status = PayoutStatus.PENDING;
+  private PayoutStatus status = PayoutStatus.REQUESTED;
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false, length = 3)
   private CurrencyCode currency = CurrencyCode.NGN;
 
+  @Column(
+      name = "provider",
+      length = 50
+  )
+  private String provider;
+
   @Column(name = "provider_reference", unique = true)
   private String providerReference;
+
+  @Column(
+      nullable = false,
+      unique = true,
+      length = 100
+  )
+  private String idempotencyKey;
 
   @Column(name = "failure_reason", length = 500)
   private String failureReason;
 
+  private Instant requestedAt;
+
   @Column(name = "processed_at")
   private Instant processedAt;
+
+  @OneToMany(
+      mappedBy = "payout",
+      cascade = CascadeType.ALL,
+      orphanRemoval = true
+  )
+  private List<PayoutItem> items = new ArrayList<>();
 }

@@ -40,9 +40,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class LedgerAccount extends AuditableEntity {
 
-  /**
-   * Null means this is a platform/system account.
-   */
+// Null means this is a platform/system account.
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "business_id")
   private Business business;
