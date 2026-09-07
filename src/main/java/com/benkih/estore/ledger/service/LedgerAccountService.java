@@ -21,8 +21,7 @@ public class LedgerAccountService {
       CurrencyCode currency
   ) {
 
-    return repository
-        .findByBusinessIdAndAccountTypeAndCurrency(
+    return repository.findByBusinessIdAndAccountTypeAndCurrency(
             business.getId(),
             type,
             currency
@@ -40,13 +39,13 @@ public class LedgerAccountService {
         });
   }
 
+
   public LedgerAccount getOrCreatePlatformAccount(
       LedgerAccountType type,
       CurrencyCode currency
   ) {
 
-    return repository
-        .findByBusinessIsNullAndAccountTypeAndCurrency(
+    return repository.findByBusinessIsNullAndAccountTypeAndCurrency(
             type,
             currency
         )

@@ -16,7 +16,7 @@ public interface EmailVerificationRepository extends JpaRepository<EmailVerifica
   @Modifying
   @Query("""
         update EmailVerification ev
-        set ev.usedAt = CURRENT_TIMESTAMP
+        set ev.usedAt = CURRENT_INSTANT
         where ev.user.slug = :userSlug
         and ev.usedAt is null
     """)

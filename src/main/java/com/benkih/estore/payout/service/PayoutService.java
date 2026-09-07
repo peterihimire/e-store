@@ -106,7 +106,7 @@ public class PayoutService {
 
             new LedgerPosting(
                 available,
-                LedgerEntryType.SELLER_AVAILABLE,
+//                LedgerEntryType.SELLER_AVAILABLE,
                 LedgerEntryDirection.DEBIT,
                 amount,
                 null,
@@ -117,7 +117,7 @@ public class PayoutService {
 
             new LedgerPosting(
                 payoutProcessing,
-                LedgerEntryType.PAYOUT_PROCESSING,
+//                LedgerEntryType.PAYOUT_PROCESSING,
                 LedgerEntryDirection.CREDIT,
                 amount,
                 null,
@@ -161,8 +161,7 @@ public class PayoutService {
     BigDecimal amount =
         payout.getNetAmount();
 
-    LedgerAccount payoutProcessing =
-        ledgerAccountService.getOrCreatePlatformAccount(
+    LedgerAccount payoutProcessing = ledgerAccountService.getOrCreatePlatformAccount(
             LedgerAccountType.PAYOUT_PROCESSING,
             currency
         );
@@ -171,8 +170,7 @@ public class PayoutService {
      * In the complete ledger you would have a
      * platform cash/bank account as the other side.
      */
-    LedgerAccount bank =
-        ledgerAccountService.getOrCreatePlatformAccount(
+    LedgerAccount bank = ledgerAccountService.getOrCreatePlatformAccount(
             LedgerAccountType.PLATFORM_REVENUE,
             currency
         );
@@ -186,7 +184,7 @@ public class PayoutService {
 
             new LedgerPosting(
                 payoutProcessing,
-                LedgerEntryType.PAYOUT_PROCESSING,
+//                LedgerEntryType.PAYOUT_PROCESSING,
                 LedgerEntryDirection.DEBIT,
                 amount,
                 null,
@@ -197,7 +195,7 @@ public class PayoutService {
 
             new LedgerPosting(
                 bank,
-                LedgerEntryType.PLATFORM_REVENUE,
+//                LedgerEntryType.PLATFORM_REVENUE,
                 LedgerEntryDirection.CREDIT,
                 amount,
                 null,

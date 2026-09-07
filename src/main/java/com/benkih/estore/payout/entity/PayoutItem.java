@@ -1,6 +1,7 @@
 package com.benkih.estore.payout.entity;
 
 import com.benkih.estore.business.entity.Business;
+import com.benkih.estore.common.entity.AuditableEntity;
 import com.benkih.estore.common.entity.BaseEntity;
 import com.benkih.estore.common.enums.CurrencyCode;
 import com.benkih.estore.settlement.entity.Settlement;

@@ -40,10 +40,6 @@ public class Payout extends AuditableEntity {
   private Business business;
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
-  @JoinColumn(name = "settlement_id", nullable = false)
-  private Settlement settlement;
-
-  @ManyToOne(fetch = FetchType.LAZY, optional = false)
 
   @JoinColumn(name = "bank_account_id", nullable = false)
 

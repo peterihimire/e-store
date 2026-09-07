@@ -90,9 +90,6 @@ public class BusinessBalance extends BaseEntity {
   )
   private BigDecimal lifetimePayouts = BigDecimal.ZERO;
 
-  @Column(nullable = false)
-  private Instant updatedAt;
-
   @Version
   private Long version;// for optimistic locking
 }

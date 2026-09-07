@@ -19,7 +19,6 @@ import java.util.List;
 @RequiredArgsConstructor
 @Transactional
 public class LedgerService implements ILedgerService{
-
   private final LedgerTransactionRepository transactionRepository;
   private final LedgerAccountRepository accountRepository;
 
@@ -32,9 +31,7 @@ public class LedgerService implements ILedgerService{
   ) {
 
     if (postings == null || postings.size() < 2) {
-      throw new IllegalArgumentException(
-          "A ledger transaction must contain at least two postings"
-      );
+      throw new IllegalArgumentException("A ledger transaction must contain at least two postings");
     }
 
     BigDecimal totalDebit = postings.stream()
@@ -67,8 +64,7 @@ public class LedgerService implements ILedgerService{
       );
     }
 
-    LedgerTransaction transaction =
-        new LedgerTransaction();
+    LedgerTransaction transaction = new LedgerTransaction();
 
     transaction.setType(type);
     transaction.setCurrency(currency);
@@ -86,7 +82,7 @@ public class LedgerService implements ILedgerService{
       entry.setBusiness(
           posting.account().getBusiness()
       );
-      entry.setType(posting.entryType());
+//      entry.setType(posting.entryType());
       entry.setDirection(posting.direction());
       entry.setAmount(posting.amount());
       entry.setCurrency(currency);

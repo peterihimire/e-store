@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 
 public record LedgerPosting(
     LedgerAccount account,
-    LedgerEntryType entryType,
+//    LedgerEntryType entryType,
     LedgerEntryDirection direction,
     BigDecimal amount,
     Allocation allocation,
@@ -28,7 +28,7 @@ public record LedgerPosting(
   ) {
     this(
         account,
-        entryType,
+//        entryType,
         direction,
         amount,
         null,

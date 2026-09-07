@@ -146,7 +146,7 @@ public class SettlementService {
 
             new LedgerPosting(
                 pending,
-                LedgerEntryType.SELLER_PENDING,
+//                LedgerEntryType.SELLER_PENDING,
                 LedgerEntryDirection.DEBIT,
                 amount,
                 null,
@@ -157,7 +157,7 @@ public class SettlementService {
 
             new LedgerPosting(
                 available,
-                LedgerEntryType.SELLER_AVAILABLE,
+//                LedgerEntryType.SELLER_AVAILABLE,
                 LedgerEntryDirection.CREDIT,
                 amount,
                 null,
@@ -184,6 +184,4 @@ public class SettlementService {
 
     settlementRepository.save(settlement);
   }
-
-
 }

@@ -87,14 +87,6 @@ public class LedgerEntry extends AuditableEntity {
 
   @Enumerated(EnumType.STRING)
   @Column(
-      name = "entry_type",
-      nullable = false,
-      length = 50
-  )
-  private LedgerEntryType type;
-
-  @Enumerated(EnumType.STRING)
-  @Column(
       nullable = false,
       length = 10
   )
