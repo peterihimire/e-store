@@ -62,7 +62,10 @@ public enum LedgerTransactionType {
 
   ADJUSTMENT,
 
-  REVERSAL
+  REVERSAL,
+  SHIPPING_CHARGE,
+  TAX_COLLECTED,
+  PROCESSOR_FEE_RECOVERY
 }
 
 //public enum LedgerTransactionType {

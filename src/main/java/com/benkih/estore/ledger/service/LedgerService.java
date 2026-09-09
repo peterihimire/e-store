@@ -525,7 +525,7 @@ public class LedgerService implements ILedgerService{
         );
 
     post(
-        LedgerTransactionType.ADJUSTMENT, // or create TAX_COLLECTED
+        LedgerTransactionType.TAX_COLLECTED, // or create TAX_COLLECTED
         currency,
         reference,
         "Tax collected for payment " + payment.getReference(),
@@ -604,7 +604,7 @@ public class LedgerService implements ILedgerService{
         );
 
     post(
-        LedgerTransactionType.ADJUSTMENT, // or SHIPPING_REVENUE
+        LedgerTransactionType.SHIPPING_CHARGE, // or SHIPPING_REVENUE
         currency,
         reference,
         "Shipping collected for payment " + payment.getReference(),

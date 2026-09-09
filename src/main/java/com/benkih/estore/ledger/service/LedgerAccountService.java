@@ -28,8 +28,7 @@ public class LedgerAccountService implements ILedgerAccountService{
         )
         .orElseGet(() -> {
 
-          LedgerAccount account =
-              new LedgerAccount(
+          LedgerAccount account = new LedgerAccount(
                   business,
                   type,
                   currency
@@ -50,9 +49,7 @@ public class LedgerAccountService implements ILedgerAccountService{
             currency
         )
         .orElseGet(() -> {
-
-          LedgerAccount account =
-              new LedgerAccount(
+          LedgerAccount account = new LedgerAccount(
                   null,
                   type,
                   currency
