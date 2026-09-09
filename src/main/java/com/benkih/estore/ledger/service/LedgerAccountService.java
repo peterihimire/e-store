@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class LedgerAccountService {
+public class LedgerAccountService implements ILedgerAccountService{
   private final LedgerAccountRepository repository;
 
   public LedgerAccount getOrCreateSellerAccount(

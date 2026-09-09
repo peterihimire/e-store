@@ -25,7 +25,7 @@ public class AllocationService implements IAllocationService{
 
   @Transactional
   @Override
-  public void allocatePayment(Payment payment) {
+  public List<Allocation> allocatePayment(Payment payment) {
     if (payment == null) {
       throw new IllegalArgumentException("Payment is required");
     }
@@ -36,7 +36,7 @@ public class AllocationService implements IAllocationService{
           "Allocations already exist for payment {}. Skipping allocation.",
           payment.getReference()
       );
-      return;
+      return allocationRepository.findByPaymentId(payment.getId());
     }
 
     Order order = payment.getOrder();
@@ -51,13 +51,15 @@ public class AllocationService implements IAllocationService{
           "Order {} has no order items. Nothing to allocate.",
           order.getOrderNumber()
       );
-      return;
+      return List.of();
     }
 
     BigDecimal orderSubtotal = defaultZero(order.getSubTotal());
     if (orderSubtotal.compareTo(BigDecimal.ZERO) <= 0) {
       throw new IllegalArgumentException("Order subtotal must be greater than zero");
     }
+
+    List<Allocation> allocations = new java.util.ArrayList<>();
 
     for (OrderItem orderItem : orderItems) {
       /*
@@ -92,7 +94,7 @@ public class AllocationService implements IAllocationService{
       /*
        * Benkih marketplace commission.
        */
-      BigDecimal platformFee = calculatePlatformFee(grossAmount);
+      BigDecimal platformFee = calculatePlatformFee(grossAmount, discountAmount);
 
       /*
        * Paystack/payment processor fee exists at Payment level,
@@ -124,6 +126,7 @@ public class AllocationService implements IAllocationService{
           );
 
       Allocation allocation = new Allocation();
+
       allocation.setPayment(payment);
       allocation.setOrderItem(orderItem);
       allocation.setBusiness(orderItem.getBusiness());
@@ -137,7 +140,8 @@ public class AllocationService implements IAllocationService{
       allocation.setNetAmount(netAmount);
       allocation.setCurrency(order.getCurrency());
 
-      allocationRepository.save(allocation);
+      Allocation savedAllocation =  allocationRepository.save(allocation);
+      allocations.add(savedAllocation);
 
       log.info(
           "Created allocation for payment={}, order={}, orderItem={}, business={}, gross={}, discount={}, tax={}, shipping={}, platformFee={}, processorFee={}, net={}",
@@ -154,7 +158,9 @@ public class AllocationService implements IAllocationService{
           netAmount
       );
     }
+    return  allocations;
   }
+
 
   private BigDecimal calculateNetAmount(
       BigDecimal grossAmount,
@@ -171,15 +177,22 @@ public class AllocationService implements IAllocationService{
         .setScale(2, RoundingMode.HALF_UP);
   }
 
+
   private BigDecimal calculatePlatformFee(
-      BigDecimal grossAmount
+      BigDecimal grossAmount,
+      BigDecimal discountAmount
   ) {
-    if (grossAmount == null ||
-        grossAmount.compareTo(BigDecimal.ZERO) <= 0) {
-      return BigDecimal.ZERO;
+    grossAmount = defaultZero(grossAmount);
+    discountAmount = defaultZero(discountAmount);
+
+    BigDecimal netMerchandiseAmount =
+        grossAmount.subtract(discountAmount);
+
+    if (netMerchandiseAmount.compareTo(BigDecimal.ZERO) <= 0) {
+      return BigDecimal.ZERO.setScale(2);
     }
 
-    return grossAmount
+    return netMerchandiseAmount
         .multiply(PLATFORM_FEE_RATE)
         .setScale(2, RoundingMode.HALF_UP);
   }

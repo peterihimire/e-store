@@ -29,7 +29,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class PayoutService {
+public class PayoutService implements IPayoutService{
 
   private final PayoutRepository payoutRepository;
   private final LedgerService ledgerService;

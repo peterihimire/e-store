@@ -102,27 +102,18 @@ public class SettlementService {
     return settlementRepository.save(settlement);
   }
 
-  public void releaseSettlement(
-      Settlement settlement
-  ) {
 
-    if (
-        settlement.getStatus()
-            != SettlementStatus.PROCESSING
-    ) {
-      throw new IllegalStateException(
-          "Settlement is not processing"
-      );
+  public void releaseSettlement(Settlement settlement) {
+
+    if (settlement.getStatus() != SettlementStatus.PROCESSING) {
+      throw new IllegalStateException("Settlement is not processing");
     }
 
-    Business business =
-        settlement.getBusiness();
+    Business business = settlement.getBusiness();
 
-    CurrencyCode currency =
-        settlement.getCurrency();
+    CurrencyCode currency = settlement.getCurrency();
 
-    BigDecimal amount =
-        settlement.getNetAmount();
+    BigDecimal amount = settlement.getNetAmount();
 
     LedgerAccount pending = ledgerAccountService.getOrCreateSellerAccount(
             business,
@@ -130,8 +121,7 @@ public class SettlementService {
             currency
         );
 
-    LedgerAccount available =
-        ledgerAccountService.getOrCreateSellerAccount(
+    LedgerAccount available = ledgerAccountService.getOrCreateSellerAccount(
             business,
             LedgerAccountType.SELLER_AVAILABLE,
             currency
@@ -174,14 +164,19 @@ public class SettlementService {
         amount
     );
 
-    settlement.setStatus(
-        SettlementStatus.SETTLED
-    );
+    settlement.setStatus(SettlementStatus.SETTLED);
 
-    settlement.setSettledAt(
-        Instant.now()
-    );
+    settlement.setSettledAt(Instant.now());
 
     settlementRepository.save(settlement);
   }
 }
+// processing order, marks orders , creates allocation, ledgers and business
+// balance
+
+// cron that runs to check if product sold to a customer has reach return window
+
+// create settlement for the business and once all requirements has been met,
+// then settlement is moved from pending to available
+
+// the seller can withdraw , which is a seller can create payout

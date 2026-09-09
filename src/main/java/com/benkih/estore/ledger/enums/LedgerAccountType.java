@@ -23,6 +23,7 @@ public enum LedgerAccountType {
   // LIABILITIES
   // =========================
 
+  CUSTOMER_PAYMENT_LIABILITY,
   /**
    * Money owed to sellers but not yet eligible for release.
    */

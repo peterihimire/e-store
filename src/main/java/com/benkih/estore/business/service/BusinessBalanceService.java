@@ -1,5 +1,6 @@
 package com.benkih.estore.business.service;
 
+import com.benkih.estore.allocation.entity.Allocation;
 import com.benkih.estore.business.entity.Business;
 import com.benkih.estore.business.entity.BusinessBalance;
 import com.benkih.estore.business.repository.BusinessBalanceRepository;
@@ -10,11 +11,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class BusinessBalanceService {
+public class BusinessBalanceService implements IBusinessBalanceService{
   private final BusinessBalanceRepository repository;
 
   public BusinessBalance getOrCreate(
@@ -109,5 +111,41 @@ public class BusinessBalanceService {
     balance.setUpdatedAt(Instant.now());
 
     repository.save(balance);
+  }
+
+  public void recordAllocations(List<Allocation> allocations) {
+
+    if (allocations == null || allocations.isEmpty()) {
+      return;
+    }
+
+    for (Allocation allocation : allocations) {
+
+      if (allocation == null) {
+        continue;
+      }
+
+      Business business = allocation.getBusiness();
+
+      if (business == null) {
+        throw new IllegalStateException(
+            "Allocation must have a business"
+        );
+      }
+
+      BigDecimal amount = allocation.getNetAmount();
+
+      if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+        continue;
+      }
+
+      CurrencyCode currency = allocation.getCurrency();
+
+      increasePending(
+          business,
+          currency,
+          amount
+      );
+    }
   }
 }

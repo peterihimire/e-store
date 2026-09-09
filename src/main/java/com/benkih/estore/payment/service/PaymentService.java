@@ -1,10 +1,14 @@
 package com.benkih.estore.payment.service;
 
+import com.benkih.estore.allocation.entity.Allocation;
 import com.benkih.estore.allocation.service.AllocationService;
 import com.benkih.estore.allocation.service.IAllocationService;
 import com.benkih.estore.audit.service.ApiLogService;
+import com.benkih.estore.business.service.BusinessBalanceService;
 import com.benkih.estore.common.enums.*;
 import com.benkih.estore.common.exceptions.*;
+import com.benkih.estore.ledger.service.ILedgerService;
+import com.benkih.estore.ledger.service.LedgerService;
 import com.benkih.estore.notification.INotificationService;
 import com.benkih.estore.order.service.OrderService;
 import com.benkih.estore.payment.dto.request.CheckoutRequest;
@@ -35,6 +39,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -62,6 +67,8 @@ public class PaymentService implements IPaymentService {
   private final INotificationService notificationService;
   private final IRefundService refundService;
   private final IAllocationService allocationService;
+  private final ILedgerService ledgerService;
+  private final BusinessBalanceService businessBalanceService;
 
 
   @Override
@@ -459,7 +466,15 @@ private void processOrder(Payment payment) {
 
   Order order = payment.getOrder();
   orderService.processPaidOrder(order);
-  allocationService.allocatePayment(payment);
+  List<Allocation> allocations = allocationService.allocatePayment(payment);
+
+  ledgerService.recordPaymentReceived(payment);
+  ledgerService.recordAllocations(allocations);
+  ledgerService.recordPlatformFees(allocations);
+  ledgerService.recordProcessorFee(payment);
+  ledgerService.recordShipping(allocations);
+  ledgerService.recordTax(allocations);
+  businessBalanceService.recordAllocations(allocations);
 }
 
   private void postPaymentProcessing(Payment payment) {
