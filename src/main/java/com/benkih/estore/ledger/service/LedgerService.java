@@ -552,6 +552,7 @@ public class LedgerService implements ILedgerService{
     );
   }
 
+
   @Transactional
   public void recordShipping(List<Allocation> allocations) {
 
@@ -567,8 +568,7 @@ public class LedgerService implements ILedgerService{
       );
     }
 
-    CurrencyCode currency =
-        payment.getOrder().getCurrency();
+    CurrencyCode currency = payment.getOrder().getCurrency();
 
     String reference =
         "SHIPPING-" + payment.getReference();
@@ -626,6 +626,89 @@ public class LedgerService implements ILedgerService{
                 null,
                 null,
                 "Shipping revenue"
+            )
+        )
+    );
+  }
+
+  @Transactional
+  public void recordProcessorFeeRecovery(Payment payment) {
+
+    if (payment == null) {
+      throw new IllegalArgumentException(
+          "Payment is required"
+      );
+    }
+
+    if (payment.getOrder() == null) {
+      throw new IllegalArgumentException(
+          "Payment must be associated with an order"
+      );
+    }
+
+    BigDecimal processorFee =
+        payment.getProcessorFee();
+
+    if (processorFee == null ||
+        processorFee.compareTo(BigDecimal.ZERO) <= 0) {
+      return;
+    }
+
+    CurrencyCode currency =
+        payment.getOrder().getCurrency();
+
+    String reference =
+        "PROCESSOR-FEE-RECOVERY-" +
+            payment.getReference();
+
+    if (transactionRepository.existsByReference(reference)) {
+
+      log.info(
+          "Processor fee recovery already exists for payment {}",
+          payment.getReference()
+      );
+
+      return;
+    }
+
+    LedgerAccount customerPaymentLiability =
+        ledgerAccountService.getOrCreatePlatformAccount(
+            LedgerAccountType.CUSTOMER_PAYMENT_LIABILITY,
+            currency
+        );
+
+    LedgerAccount processorFeeRecovery =
+        ledgerAccountService.getOrCreatePlatformAccount(
+            LedgerAccountType.PROCESSOR_FEE_REIMBURSEMENT,
+            currency
+        );
+ 
+    post(
+        LedgerTransactionType.PROCESSOR_FEE_RECOVERY,
+        currency,
+        reference,
+        "Processor fee recovered from seller for payment "
+            + payment.getReference(),
+        List.of(
+
+            new LedgerPosting(
+                customerPaymentLiability,
+                LedgerEntryDirection.DEBIT,
+                processorFee,
+                null,
+                null,
+                null,
+                "Processor fee recovered from seller"
+            ),
+
+            new LedgerPosting(
+                processorFeeRecovery,
+                LedgerEntryDirection.CREDIT,
+                processorFee,
+                null,
+                null,
+                null,
+                "Seller processor fee recovery"
             )
         )
     );

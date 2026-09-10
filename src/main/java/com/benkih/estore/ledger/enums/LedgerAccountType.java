@@ -71,6 +71,8 @@ public enum LedgerAccountType {
    */
   SHIPPING_REVENUE,
 
+  PROCESSOR_FEE_REIMBURSEMENT,
+
 
   // =========================
   // EXPENSES

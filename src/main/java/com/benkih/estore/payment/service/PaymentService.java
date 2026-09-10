@@ -472,6 +472,7 @@ private void processOrder(Payment payment) {
   ledgerService.recordAllocations(allocations);
   ledgerService.recordPlatformFees(allocations);
   ledgerService.recordProcessorFee(payment);
+  ledgerService.recordProcessorFeeRecovery(payment);
   ledgerService.recordShipping(allocations);
   ledgerService.recordTax(allocations);
   businessBalanceService.recordAllocations(allocations);

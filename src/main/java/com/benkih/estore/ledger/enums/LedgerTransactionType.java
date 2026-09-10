@@ -10,6 +10,11 @@ public enum LedgerTransactionType {
 
   PROCESSOR_FEE,
 
+  PROCESSOR_FEE_RECOVERY,
+
+  SHIPPING_CHARGE,
+
+  TAX_COLLECTED,
 
   // =========================
   // SELLER ALLOCATION
@@ -18,7 +23,6 @@ public enum LedgerTransactionType {
   ALLOCATION_POSTED,
 
   PLATFORM_FEE,
-
 
   // =========================
   // SETTLEMENT
@@ -63,9 +67,7 @@ public enum LedgerTransactionType {
   ADJUSTMENT,
 
   REVERSAL,
-  SHIPPING_CHARGE,
-  TAX_COLLECTED,
-  PROCESSOR_FEE_RECOVERY
+
 }
 
 //public enum LedgerTransactionType {

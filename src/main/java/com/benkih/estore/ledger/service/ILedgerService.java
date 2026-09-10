@@ -24,6 +24,8 @@ public interface ILedgerService {
 
   void recordProcessorFee(Payment payment);
 
+  void recordProcessorFeeRecovery(Payment payment);
+
   void recordTax(List<Allocation> allocations);
 
   void recordShipping(List<Allocation> allocations);
