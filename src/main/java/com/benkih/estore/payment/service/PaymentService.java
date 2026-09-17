@@ -467,7 +467,6 @@ private void processOrder(Payment payment) {
   Order order = payment.getOrder();
   orderService.processPaidOrder(order);
   List<Allocation> allocations = allocationService.allocatePayment(payment);
-
   ledgerService.recordPaymentReceived(payment);
   ledgerService.recordAllocations(allocations);
   ledgerService.recordPlatformFees(allocations);

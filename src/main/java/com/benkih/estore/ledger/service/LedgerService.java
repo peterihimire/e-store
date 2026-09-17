@@ -109,6 +109,7 @@ public class LedgerService implements ILedgerService{
     return transactionRepository.save(transaction);
   }
 
+  
   @Transactional
   public void recordPaymentReceived(Payment payment) {
 
@@ -399,6 +400,7 @@ public class LedgerService implements ILedgerService{
     );
   }
 
+
   @Transactional
   public void recordProcessorFee(Payment payment) {
 
@@ -419,11 +421,9 @@ public class LedgerService implements ILedgerService{
       return;
     }
 
-    CurrencyCode currency =
-        payment.getOrder().getCurrency();
+    CurrencyCode currency = payment.getOrder().getCurrency();
 
-    String reference =
-        "PROCESSOR-FEE-" + payment.getReference();
+    String reference = "PROCESSOR-FEE-" + payment.getReference();
 
     if (transactionRepository.existsByReference(reference)) {
       log.info(
@@ -473,6 +473,7 @@ public class LedgerService implements ILedgerService{
     );
   }
 
+
   @Transactional
   public void recordTax(List<Allocation> allocations) {
 
@@ -488,11 +489,9 @@ public class LedgerService implements ILedgerService{
       );
     }
 
-    CurrencyCode currency =
-        payment.getOrder().getCurrency();
+    CurrencyCode currency = payment.getOrder().getCurrency();
 
-    String reference =
-        "TAX-" + payment.getReference();
+    String reference = "TAX-" + payment.getReference();
 
     if (transactionRepository.existsByReference(reference)) {
       log.info(
@@ -563,15 +562,12 @@ public class LedgerService implements ILedgerService{
     Payment payment = allocations.get(0).getPayment();
 
     if (payment == null || payment.getOrder() == null) {
-      throw new IllegalArgumentException(
-          "Allocation must be associated with a payment and order"
-      );
+      throw new IllegalArgumentException("Allocation must be associated with a payment and order");
     }
 
     CurrencyCode currency = payment.getOrder().getCurrency();
 
-    String reference =
-        "SHIPPING-" + payment.getReference();
+    String reference = "SHIPPING-" + payment.getReference();
 
     if (transactionRepository.existsByReference(reference)) {
       log.info(
@@ -631,35 +627,28 @@ public class LedgerService implements ILedgerService{
     );
   }
 
+
   @Transactional
   public void recordProcessorFeeRecovery(Payment payment) {
 
     if (payment == null) {
-      throw new IllegalArgumentException(
-          "Payment is required"
-      );
+      throw new IllegalArgumentException("Payment is required");
     }
 
     if (payment.getOrder() == null) {
-      throw new IllegalArgumentException(
-          "Payment must be associated with an order"
-      );
+      throw new IllegalArgumentException("Payment must be associated with an order");
     }
 
-    BigDecimal processorFee =
-        payment.getProcessorFee();
+    BigDecimal processorFee = payment.getProcessorFee();
 
     if (processorFee == null ||
         processorFee.compareTo(BigDecimal.ZERO) <= 0) {
       return;
     }
 
-    CurrencyCode currency =
-        payment.getOrder().getCurrency();
+    CurrencyCode currency = payment.getOrder().getCurrency();
 
-    String reference =
-        "PROCESSOR-FEE-RECOVERY-" +
-            payment.getReference();
+    String reference = "PROCESSOR-FEE-RECOVERY-" + payment.getReference();
 
     if (transactionRepository.existsByReference(reference)) {
 
@@ -682,7 +671,7 @@ public class LedgerService implements ILedgerService{
             LedgerAccountType.PROCESSOR_FEE_REIMBURSEMENT,
             currency
         );
- 
+
     post(
         LedgerTransactionType.PROCESSOR_FEE_RECOVERY,
         currency,
