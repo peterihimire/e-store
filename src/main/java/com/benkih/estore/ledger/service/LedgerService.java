@@ -31,7 +31,6 @@ import java.util.Objects;
 @Transactional
 public class LedgerService implements ILedgerService{
   private final LedgerTransactionRepository transactionRepository;
-  private final LedgerAccountRepository accountRepository;
   private final LedgerAccountService ledgerAccountService;
 
   public LedgerTransaction post(
@@ -42,40 +41,77 @@ public class LedgerService implements ILedgerService{
       List<LedgerPosting> postings
   ) {
 
+    // BASIC VALIDATION
+    if (type == null) {
+      throw new IllegalArgumentException("Ledger transaction type is required");
+    }
+
+    if (currency == null) {
+      throw new IllegalArgumentException("Currency is required");
+    }
+
+    if (reference == null || reference.isBlank()) {
+      throw new IllegalArgumentException("Ledger transaction reference is required");
+    }
+
     if (postings == null || postings.size() < 2) {
       throw new IllegalArgumentException("A ledger transaction must contain at least two postings");
     }
 
-    BigDecimal totalDebit = postings.stream()
+    // VALIDATE POSTINGS
+    for (LedgerPosting posting : postings) {
+
+      if (posting == null) {
+        throw new IllegalArgumentException("Ledger posting cannot be null");
+      }
+
+      if (posting.account() == null) {
+        throw new IllegalArgumentException("Ledger posting account is required");
+      }
+
+      if (posting.direction() == null) {
+        throw new IllegalArgumentException("Ledger posting direction is required");
+      }
+
+      if (posting.amount() == null || posting.amount().compareTo(BigDecimal.ZERO) <= 0) {
+        throw new IllegalArgumentException("Ledger posting amount must be greater than zero");
+      }
+
+      if (posting.account().getCurrency() != currency) {
+        throw new IllegalStateException("Ledger account currency does not match transaction currency");
+      }
+    }
+
+    // CALCULATE TOTALS
+    BigDecimal totalDebit = postings
+        .stream()
         .filter(p ->
             p.direction() == LedgerEntryDirection.DEBIT
         )
         .map(LedgerPosting::amount)
         .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-    BigDecimal totalCredit = postings.stream()
+    BigDecimal totalCredit = postings
+        .stream()
         .filter(p ->
             p.direction() == LedgerEntryDirection.CREDIT
         )
         .map(LedgerPosting::amount)
         .reduce(BigDecimal.ZERO, BigDecimal::add);
 
+    // BALANCE CHECK
     if (totalDebit.compareTo(totalCredit) != 0) {
       throw new IllegalStateException(
-          "Unbalanced ledger transaction. Debit="
-              + totalDebit
-              + ", Credit="
-              + totalCredit
+          "Unbalanced ledger transaction. Debit=" + totalDebit + ", Credit=" + totalCredit
       );
     }
 
+    // IDEMPOTENCY CHECK
     if (transactionRepository.existsByReference(reference)) {
-      throw new IllegalStateException(
-          "Ledger transaction already exists: "
-              + reference
-      );
+      throw new IllegalStateException("Ledger transaction already exists: " + reference);
     }
 
+    // CREATE TRANSACTION
     LedgerTransaction transaction = new LedgerTransaction();
 
     transaction.setType(type);
@@ -85,15 +121,14 @@ public class LedgerService implements ILedgerService{
     transaction.setTotalDebit(totalDebit);
     transaction.setTotalCredit(totalCredit);
 
+    // CREATE ENTRIES
     for (LedgerPosting posting : postings) {
 
       LedgerEntry entry = new LedgerEntry();
 
       entry.setTransaction(transaction);
       entry.setAccount(posting.account());
-      entry.setBusiness(
-          posting.account().getBusiness()
-      );
+      entry.setBusiness(posting.account().getBusiness());
 //      entry.setType(posting.entryType());
       entry.setDirection(posting.direction());
       entry.setAmount(posting.amount());
@@ -109,7 +144,7 @@ public class LedgerService implements ILedgerService{
     return transactionRepository.save(transaction);
   }
 
-  
+
   @Transactional
   public void recordPaymentReceived(Payment payment) {
 
@@ -351,7 +386,8 @@ public class LedgerService implements ILedgerService{
       return;
     }
 
-    BigDecimal totalPlatformFee = allocations.stream()
+    BigDecimal totalPlatformFee = allocations
+        .stream()
         .map(Allocation::getPlatformFee)
         .filter(Objects::nonNull)
         .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -491,7 +527,7 @@ public class LedgerService implements ILedgerService{
 
     CurrencyCode currency = payment.getOrder().getCurrency();
 
-    String reference = "TAX-" + payment.getReference();
+    String reference = "TAX-COLLECTED-" + payment.getReference();
 
     if (transactionRepository.existsByReference(reference)) {
       log.info(
@@ -595,12 +631,12 @@ public class LedgerService implements ILedgerService{
 
     LedgerAccount shippingRevenue =
         ledgerAccountService.getOrCreatePlatformAccount(
-            LedgerAccountType.SHIPPING_REVENUE,
+            LedgerAccountType.LOGISTICS_PAYABLE,
             currency
         );
 
     post(
-        LedgerTransactionType.SHIPPING_CHARGE, // or SHIPPING_REVENUE
+        LedgerTransactionType.SHIPPING_CHARGE,
         currency,
         reference,
         "Shipping collected for payment " + payment.getReference(),
@@ -621,7 +657,7 @@ public class LedgerService implements ILedgerService{
                 null,
                 null,
                 null,
-                "Shipping revenue"
+                "Amount payable to logistics provider"
             )
         )
     );
@@ -703,3 +739,6 @@ public class LedgerService implements ILedgerService{
     );
   }
 }
+//when logistic company is paid
+//DR  LOGISTICS_PAYABLE             ₦3,500
+//CR  PLATFORM_CASH                 ₦3,500

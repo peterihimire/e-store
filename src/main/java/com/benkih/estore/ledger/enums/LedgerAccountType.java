@@ -37,6 +37,9 @@ public enum LedgerAccountType {
  // Amounts owed to customers because of refunds.
   REFUND_PAYABLE,
 
+// Money collected from customers that must be remitted to logistics providers.
+  LOGISTICS_PAYABLE,
+
   // =========================
   // REVENUE
   // =========================
@@ -44,8 +47,8 @@ public enum LedgerAccountType {
  // Benkih's marketplace/platform commission.
   PLATFORM_REVENUE,
 
-  // shipping amount collected from customers when Benkih is entitled to the shipping revenue.
-  SHIPPING_REVENUE,
+//  // shipping amount collected from customers when Benkih is entitled to the shipping revenue.
+//  SHIPPING_REVENUE,
 
   PROCESSOR_FEE_REIMBURSEMENT,
 
