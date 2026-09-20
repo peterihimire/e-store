@@ -63,7 +63,7 @@ public class OrderController {
         orderData));
   }
 
-  @PreAuthorize("hasRole('ADMIN')")
+  @PreAuthorize("hasAuthority('ORDER_UPDATE')")
   @PatchMapping("/{slug}/status")
   public ResponseEntity<ApiResponse> changeStatus(
       @PathVariable String slug,
