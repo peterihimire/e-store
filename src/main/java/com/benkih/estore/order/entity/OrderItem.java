@@ -9,6 +9,7 @@ import com.benkih.estore.product.entity.Brand;
 import com.benkih.estore.product.entity.Product;
 import com.benkih.estore.product.entity.ProductVariant;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -72,10 +73,29 @@ public class OrderItem extends BaseEntity {
   @JoinColumn(name = "product_id", nullable = false)
   private Product product;
 
-  public OrderItem(int quantity, BigDecimal price, String name,
-                   String sku, Brand brand, CurrencyCode currency, TaxCategory taxCategory, Order order,
-                   Product product, ProductVariant variant, Business business,
-                   BigDecimal subtotal) {
+  @Column(name = "returnable", nullable = false)
+  private boolean returnable;
+
+  @PositiveOrZero
+  @Column(name = "return_window_days", nullable = false)
+  private Integer returnWindowDays;
+
+  public OrderItem(
+      int quantity,
+      BigDecimal price,
+      String name,
+      String sku,
+      Brand brand,
+      CurrencyCode currency,
+      TaxCategory taxCategory,
+      Order order,
+      Product product,
+      ProductVariant variant,
+      boolean returnable,
+      Integer returnWindowDays,
+      Business business,
+      BigDecimal subtotal
+  ) {
     this.quantity = quantity;
     this.price = price;
     this.name = name;
@@ -86,6 +106,8 @@ public class OrderItem extends BaseEntity {
     this.order = order;
     this.product = product;
     this.variant = variant;
+    this.returnable = returnable;
+    this.returnWindowDays = returnWindowDays;
     this.business = business;
     this.subtotal = subtotal;
   }

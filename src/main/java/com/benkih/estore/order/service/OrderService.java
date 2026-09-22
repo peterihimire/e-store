@@ -217,6 +217,8 @@ public class OrderService implements IOrderService{
           order,
           product,
           variant,
+          product.isReturnable(),
+          product.getReturnWindowDays(),
           product.getBusiness(),
           subtotal
       );

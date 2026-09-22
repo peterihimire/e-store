@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -33,8 +34,6 @@ import java.util.List;
 public class SettlementService {
 
   private final SettlementRepository settlementRepository;
-  private final SettlementItemRepository settlementItemRepository;
-  private final AllocationRepository allocationRepository;
   private final LedgerService ledgerService;
   private final LedgerAccountService ledgerAccountService;
   private final BusinessBalanceService balanceService;
@@ -51,10 +50,21 @@ public class SettlementService {
       throw new BadRequestException("No allocations available for settlement");
     }
 
-    BigDecimal total = BigDecimal.ZERO;
+//    BigDecimal total = BigDecimal.ZERO;
+
+
+    BigDecimal grossAmount = BigDecimal.ZERO;
+    BigDecimal discountAmount = BigDecimal.ZERO;
+    BigDecimal platformFee = BigDecimal.ZERO;
+    BigDecimal paymentFee = BigDecimal.ZERO;
+    BigDecimal taxAmount = BigDecimal.ZERO;
+    BigDecimal shippingAmount = BigDecimal.ZERO;
+    BigDecimal refundAmount = BigDecimal.ZERO;
+    BigDecimal netAmount = BigDecimal.ZERO;
 
     Settlement settlement = new Settlement();
 
+    settlement.setSettlementNumber(generateSettlementNumber());
     settlement.setBusiness(business);
     settlement.setCurrency(currency);
     settlement.setPeriodStart(periodStart);
@@ -81,22 +91,64 @@ public class SettlementService {
        * This amount comes from Allocation.
        * Settlement does not recalculate the commercial split.
        */
-      BigDecimal amount = allocation.getNetAmount();
+//      BigDecimal amount = allocation.getNetAmount();
+      grossAmount = grossAmount.add(
+          allocation.getGrossAmount()
+      );
+
+      discountAmount = discountAmount.add(
+          allocation.getDiscountAmount()
+      );
+
+      platformFee = platformFee.add(
+          allocation.getPlatformFee()
+      );
+
+      paymentFee = paymentFee.add(
+          allocation.getPaymentFee()
+      );
+
+      taxAmount = taxAmount.add(
+          allocation.getTaxAmount()
+      );
+
+      shippingAmount = shippingAmount.add(
+          allocation.getShippingAmount()
+      );
+
+      refundAmount = refundAmount.add(
+          allocation.getRefundAmount()
+      );
+
+      netAmount = netAmount.add(
+          allocation.getNetAmount()
+      );
 
       SettlementItem item = new SettlementItem();
 
       item.setSettlement(settlement);
       item.setAllocation(allocation);
       item.setBusiness(business);
-      item.setAmount(amount);
+//      item.setAmount(amount);
+      item.setAmount(allocation.getNetAmount());
       item.setCurrency(currency);
 
       settlement.getItems().add(item);
 
-      total = total.add(amount);
+//      total = total.add(amount);
     }
 
-    settlement.setNetAmount(total);
+    settlement.setGrossAmount(grossAmount);
+    settlement.setDiscountAmount(discountAmount);
+    settlement.setPlatformFee(platformFee);
+    settlement.setPaymentFee(paymentFee);
+    settlement.setTaxAmount(taxAmount);
+    settlement.setShippingAmount(shippingAmount);
+    settlement.setRefundAmount(refundAmount);
+    settlement.setAdjustmentAmount(BigDecimal.ZERO);
+
+//    settlement.setNetAmount(total);
+    settlement.setNetAmount(netAmount);
     settlement.setEligibleAt(Instant.now());
 
     return settlementRepository.save(settlement);
@@ -169,6 +221,14 @@ public class SettlementService {
     settlement.setSettledAt(Instant.now());
 
     settlementRepository.save(settlement);
+  }
+
+  private String generateSettlementNumber() {
+    return "SET-" + UUID.randomUUID()
+        .toString()
+        .replace("-", "")
+        .substring(0, 12)
+        .toUpperCase();
   }
 }
 // processing order, marks orders , creates allocation, ledgers and business
