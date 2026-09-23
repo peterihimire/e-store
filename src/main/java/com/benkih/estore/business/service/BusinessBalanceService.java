@@ -24,13 +24,11 @@ public class BusinessBalanceService implements IBusinessBalanceService{
       CurrencyCode currency
   ) {
 
-    return repository
-        .findByBusinessIdAndCurrency(
+    return repository.findByBusinessIdAndCurrency(
             business.getId(),
             currency
         )
         .orElseGet(() -> {
-
           BusinessBalance balance = new BusinessBalance();
 
           balance.setBusiness(business);
@@ -47,13 +45,9 @@ public class BusinessBalanceService implements IBusinessBalanceService{
       BigDecimal amount
   ) {
 
-    BusinessBalance balance =
-        getOrCreate(business, currency);
+    BusinessBalance balance = getOrCreate(business, currency);
 
-    balance.setPendingBalance(
-        balance.getPendingBalance().add(amount)
-    );
-
+    balance.setPendingBalance(balance.getPendingBalance().add(amount));
     balance.setUpdatedAt(Instant.now());
 
     repository.save(balance);
@@ -65,24 +59,14 @@ public class BusinessBalanceService implements IBusinessBalanceService{
       BigDecimal amount
   ) {
 
-    BusinessBalance balance =
-        getOrCreate(business, currency);
+    BusinessBalance balance = getOrCreate(business, currency);
 
-    if (
-        balance.getPendingBalance()
-            .compareTo(amount) < 0
-    ) {
+    if (balance.getPendingBalance().compareTo(amount) < 0) {
       throw new IllegalStateException("Insufficient pending balance");
     }
 
-    balance.setPendingBalance(
-        balance.getPendingBalance().subtract(amount)
-    );
-
-    balance.setAvailableBalance(
-        balance.getAvailableBalance().add(amount)
-    );
-
+    balance.setPendingBalance(balance.getPendingBalance().subtract(amount));
+    balance.setAvailableBalance(balance.getAvailableBalance().add(amount));
     balance.setUpdatedAt(Instant.now());
 
     repository.save(balance);
@@ -94,20 +78,13 @@ public class BusinessBalanceService implements IBusinessBalanceService{
       BigDecimal amount
   ) {
 
-    BusinessBalance balance =
-        getOrCreate(business, currency);
+    BusinessBalance balance = getOrCreate(business, currency);
 
-    if (
-        balance.getAvailableBalance()
-            .compareTo(amount) < 0
-    ) {
+    if (balance.getAvailableBalance().compareTo(amount) < 0) {
       throw new IllegalStateException("Insufficient available balance");
     }
 
-    balance.setAvailableBalance(
-        balance.getAvailableBalance().subtract(amount)
-    );
-
+    balance.setAvailableBalance(balance.getAvailableBalance().subtract(amount));
     balance.setUpdatedAt(Instant.now());
 
     repository.save(balance);
@@ -120,7 +97,6 @@ public class BusinessBalanceService implements IBusinessBalanceService{
     }
 
     for (Allocation allocation : allocations) {
-
       if (allocation == null) {
         continue;
       }
@@ -128,9 +104,7 @@ public class BusinessBalanceService implements IBusinessBalanceService{
       Business business = allocation.getBusiness();
 
       if (business == null) {
-        throw new IllegalStateException(
-            "Allocation must have a business"
-        );
+        throw new IllegalStateException("Allocation must have a business");
       }
 
       BigDecimal amount = allocation.getNetAmount();

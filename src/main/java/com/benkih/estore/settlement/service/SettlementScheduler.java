@@ -14,9 +14,7 @@ public class SettlementScheduler {
   @Scheduled(cron = "${settlement.schedule}")
   public void processEligibleSettlements() {
     log.info("Starting settlement eligibility check");
-
     eligibilityService.processEligibleSettlements();
-
     log.info("Settlement eligibility check completed");
   }
 }

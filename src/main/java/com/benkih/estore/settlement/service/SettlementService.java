@@ -4,6 +4,7 @@ import com.benkih.estore.allocation.entity.Allocation;
 import com.benkih.estore.allocation.repository.AllocationRepository;
 import com.benkih.estore.business.entity.Business;
 import com.benkih.estore.business.service.BusinessBalanceService;
+import com.benkih.estore.common.enums.AllocationStatus;
 import com.benkih.estore.common.enums.CurrencyCode;
 import com.benkih.estore.common.exceptions.BadRequestException;
 import com.benkih.estore.ledger.dto.LedgerPosting;
@@ -216,8 +217,10 @@ public class SettlementService {
         amount
     );
 
+    for (SettlementItem item : settlement.getItems()) {
+      item.getAllocation().setStatus(AllocationStatus.SETTLED);
+    }
     settlement.setStatus(SettlementStatus.SETTLED);
-
     settlement.setSettledAt(Instant.now());
 
     settlementRepository.save(settlement);

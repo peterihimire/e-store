@@ -48,11 +48,7 @@ public class PayoutService implements IPayoutService{
       throw new BadRequestException("Payout amount must be greater than zero");
     }
 
-    if (
-        payoutRepository.existsByIdempotencyKey(
-            idempotencyKey
-        )
-    ) {
+    if (payoutRepository.existsByIdempotencyKey(idempotencyKey)) {
       throw new AlreadyExistsException("Payout request already exists");
     }
 
@@ -61,10 +57,7 @@ public class PayoutService implements IPayoutService{
             currency
         );
 
-    if (
-        balance.getAvailableBalance()
-            .compareTo(amount) < 0
-    ) {
+    if (balance.getAvailableBalance().compareTo(amount) < 0) {
       throw new BadRequestException("Insufficient available balance");
     }
 
@@ -74,15 +67,9 @@ public class PayoutService implements IPayoutService{
     payout.setBankAccount(bankAccount);
     payout.setCurrency(currency);
     payout.setNetAmount(amount);
-    payout.setStatus(
-        PayoutStatus.REQUESTED
-    );
-    payout.setIdempotencyKey(
-        idempotencyKey
-    );
-    payout.setRequestedAt(
-        Instant.now()
-    );
+    payout.setStatus(PayoutStatus.REQUESTED);
+    payout.setIdempotencyKey(idempotencyKey);
+    payout.setRequestedAt(Instant.now());
 
     payout = payoutRepository.save(payout);
 
@@ -146,20 +133,13 @@ public class PayoutService implements IPayoutService{
       String providerReference
   ) {
 
-    if (
-        payout.getStatus()
-            != PayoutStatus.PROCESSING
-    ) {
-      throw new IllegalStateException(
-          "Payout is not processing"
-      );
+    if (payout.getStatus() != PayoutStatus.PROCESSING) {
+      throw new IllegalStateException("Payout is not processing");
     }
 
-    CurrencyCode currency =
-        payout.getCurrency();
+    CurrencyCode currency = payout.getCurrency();
 
-    BigDecimal amount =
-        payout.getNetAmount();
+    BigDecimal amount = payout.getNetAmount();
 
     LedgerAccount payoutProcessing = ledgerAccountService.getOrCreatePlatformAccount(
             LedgerAccountType.PAYOUT_PROCESSING,
@@ -181,7 +161,6 @@ public class PayoutService implements IPayoutService{
         "PAYOUT-COMPLETE-" + payout.getSlug(),
         "Payout completed",
         List.of(
-
             new LedgerPosting(
                 payoutProcessing,
 //                LedgerEntryType.PAYOUT_PROCESSING,
@@ -206,17 +185,9 @@ public class PayoutService implements IPayoutService{
         )
     );
 
-    payout.setStatus(
-        PayoutStatus.SUCCESS
-    );
-
-    payout.setProviderReference(
-        providerReference
-    );
-
-    payout.setProcessedAt(
-        Instant.now()
-    );
+    payout.setStatus(PayoutStatus.SUCCESS);
+    payout.setProviderReference(providerReference);
+    payout.setProcessedAt(Instant.now());
 
     payoutRepository.save(payout);
   }

@@ -1,7 +1,6 @@
 package com.benkih.estore.allocation.repository;
 
 import com.benkih.estore.allocation.entity.Allocation;
-import com.benkih.estore.inventory.entity.Inventory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

@@ -23,13 +23,19 @@ import java.math.BigDecimal;
                 "settlement_id",
                 "allocation_id"
             }
+        ),
+        @UniqueConstraint(
+            name = "uk_settlement_item_allocation",
+            columnNames = {
+                "allocation_id"
+            }
         )
     },
     indexes = {
-        @Index(
-            name = "idx_settlement_item_allocation",
-            columnList = "allocation_id"
-        ),
+//        @Index(
+//            name = "idx_settlement_item_allocation",
+//            columnList = "allocation_id"
+//        ),
         @Index(
             name = "idx_settlement_item_business",
             columnList = "business_id"
