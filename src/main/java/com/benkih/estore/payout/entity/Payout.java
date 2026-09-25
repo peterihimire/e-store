@@ -5,6 +5,7 @@ import com.benkih.estore.business.entity.BankAccount;
 import com.benkih.estore.business.entity.Business;
 import com.benkih.estore.common.entity.AuditableEntity;
 import com.benkih.estore.common.enums.CurrencyCode;
+import com.benkih.estore.common.enums.PaymentProvider;
 import com.benkih.estore.payout.enums.PayoutStatus;
 import com.benkih.estore.settlement.entity.Settlement;
 import jakarta.persistence.*;
@@ -97,11 +98,9 @@ public class Payout extends AuditableEntity {
   @Column(nullable = false, length = 3)
   private CurrencyCode currency = CurrencyCode.NGN;
 
-  @Column(
-      name = "provider",
-      length = 50
-  )
-  private String provider;
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false, length = 50)
+  private PaymentProvider provider;
 
   @Column(name = "provider_reference", unique = true)
   private String providerReference;

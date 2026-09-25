@@ -177,7 +177,10 @@ public ResponseEntity<ApiResponse> getProductBySlug(@PathVariable String slug) {
 
   @PreAuthorize("hasAuthority('PRODUCT_UPDATE')")
   @PutMapping("/{productSlug}/update")
-  public ResponseEntity<ApiResponse> updateProduct(@RequestBody UpdateProductRequest product, @PathVariable String productSlug){
+  public ResponseEntity<ApiResponse> updateProduct(
+      @RequestBody UpdateProductRequest product,
+      @PathVariable String productSlug
+  ){
       Long businessId = tenantContext.getBusinessId();
 
       Product productData = productService.updateProduct(product, productSlug, businessId);

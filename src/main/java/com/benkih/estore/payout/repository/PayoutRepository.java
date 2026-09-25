@@ -20,4 +20,8 @@ public interface PayoutRepository extends JpaRepository<Payout, Long> {
   boolean existsByIdempotencyKey(
       String idempotencyKey
   );
+
+  Optional<Payout>  findByIdempotencyKey(
+      String idempotencyKey
+  );
 }
