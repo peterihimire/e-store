@@ -292,6 +292,49 @@ public class GlobalExceptionHandler {
     return buildError(HttpStatus.CONFLICT, message, request);
   }
 
+  // In GlobalExceptionHandler
+  @ExceptionHandler(PayoutException.class)
+  public ResponseEntity<ApiError> handlePayoutException(
+      PayoutException ex,
+      HttpServletRequest request) {
+
+    log.warn("Payout error: {}", ex.getMessage());
+
+    String message = "Payout processing failed: " + ex.getMessage();
+    if (ex.getCause() != null) {
+      log.debug("Payout exception cause: ", ex.getCause());
+    }
+
+    return buildError(HttpStatus.BAD_REQUEST, message, request);
+  }
+
+  @ExceptionHandler(PayoutGatewayException.class)
+  public ResponseEntity<ApiError> handlePayoutGatewayException(
+      PayoutGatewayException ex,
+      HttpServletRequest request) {
+
+    log.error("Payout gateway error: {}", ex.getMessage(), ex);
+
+    String message = "Payout gateway is currently unavailable. Please try again later.";
+    if (ex.getCause() != null) {
+      log.debug("Gateway exception cause: ", ex.getCause());
+    }
+
+    return buildError(HttpStatus.BAD_GATEWAY, message, request);
+  }
+
+  @ExceptionHandler(DuplicatePayoutException.class)
+  public ResponseEntity<ApiError> handleDuplicatePayoutException(
+      DuplicatePayoutException ex,
+      HttpServletRequest request) {
+
+    log.warn("Duplicate payout detected: {}", ex.getMessage());
+
+    String message = "Duplicate payout detected: " + ex.getMessage();
+
+    return buildError(HttpStatus.CONFLICT, message, request);
+  }
+
   @ExceptionHandler(PaymentVerificationException.class)
   public ResponseEntity<ApiError> handlePaymentVerificationException(
       PaymentVerificationException ex,

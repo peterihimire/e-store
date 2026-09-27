@@ -6,6 +6,7 @@ import com.benkih.estore.business.entity.Business;
 import com.benkih.estore.common.entity.AuditableEntity;
 import com.benkih.estore.common.enums.CurrencyCode;
 import com.benkih.estore.common.enums.PaymentProvider;
+import com.benkih.estore.payout.enums.PayoutProvider;
 import com.benkih.estore.payout.enums.PayoutStatus;
 import com.benkih.estore.settlement.entity.Settlement;
 import jakarta.persistence.*;
@@ -59,12 +60,12 @@ public class Payout extends AuditableEntity {
   private String bankName;
 
   @Column(
-      name = "gross_amount",
+      name = "amount",
       nullable = false,
       precision = 18,
       scale = 2
   )
-  private BigDecimal grossAmount = BigDecimal.ZERO;
+  private BigDecimal amount = BigDecimal.ZERO;
 
   @Column(
       name = "transfer_fee",
@@ -82,14 +83,6 @@ public class Payout extends AuditableEntity {
   )
   private BigDecimal stampDuty = BigDecimal.ZERO;
 
-  @Column(
-      name = "net_amount",
-      nullable = false,
-      precision = 18,
-      scale = 2
-  )
-  private BigDecimal netAmount = BigDecimal.ZERO;
-
   @Enumerated(EnumType.STRING)
   @Column(nullable = false, length = 20)
   private PayoutStatus status = PayoutStatus.REQUESTED;
@@ -100,7 +93,7 @@ public class Payout extends AuditableEntity {
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false, length = 50)
-  private PaymentProvider provider;
+  private PayoutProvider provider;
 
   @Column(name = "provider_reference", unique = true)
   private String providerReference;

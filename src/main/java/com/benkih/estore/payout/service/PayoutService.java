@@ -9,6 +9,7 @@ import com.benkih.estore.business.service.BusinessBalanceService;
 import com.benkih.estore.common.enums.CurrencyCode;
 import com.benkih.estore.common.exceptions.AlreadyExistsException;
 import com.benkih.estore.common.exceptions.BadRequestException;
+import com.benkih.estore.common.exceptions.PayoutGatewayException;
 import com.benkih.estore.common.exceptions.ResourceNotFoundException;
 import com.benkih.estore.ledger.dto.LedgerPosting;
 import com.benkih.estore.ledger.entity.LedgerAccount;
@@ -18,11 +19,19 @@ import com.benkih.estore.ledger.enums.LedgerEntryType;
 import com.benkih.estore.ledger.enums.LedgerTransactionType;
 import com.benkih.estore.ledger.service.LedgerAccountService;
 import com.benkih.estore.ledger.service.LedgerService;
+import com.benkih.estore.payout.dto.response.PayoutRecipientResult;
 import com.benkih.estore.payout.dto.response.PayoutResponseDto;
+import com.benkih.estore.payout.dto.response.PayoutResult;
 import com.benkih.estore.payout.entity.Payout;
+import com.benkih.estore.payout.entity.PayoutRecipient;
+import com.benkih.estore.payout.enums.PayoutProvider;
 import com.benkih.estore.payout.enums.PayoutStatus;
+import com.benkih.estore.payout.provider.PayoutGateway;
+import com.benkih.estore.payout.provider.PayoutGatewayFactory;
+import com.benkih.estore.payout.repository.PayoutRecipientRepository;
 import com.benkih.estore.payout.repository.PayoutRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,13 +45,19 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Transactional
 public class PayoutService implements IPayoutService{
-
+//  @Value("${payout.provider}")
+//  private PayoutProvider payoutProvider;
+  private final PayoutProperties payoutProperties;
   private final PayoutRepository payoutRepository;
+  private final PayoutRecipientRepository payoutRecipientRepository;
   private final LedgerService ledgerService;
   private final LedgerAccountService ledgerAccountService;
   private final BusinessBalanceService balanceService;
   private final BusinessRepository businessRepository;
   private final BankAccountRepository bankAccountRepository;
+  private final PayoutGatewayFactory gatewayFactory;
+  private final PayoutFeeService payoutFeeService;
+
 
   public PayoutResponseDto requestPayout(
       Long businessId,
@@ -78,12 +93,10 @@ public class PayoutService implements IPayoutService{
               && payout.getBankAccount().getId()
               .equals(bankAccount.getId())
               && payout.getCurrency() == currency
-              && payout.getNetAmount().compareTo(amount) == 0;
+              && payout.getAmount().compareTo(amount) == 0;
 
       if (!sameRequest) {
-        throw new AlreadyExistsException(
-            "Idempotency key has already been used " + "for a different payout request"
-        );
+        throw new AlreadyExistsException("Idempotency key has already been used " + "for a different payout request");
       }
       return convertToDto(payout);
     }
@@ -101,76 +114,67 @@ public class PayoutService implements IPayoutService{
       throw new BadRequestException("Insufficient available balance");
     }
 
-    Payout payout = new Payout();
+    BigDecimal transferFee =
+        payoutFeeService.calculateTransferFee(amount, currency);
 
-    payout.setPayoutNumber(generatePayoutNumber());
-    payout.setBusiness(business);
-    payout.setBankAccount(bankAccount);
-    payout.setCurrency(currency);
-    payout.setNetAmount(amount);
-    payout.setStatus(PayoutStatus.REQUESTED);
-    payout.setIdempotencyKey(idempotencyKey);
-    payout.setRequestedAt(Instant.now());
+    BigDecimal stampDuty =
+        payoutFeeService.calculateStampDuty(amount, currency);
 
-    payout.setAccountName(bankAccount.getAccountName());
-    payout.setAccountNumber(bankAccount.getAccountNumber());
-    payout.setBankCode(bankAccount.getBankCode());
-    payout.setBankName(bankAccount.getBankName());
-
-    payout = payoutRepository.save(payout);
-
-    LedgerAccount available = ledgerAccountService.getOrCreateSellerAccount(
-            business,
-            LedgerAccountType.SELLER_AVAILABLE,
-            currency
-        );
-
-    LedgerAccount payoutProcessing = ledgerAccountService.getOrCreatePlatformAccount(
-            LedgerAccountType.PAYOUT_PROCESSING,
-            currency
-        );
-
-    ledgerService.post(
-        LedgerTransactionType.PAYOUT_INITIATED,
+    Payout payout = createPayout(
+        business,
+        bankAccount,
         currency,
-        "PAYOUT-" + payout.getSlug(),
-        "Payout initiated",
-        List.of(
-
-            new LedgerPosting(
-                available,
-//                LedgerEntryType.SELLER_AVAILABLE,
-                LedgerEntryDirection.DEBIT,
-                amount,
-                null,
-                null,
-                payout,
-                "Seller payout"
-            ),
-
-            new LedgerPosting(
-                payoutProcessing,
-//                LedgerEntryType.PAYOUT_PROCESSING,
-                LedgerEntryDirection.CREDIT,
-                amount,
-                null,
-                null,
-                payout,
-                "Payout processing liability"
-            )
-        )
+        amount,
+        transferFee,
+        stampDuty,
+        idempotencyKey
     );
 
-    balanceService.moveAvailableToPayout(
+//    PayoutGateway gateway = gatewayFactory.get(payoutProvider);
+    PayoutGateway gateway =
+        gatewayFactory.get(payoutProperties.getProvider());
+
+    PayoutRecipient recipient = resolvePayoutRecipient(payout, gateway);
+
+    reservePayoutFunds(
+        payout,
         business,
         currency,
         amount
     );
 
-    payout.setStatus(PayoutStatus.PROCESSING);
+    try {
+      PayoutResult result = gateway.initiate(payout, recipient);
 
-    payout = payoutRepository.save(payout);
-    return convertToDto( payout);
+      if (!result.isAccepted()) {
+        handlePayoutInitiationFailure(
+            payout,
+            business,
+            currency,
+            amount,
+            result.getFailureReason()
+        );
+
+        throw new PayoutGatewayException("Payout initiation failed: " + result.getFailureReason());
+      }
+
+      payout.setProviderReference(result.getProviderReference());
+      payout.setStatus(PayoutStatus.PROCESSING);
+      payout = payoutRepository.save(payout);
+
+      return convertToDto(payout);
+    } catch (PayoutGatewayException ex) {
+      throw ex;
+    } catch (Exception ex) {
+
+      payout.setStatus(PayoutStatus.PROCESSING);
+      payout.setFailureReason("Transfer status could not be confirmed");
+
+      payoutRepository.save(payout);
+
+      throw new PayoutGatewayException("Unable to confirm payout status. " + "The payout will be reconciled.", ex);
+    }
+//    return convertToDto( payout);
   }
 
 
@@ -186,7 +190,7 @@ public class PayoutService implements IPayoutService{
 
     CurrencyCode currency = payout.getCurrency();
 
-    BigDecimal amount = payout.getNetAmount();
+    BigDecimal amount = payout.getAmount();
 
     LedgerAccount payoutProcessing = ledgerAccountService.getOrCreatePlatformAccount(
             LedgerAccountType.PAYOUT_PROCESSING,
@@ -250,10 +254,10 @@ public class PayoutService implements IPayoutService{
         .accountNumber(maskAccountNumber(payout.getAccountNumber()))
         .bankCode(payout.getBankCode())
         .bankName(payout.getBankName())
-        .grossAmount(payout.getGrossAmount())
+        .amount(payout.getAmount())
         .transferFee(payout.getTransferFee())
         .stampDuty(payout.getStampDuty())
-        .netAmount(payout.getNetAmount())
+//        .netAmount(payout.getNetAmount())
         .currency(payout.getCurrency())
         .status(payout.getStatus())
         .provider(payout.getProvider())
@@ -262,6 +266,40 @@ public class PayoutService implements IPayoutService{
         .requestedAt(payout.getRequestedAt())
         .processedAt(payout.getProcessedAt())
         .build();
+  }
+
+  private Payout createPayout(
+      Business business,
+      BankAccount bankAccount,
+      CurrencyCode currency,
+      BigDecimal amount,
+      BigDecimal transferFee,
+      BigDecimal stampDuty,
+      String idempotencyKey
+  ) {
+
+    Payout payout = new Payout();
+
+    payout.setPayoutNumber(generatePayoutNumber());
+    payout.setBusiness(business);
+    payout.setBankAccount(bankAccount);
+    payout.setCurrency(currency);
+    payout.setProvider(payoutProperties.getProvider());
+
+    payout.setAmount(amount);
+    payout.setTransferFee(transferFee);
+    payout.setStampDuty(stampDuty);
+    
+    payout.setStatus(PayoutStatus.REQUESTED);
+    payout.setIdempotencyKey(idempotencyKey);
+    payout.setRequestedAt(Instant.now());
+
+    payout.setAccountName(bankAccount.getAccountName());
+    payout.setAccountNumber(bankAccount.getAccountNumber());
+    payout.setBankCode(bankAccount.getBankCode());
+    payout.setBankName(bankAccount.getBankName());
+
+    return payoutRepository.save(payout);
   }
 
   private String maskAccountNumber(String accountNumber) {
@@ -279,5 +317,166 @@ public class PayoutService implements IPayoutService{
         .replace("-", "")
         .substring(0, 12)
         .toUpperCase();
+  }
+
+  private PayoutRecipient resolvePayoutRecipient(
+      Payout payout,
+      PayoutGateway gateway
+  ) {
+
+    return payoutRecipientRepository
+        .findByBankAccountIdAndProviderAndActiveTrue(
+            payout.getBankAccount().getId(),
+            payout.getProvider()
+        )
+        .orElseGet(() -> createPayoutRecipient(payout, gateway));
+  }
+
+  private PayoutRecipient createPayoutRecipient(
+      Payout payout,
+      PayoutGateway gateway
+  ) {
+
+    PayoutRecipientResult result = gateway.createRecipient(payout.getBankAccount());
+
+    if (!result.isSuccess()) {
+      throw new PayoutGatewayException(
+          "Unable to create payout recipient: "
+              + result.getMessage()
+      );
+    }
+
+    PayoutRecipient recipient = new PayoutRecipient();
+
+    recipient.setBankAccount(payout.getBankAccount());
+    recipient.setProvider(payout.getProvider());
+    recipient.setRecipientCode(result.getRecipientCode());
+    recipient.setRecipientName(result.getRecipientName());
+    recipient.setActive(true);
+
+    return payoutRecipientRepository.save(recipient);
+  }
+
+  private void reservePayoutFunds(
+      Payout payout,
+      Business business,
+      CurrencyCode currency,
+      BigDecimal amount
+  ) {
+
+    LedgerAccount available =
+        ledgerAccountService.getOrCreateSellerAccount(
+            business,
+            LedgerAccountType.SELLER_AVAILABLE,
+            currency
+        );
+
+    LedgerAccount payoutProcessing =
+        ledgerAccountService.getOrCreatePlatformAccount(
+            LedgerAccountType.PAYOUT_PROCESSING,
+            currency
+        );
+
+    ledgerService.post(
+        LedgerTransactionType.PAYOUT_INITIATED,
+        currency,
+        "PAYOUT-" + payout.getSlug(),
+        "Payout initiated",
+        List.of(
+
+            new LedgerPosting(
+                available,
+                LedgerEntryDirection.DEBIT,
+                amount,
+                null,
+                null,
+                payout,
+                "Seller payout"
+            ),
+
+            new LedgerPosting(
+                payoutProcessing,
+                LedgerEntryDirection.CREDIT,
+                amount,
+                null,
+                null,
+                payout,
+                "Payout processing liability"
+            )
+        )
+    );
+
+    balanceService.moveAvailableToPayout(
+        business,
+        currency,
+        amount
+    );
+
+    payout.setStatus(PayoutStatus.PROCESSING);
+
+    payoutRepository.save(payout);
+  }
+
+  private void handlePayoutInitiationFailure(
+      Payout payout,
+      Business business,
+      CurrencyCode currency,
+      BigDecimal amount,
+      String failureReason
+  ) {
+
+    LedgerAccount payoutProcessing =
+        ledgerAccountService.getOrCreatePlatformAccount(
+            LedgerAccountType.PAYOUT_PROCESSING,
+            currency
+        );
+
+    LedgerAccount available =
+        ledgerAccountService.getOrCreateSellerAccount(
+            business,
+            LedgerAccountType.SELLER_AVAILABLE,
+            currency
+        );
+
+    ledgerService.post(
+        LedgerTransactionType.PAYOUT_FAILED,
+        currency,
+        "PAYOUT-FAILED-" + payout.getSlug(),
+        "Payout initiation failed",
+        List.of(
+
+            new LedgerPosting(
+                payoutProcessing,
+                LedgerEntryDirection.DEBIT,
+                amount,
+                null,
+                null,
+                payout,
+                "Reverse failed payout"
+            ),
+
+            new LedgerPosting(
+                available,
+                LedgerEntryDirection.CREDIT,
+                amount,
+                null,
+                null,
+                payout,
+                "Return seller payout funds"
+            )
+        )
+    );
+
+    balanceService.movePayoutToAvailable(
+        business,
+        currency,
+        amount
+    );
+
+    payout.setStatus(PayoutStatus.FAILED);
+    payout.setFailureReason(failureReason);
+    payout.setProcessedAt(Instant.now());
+
+    payoutRepository.save(payout);
   }
 }

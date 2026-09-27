@@ -3,20 +3,32 @@ package com.benkih.estore.vendor;
 import com.benkih.estore.audit.entity.ApiLog;
 import com.benkih.estore.audit.service.ApiLogService;
 import com.benkih.estore.audit.service.IApiLogService;
+import com.benkih.estore.business.entity.BankAccount;
+import com.benkih.estore.common.enums.CurrencyCode;
 import com.benkih.estore.common.enums.PaymentStatus;
 import com.benkih.estore.common.enums.RefundGatewayStatus;
 import com.benkih.estore.common.enums.RefundStatus;
 import com.benkih.estore.common.exceptions.PaymentGatewayException;
+import com.benkih.estore.common.exceptions.PayoutGatewayException;
 import com.benkih.estore.payment.dto.request.InitializePaymentRequest;
 import com.benkih.estore.payment.dto.request.PaystackInitializeRequest;
 import com.benkih.estore.payment.dto.request.RefundPaymentRequest;
 import com.benkih.estore.payment.dto.response.*;
 import com.benkih.estore.payment.dto.webhook.PaystackWebhookEvent;
+import com.benkih.estore.payout.dto.request.PaystackTransferRecipientRequest;
+import com.benkih.estore.payout.dto.request.PaystackTransferRequest;
+import com.benkih.estore.payout.dto.response.*;
+import com.benkih.estore.payout.entity.Payout;
+import com.benkih.estore.payout.entity.PayoutRecipient;
+import com.benkih.estore.payout.enums.PayoutGatewayStatus;
+import com.benkih.estore.payout.enums.PayoutTransferStatus;
+import com.benkih.estore.payout.webhook.PayoutWebhookEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -222,6 +234,221 @@ public class PaystackClient {
   }
 
 
+  public PayoutRecipientResult createTransferRecipient(
+      BankAccount bankAccount
+  ) {
+
+    PaystackTransferRecipientRequest body =
+        PaystackTransferRecipientRequest.builder()
+            .type("nuban")
+            .name(bankAccount.getAccountName())
+            .accountNumber(bankAccount.getAccountNumber())
+            .bankCode(bankAccount.getBankCode())
+            .currency(CurrencyCode.NGN.name())
+            .build();
+
+    String url = baseUrl + "/transferrecipient";
+
+    try {
+
+      PaystackTransferRecipientResponse response =
+          webClient.post()
+              .uri(url)
+              .header(
+                  HttpHeaders.AUTHORIZATION,
+                  "Bearer " + secretKey
+              )
+              .header(
+                  HttpHeaders.CONTENT_TYPE,
+                  MediaType.APPLICATION_JSON_VALUE
+              )
+              .bodyValue(body)
+              .retrieve()
+              .bodyToMono(PaystackTransferRecipientResponse.class)
+              .block();
+
+      apiLogService.saveOutboundLog(
+          "POST",
+          url,
+          body,
+          200,
+          response,
+          null
+      );
+
+      if (response == null || !response.isStatus()) {
+        throw new PayoutGatewayException(
+            response != null
+                ? response.getMessage()
+                : "Unable to create Paystack transfer recipient"
+        );
+      }
+      return mapTransferRecipientResponse(response);
+
+//      return new PayoutRecipientResult(
+//          true,
+//          response.getMessage(),
+//          response.getData().getRecipientCode(),
+//          response.getData().getName()
+//      );
+
+    } catch (Exception e) {
+
+      apiLogService.saveOutboundLog(
+          "POST",
+          url,
+          body,
+          500,
+          e.getMessage(),
+          e
+      );
+
+      if (e instanceof PayoutGatewayException) {
+        throw e;
+      }
+
+      throw new PayoutGatewayException("Unable to create Paystack transfer recipient", e);
+    }
+  }
+
+
+  public PayoutResult initiateTransfer(
+      Payout payout,
+      PayoutRecipient recipient
+  ) {
+
+    long amountInKobo = payout.getAmount()
+            .movePointRight(2)
+            .longValueExact();
+
+    String reference = "payout-" + payout.getSlug();
+
+    PaystackTransferRequest body = PaystackTransferRequest.builder()
+            .source("balance")
+            .amount(amountInKobo)
+            .recipient(recipient.getRecipientCode())
+            .reference(reference)
+            .reason("Seller payout")
+            .currency(payout.getCurrency().name())
+            .build();
+
+    String url = baseUrl + "/transfer";
+
+    try {
+
+      PaystackTransferResponse response = webClient.post()
+              .uri(url)
+              .header(
+                  HttpHeaders.AUTHORIZATION,
+                  "Bearer " + secretKey
+              )
+              .header(
+                  HttpHeaders.CONTENT_TYPE,
+                  MediaType.APPLICATION_JSON_VALUE
+              )
+              .bodyValue(body)
+              .retrieve()
+              .bodyToMono(PaystackTransferResponse.class)
+              .block();
+
+      apiLogService.saveOutboundLog(
+          "POST",
+          url,
+          body,
+          200,
+          response,
+          null
+      );
+      return mapTransferResponse(response);
+
+//      if (response == null || !response.isStatus()) {
+//        return PayoutResult.builder()
+//            .accepted(false)
+//            .status(PayoutGatewayStatus.FAILED)
+//            .failureReason(
+//                response != null
+//                    ? response.getMessage()
+//                    : "Paystack rejected the transfer"
+//            )
+//            .build();
+//      }
+//
+//      return PayoutResult.builder()
+//          .accepted(true)
+//          .status(mapPayoutGatewayStatus(response.getData().getStatus()))
+//          .providerReference(response.getData().getReference())
+//          .providerTransferCode(response.getData().getTransferCode())
+//          .build();
+
+    } catch (Exception e) {
+
+      apiLogService.saveOutboundLog(
+          "POST",
+          url,
+          body,
+          500,
+          e.getMessage(),
+          e
+      );
+
+      throw new PayoutGatewayException("Unable to initiate Paystack transfer", e);
+    }
+  }
+
+
+  public PayoutVerificationResult verifyTransfer(
+      String providerReference
+  ) {
+
+    String url = baseUrl + "/transfer/verify/" + providerReference;
+
+    try {
+
+      PaystackTransferResponse response =
+          webClient.get()
+              .uri(url)
+              .header(
+                  HttpHeaders.AUTHORIZATION,
+                  "Bearer " + secretKey
+              )
+              .retrieve()
+              .bodyToMono(PaystackTransferResponse.class)
+              .block();
+
+      apiLogService.saveOutboundLog(
+          "GET",
+          url,
+          null,
+          200,
+          response,
+          null
+      );
+
+//      if (response == null || !response.isStatus()) {
+//        return PayoutTransferStatus.UNKNOWN;
+//      }
+
+      return mapVerifyTransferResponse(response);
+
+    } catch (Exception e) {
+
+      apiLogService.saveOutboundLog(
+          "GET",
+          url,
+          null,
+          500,
+          e.getMessage(),
+          e
+      );
+
+      throw new PayoutGatewayException(
+          "Unable to verify Paystack transfer",
+          e
+      );
+    }
+  }
+
+
   private InitializePaymentResponse mapInitializeResponse(PaystackInitializeResponse response) {
     return new InitializePaymentResponse(
         response.isStatus(),
@@ -308,4 +535,201 @@ public class PaystackClient {
       }
     };
   }
+
+
+  private PayoutGatewayStatus mapTransferStatus(String status) {
+    if (status == null) {
+      return PayoutGatewayStatus.UNKNOWN;
+    }
+
+    return switch (status.toLowerCase()) {
+      case "pending", "received" ->
+          PayoutGatewayStatus.PENDING;
+
+      case "success" ->
+          PayoutGatewayStatus.SUCCESS;
+
+      case "failed", "abandoned", "blocked", "rejected" ->
+          PayoutGatewayStatus.FAILED;
+
+      case "reversed" ->
+          PayoutGatewayStatus.REVERSED;
+
+      default ->
+          PayoutGatewayStatus.UNKNOWN;
+    };
+  }
+
+  private PayoutGatewayStatus mapInitiationStatus(String status) {
+    if (status == null) {
+      return PayoutGatewayStatus.UNKNOWN;
+    }
+
+    return switch (status.toLowerCase()) {
+      case "pending", "received", "success" ->
+          PayoutGatewayStatus.PENDING;
+
+      case "failed", "abandoned", "blocked", "rejected" ->
+          PayoutGatewayStatus.FAILED;
+
+      case "reversed" ->
+          PayoutGatewayStatus.REVERSED;
+
+      default ->
+          PayoutGatewayStatus.UNKNOWN;
+    };
+  }
+
+//  private PayoutRecipientResult mapTransferRecipientResponse(
+//      PaystackTransferRecipientResponse response
+//  ) {
+//
+//    if (response == null || !response.isStatus()) {
+//      throw new PayoutGatewayException(
+//          response != null
+//              ? response.getMessage()
+//              : "Unable to create Paystack transfer recipient"
+//      );
+//    }
+//
+//    return PayoutRecipientResult.builder()
+//        .success(true)
+//        .message(response.getMessage())
+//        .recipientCode(response.getData().getRecipientCode())
+//        .recipientName(response.getData().getName())
+//        .build();
+//  }
+
+  private PayoutRecipientResult mapTransferRecipientResponse(
+      PaystackTransferRecipientResponse response
+  ) {
+
+    return new PayoutRecipientResult(
+        response.isStatus(),
+        response.getMessage(),
+        response.getData().getRecipientCode(),
+        response.getData().getName()
+    );
+  }
+
+  private PayoutResult mapTransferResponse(
+      PaystackTransferResponse response
+  ) {
+
+    return new PayoutResult(
+        response.isStatus(),
+        mapPayoutStatus(response.getData().getStatus()),
+        response.getData().getReference(),
+        response.getData().getTransferCode(),
+        response.getMessage()
+    );
+  }
+
+  private PayoutGatewayStatus mapPayoutStatus(String status) {
+
+    if (status == null) {
+      return PayoutGatewayStatus.PENDING;
+    }
+
+    return switch (status.toLowerCase()) {
+
+      case "pending", "received" ->
+          PayoutGatewayStatus.PENDING;
+
+      case "success" ->
+          PayoutGatewayStatus.SUCCESS;
+
+      case "failed", "abandoned", "blocked", "rejected" ->
+          PayoutGatewayStatus.FAILED;
+
+      case "reversed" ->
+          PayoutGatewayStatus.REVERSED;
+
+      default -> {
+        log.warn("Unknown Paystack transfer status: {}", status);
+        yield PayoutGatewayStatus.UNKNOWN;
+      }
+    };
+  }
+
+  private PayoutVerificationResult mapVerifyTransferResponse(
+      PaystackTransferResponse response
+  ) {
+
+    if (response == null || response.getData() == null) {
+
+      return new PayoutVerificationResult(
+          null,
+          null,
+          PayoutGatewayStatus.UNKNOWN,
+          null,
+          null,
+          null
+      );
+    }
+
+    PaystackTransferResponse.Data data = response.getData();
+
+    BigDecimal amount = data.getAmount() != null
+        ? BigDecimal.valueOf(data.getAmount()).movePointLeft(2)
+        : null;
+
+    return new PayoutVerificationResult(
+        data.getReference(),
+        data.getTransferCode(),
+        mapPayoutStatus(data.getStatus()),
+        amount,
+        data.getCurrency(),
+        data.getTransferredAt()
+    );
+  }
+
+  public PayoutWebhookEvent parsePayoutWebhook(String payload) {
+
+    try {
+      return objectMapper.readValue(
+          payload,
+          PayoutWebhookEvent.class
+      );
+    } catch (Exception e) {
+      throw new RuntimeException(
+          "Unable to parse Paystack payout webhook payload",
+          e
+      );
+    }
+  }
+
+//  private PayoutResult mapTransferResponse(
+//      PaystackTransferResponse response
+//  ) {
+//
+//    if (response == null || !response.isStatus()) {
+//
+//      return PayoutResult.builder()
+//          .accepted(false)
+//          .status(PayoutGatewayStatus.FAILED)
+//          .failureReason(
+//              response != null
+//                  ? response.getMessage()
+//                  : "Paystack transfer failed"
+//          )
+//          .build();
+//    }
+//
+//    return PayoutResult.builder()
+//        .accepted(true)
+//        .status(
+//            mapInitiationStatus(
+//                response.getData().getStatus()
+//            )
+//        )
+//        .providerReference(
+//            response.getData().getReference()
+//        )
+//        .providerTransferCode(
+//            response.getData().getTransferCode()
+//        )
+//        .build();
+//  }
+
 }

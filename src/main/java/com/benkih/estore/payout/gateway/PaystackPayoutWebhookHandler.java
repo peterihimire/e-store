@@ -1,0 +1,44 @@
+package com.benkih.estore.payout.gateway;
+
+
+
+import com.benkih.estore.payout.dto.response.PayoutVerificationResult;
+import com.benkih.estore.payout.enums.PayoutProvider;
+
+
+import com.benkih.estore.payout.provider.PayoutWebhookHandler;
+import com.benkih.estore.payout.webhook.PayoutWebhookEvent;
+import com.benkih.estore.vendor.PaystackClient;
+import lombok.RequiredArgsConstructor;
+
+import org.springframework.stereotype.Service;
+
+@Service
+@RequiredArgsConstructor
+public class PaystackPayoutWebhookHandler implements PayoutWebhookHandler {
+  private final PaystackClient paystackClient;
+
+  @Override
+  public PayoutProvider supports() {
+    return PayoutProvider.PAYSTACK;
+  }
+
+  @Override
+  public void verifySignature(String signature, String payload) {
+    if (!paystackClient.verifyWebhookSignature(signature, payload)) {
+      throw new IllegalArgumentException(
+          "Invalid Paystack payout webhook signature"
+      );
+    }
+  }
+
+  @Override
+  public PayoutWebhookEvent parseWebhook(String payload) {
+    return paystackClient.parsePayoutWebhook(payload);
+  }
+
+  @Override
+  public PayoutVerificationResult verify(String providerReference) {
+    return paystackClient.verifyTransfer(providerReference);
+  }
+}

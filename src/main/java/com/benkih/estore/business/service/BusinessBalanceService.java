@@ -90,6 +90,32 @@ public class BusinessBalanceService implements IBusinessBalanceService{
     repository.save(balance);
   }
 
+  public void movePayoutToAvailable(
+      Business business,
+      CurrencyCode currency,
+      BigDecimal amount
+  ) {
+
+    BusinessBalance balance =
+        getOrCreate(business, currency);
+
+    if (balance.getReservedBalance().compareTo(amount) < 0) {
+      throw new IllegalStateException(
+          "Insufficient payout processing balance"
+      );
+    }
+
+    balance.setReservedBalance(
+        balance.getReservedBalance().subtract(amount)
+    );
+
+    balance.setAvailableBalance(
+        balance.getAvailableBalance().add(amount)
+    );
+
+    repository.save(balance);
+  }
+
   public void recordAllocations(List<Allocation> allocations) {
 
     if (allocations == null || allocations.isEmpty()) {

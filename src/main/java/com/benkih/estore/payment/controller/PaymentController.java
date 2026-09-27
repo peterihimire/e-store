@@ -18,12 +18,18 @@ public class PaymentController {
   @PostMapping("/checkout")
   public ResponseEntity<ApiResponse> checkout(@RequestBody CheckoutRequest request) {
     InitializePaymentResponse response = paymentService.checkout(request);
-    return ResponseEntity.ok(new ApiResponse("success", "Checkout returned successful", response));
+    return ResponseEntity.ok(new ApiResponse(
+        "success",
+        "Checkout returned successful",
+        response));
   }
 
   @GetMapping("/verify/{reference}")
   public ResponseEntity<ApiResponse> verify(@PathVariable String reference){
     PaymentResponse response = paymentService.verify(reference);
-    return ResponseEntity.ok(new ApiResponse("success", "Payment verified success", response));
+    return ResponseEntity.ok(new ApiResponse(
+        "success",
+        "Payment verified success",
+        response));
   }
 }
