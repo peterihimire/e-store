@@ -24,4 +24,8 @@ public interface PayoutRepository extends JpaRepository<Payout, Long> {
   Optional<Payout>  findByIdempotencyKey(
       String idempotencyKey
   );
+
+  Optional<Payout> findByProviderReference(
+      String providerReference
+  );
 }

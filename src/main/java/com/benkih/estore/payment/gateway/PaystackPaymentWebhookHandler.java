@@ -2,15 +2,15 @@ package com.benkih.estore.payment.gateway;
 
 import com.benkih.estore.common.enums.PaymentProvider;
 import com.benkih.estore.payment.dto.response.VerifyPaymentResponse;
-import com.benkih.estore.payment.dto.webhook.PaymentWebhookEvent;
 import com.benkih.estore.payment.provider.PaymentWebhookHandler;
 import com.benkih.estore.vendor.PaystackClient;
+import com.benkih.estore.webhook.handler.WebhookEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class PaystackWebhookHandler implements PaymentWebhookHandler {
+public class PaystackPaymentWebhookHandler implements PaymentWebhookHandler {
   private final PaystackClient paystackClient;
 
   @Override
@@ -25,8 +25,13 @@ public class PaystackWebhookHandler implements PaymentWebhookHandler {
     }
   }
 
+//  @Override
+//  public PaymentWebhookEvent parseWebhook(String payload) {
+//    return paystackClient.parseWebhook(payload);
+//  }
+
   @Override
-  public PaymentWebhookEvent parseWebhook(String payload) {
+  public WebhookEvent parseWebhook(String payload) {
     return paystackClient.parseWebhook(payload);
   }
 

@@ -31,6 +31,7 @@ import com.benkih.estore.refund.repository.RefundItemRepository;
 import com.benkih.estore.refund.repository.RefundRepository;
 import com.benkih.estore.security.user.CurrentUserService;
 import com.benkih.estore.user.entity.User;
+import com.benkih.estore.webhook.handler.WebhookEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -259,7 +260,7 @@ public class RefundService implements IRefundService{
   // WEBHOOK STATUS UPDATES
   @Override
   @Transactional
-  public void markPending(PaymentWebhookEvent event) {
+  public void markPending(WebhookEvent event) {
     Refund refund = getRefundByPaymentReference(event.transactionReference());
     refund.setGatewayStatus(RefundGatewayStatus.PENDING);
 
@@ -269,7 +270,7 @@ public class RefundService implements IRefundService{
 
   @Override
   @Transactional
-  public void markProcessing(PaymentWebhookEvent event) {
+  public void markProcessing(WebhookEvent event) {
     Refund refund = getRefundByPaymentReference(event.transactionReference());
     refund.setGatewayStatus(RefundGatewayStatus.PROCESSING);
 
@@ -279,7 +280,7 @@ public class RefundService implements IRefundService{
 
   @Override
   @Transactional
-  public void markNeedsAttention(PaymentWebhookEvent event) {
+  public void markNeedsAttention(WebhookEvent event) {
     Refund refund = getRefundByPaymentReference(event.transactionReference());
     refund.setGatewayStatus(RefundGatewayStatus.NEEDS_ATTENTION);
 
@@ -292,7 +293,7 @@ public class RefundService implements IRefundService{
 
 @Override
 @Transactional
-public void markSuccessful(PaymentWebhookEvent event) {
+public void markSuccessful(WebhookEvent event) {
 
   Refund refund = getRefundByPaymentReference(
       event.transactionReference()
@@ -356,7 +357,7 @@ public void markSuccessful(PaymentWebhookEvent event) {
 
   @Override
   @Transactional
-  public void markFailed(PaymentWebhookEvent event, String reason) {
+  public void markFailed(WebhookEvent event, String reason) {
     Refund refund = getRefundByPaymentReference(event.transactionReference());
     refund.setGatewayStatus(RefundGatewayStatus.FAILED);
     refund.setFailureReason(reason);
@@ -430,6 +431,47 @@ public void markSuccessful(PaymentWebhookEvent event) {
     Refund saved = refundRepository.save(refund);
 
     return convertToDto(saved);
+  }
+
+
+  @Transactional
+  public void handleWebhook(
+      WebhookEvent event,
+      String signature,
+      String payload
+  ) {
+
+    switch (event.eventType()) {
+
+      case "refund.pending":
+        markPending(event);
+        break;
+
+      case "refund.processing":
+        markProcessing(event);
+        break;
+
+      case "refund.needs-attention":
+        markNeedsAttention(event);
+        break;
+
+      case "refund.failed":
+        markFailed(
+            event,
+            "Refund failed"
+        );
+        break;
+
+      case "refund.processed":
+        markSuccessful(event);
+        break;
+
+      default:
+        log.info(
+            "Ignoring refund event: {}",
+            event.eventType()
+        );
+    }
   }
 
 
@@ -533,6 +575,13 @@ public void markSuccessful(PaymentWebhookEvent event) {
       );
     }
   }
+
+
+
+
+
+
+  // Let's see here
 }
 //NOTE:
 //Also, your refundRepository.flush() is different from save() here.

@@ -9,6 +9,7 @@ import com.benkih.estore.payout.enums.PayoutProvider;
 import com.benkih.estore.payout.provider.PayoutWebhookHandler;
 import com.benkih.estore.payout.webhook.PayoutWebhookEvent;
 import com.benkih.estore.vendor.PaystackClient;
+import com.benkih.estore.webhook.handler.WebhookEvent;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
@@ -32,8 +33,13 @@ public class PaystackPayoutWebhookHandler implements PayoutWebhookHandler {
     }
   }
 
+//  @Override
+//  public PayoutWebhookEvent parseWebhook(String payload) {
+//    return paystackClient.parsePayoutWebhook(payload);
+//  }
+
   @Override
-  public PayoutWebhookEvent parseWebhook(String payload) {
+  public WebhookEvent parseWebhook(String payload) {
     return paystackClient.parsePayoutWebhook(payload);
   }
 

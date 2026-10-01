@@ -30,7 +30,9 @@ import com.benkih.estore.payout.provider.PayoutGateway;
 import com.benkih.estore.payout.provider.PayoutGatewayFactory;
 import com.benkih.estore.payout.repository.PayoutRecipientRepository;
 import com.benkih.estore.payout.repository.PayoutRepository;
+import com.benkih.estore.webhook.handler.WebhookEvent;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,6 +43,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -243,6 +246,65 @@ public class PayoutService implements IPayoutService{
     payoutRepository.save(payout);
   }
 
+  @Transactional
+  public void handleWebhook(
+      WebhookEvent event,
+      String signature,
+      String payload
+  ) {
+
+//    if (!isPayoutEvent(event)) {
+//      throw new IllegalArgumentException(
+//          "Invalid payout webhook event: " + event.eventType()
+//      );
+//    }
+
+    Payout payout =
+        payoutRepository.findByProviderReference(event.reference())
+            .orElseThrow(() ->
+                new ResourceNotFoundException(
+                    "Payout not found for provider reference: "
+                        + event.reference()
+                )
+            );
+
+//    if (isDuplicateWebhook(payout, event, payload)) {
+//      log.info(
+//          "Payout webhook already processed: {}",
+//          event.reference()
+//      );
+//      return;
+//    }
+
+//    saveWebhookEvent(
+//        payout,
+//        event.eventType(),
+//        payload,
+//        signature
+//    );
+
+    switch (event.eventType()) {
+
+      case "transfer.success":
+        handleTransferSuccess(payout, event);
+        break;
+
+      case "transfer.failed":
+        handleTransferFailure(payout, event);
+        break;
+
+      case "transfer.reversed":
+        handleTransferReversed(payout, event);
+        break;
+
+      default:
+        log.info(
+            "Ignoring payout event: {}",
+            event.eventType()
+        );
+    }
+  }
+
   public PayoutResponseDto convertToDto(Payout payout) {
 
     return PayoutResponseDto.builder()
@@ -289,7 +351,7 @@ public class PayoutService implements IPayoutService{
     payout.setAmount(amount);
     payout.setTransferFee(transferFee);
     payout.setStampDuty(stampDuty);
-    
+
     payout.setStatus(PayoutStatus.REQUESTED);
     payout.setIdempotencyKey(idempotencyKey);
     payout.setRequestedAt(Instant.now());
@@ -478,5 +540,149 @@ public class PayoutService implements IPayoutService{
     payout.setProcessedAt(Instant.now());
 
     payoutRepository.save(payout);
+  }
+
+  private void handleTransferSuccess(
+      Payout payout,
+      WebhookEvent event
+  ) {
+    if (payout.getStatus() == PayoutStatus.COMPLETED) {
+      return;
+    }
+
+    LedgerAccount processing =
+        ledgerAccountService.getOrCreatePlatformAccount(
+            LedgerAccountType.PAYOUT_PROCESSING,
+            payout.getCurrency()
+        );
+
+    LedgerAccount cash =
+        ledgerAccountService.getOrCreatePlatformAccount(
+            LedgerAccountType.PLATFORM_CASH,
+            payout.getCurrency()
+        );
+
+    ledgerService.post(
+        LedgerTransactionType.PAYOUT_COMPLETED,
+        payout.getCurrency(),
+        "PAYOUT-COMPLETED-" + payout.getSlug(),
+        "Payout completed",
+        List.of(
+            new LedgerPosting(
+                processing,
+                LedgerEntryDirection.DEBIT,
+                payout.getAmount(),
+                null,
+                null,
+                payout,
+                "Complete payout processing"
+            ),
+            new LedgerPosting(
+                cash,
+                LedgerEntryDirection.CREDIT,
+                payout.getAmount(),
+                null,
+                null,
+                payout,
+                "Payout completed"
+            )
+        )
+    );
+
+    payout.setStatus(PayoutStatus.COMPLETED);
+    payout.setProcessedAt(Instant.now());
+
+    payoutRepository.save(payout);
+  }
+
+
+  private void handleTransferFailure(
+      Payout payout,
+      WebhookEvent event
+  ) {
+
+    if (payout.getStatus() == PayoutStatus.FAILED) {
+      return;
+    }
+
+    reversePayoutReservation(payout);
+
+    payout.setStatus(PayoutStatus.FAILED);
+    payout.setFailureReason(
+        "Transfer failed"
+    );
+    payout.setProcessedAt(Instant.now());
+
+    payoutRepository.save(payout);
+  }
+
+
+  private void handleTransferReversed(
+      Payout payout,
+      WebhookEvent event
+  ) {
+
+    if (payout.getStatus() == PayoutStatus.REVERSED) {
+      return;
+    }
+
+    reversePayoutReservation(payout);
+
+    payout.setStatus(PayoutStatus.REVERSED);
+    payout.setFailureReason(
+        "Transfer was reversed by payment provider"
+    );
+    payout.setProcessedAt(Instant.now());
+
+    payoutRepository.save(payout);
+  }
+
+  private void reversePayoutReservation(Payout payout) {
+
+    LedgerAccount payoutProcessing =
+        ledgerAccountService.getOrCreatePlatformAccount(
+            LedgerAccountType.PAYOUT_PROCESSING,
+            payout.getCurrency()
+        );
+
+    LedgerAccount available =
+        ledgerAccountService.getOrCreateSellerAccount(
+            payout.getBusiness(),
+            LedgerAccountType.SELLER_AVAILABLE,
+            payout.getCurrency()
+        );
+
+    ledgerService.post(
+        LedgerTransactionType.PAYOUT_FAILED,
+        payout.getCurrency(),
+        "PAYOUT-FAILED-" + payout.getSlug(),
+        "Payout reservation reversed",
+        List.of(
+            new LedgerPosting(
+                payoutProcessing,
+                LedgerEntryDirection.DEBIT,
+                payout.getAmount(),
+                null,
+                null,
+                payout,
+                "Reverse payout processing"
+            ),
+            new LedgerPosting(
+                available,
+                LedgerEntryDirection.CREDIT,
+                payout.getAmount(),
+                null,
+                null,
+                payout,
+                "Return payout funds to seller"
+            )
+        )
+    );
+
+    balanceService.movePayoutToAvailable(
+        payout.getBusiness(),
+        payout.getCurrency(),
+        payout.getAmount()
+    );
   }
 }

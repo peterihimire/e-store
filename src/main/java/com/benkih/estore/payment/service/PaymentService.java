@@ -30,6 +30,7 @@ import com.benkih.estore.payment.repository.PaymentRepository;
 import com.benkih.estore.refund.service.IRefundService;
 import com.benkih.estore.security.user.CurrentUserService;
 import com.benkih.estore.user.entity.User;
+import com.benkih.estore.webhook.handler.WebhookEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -120,88 +121,143 @@ public class PaymentService implements IPaymentService {
 
   @Transactional
   public void handleWebhook(
-      PaymentProvider provider,
+      WebhookEvent event,
       String signature,
-      String payload,
-      String endpoint
+      String payload
   ) {
 
-    try {
-      PaymentWebhookHandler handler = paymentWebhookHandlerFactory.get(provider);
+//    if (!isPaymentEvent(event)) {
+//      throw new IllegalArgumentException(
+//          "Invalid payment webhook event: " + event.eventType()
+//      );
+//    }
 
-      handler.verifySignature(signature, payload); // comment 4 manual webhook
+    Payment payment = getPayment(event.reference());
 
-      PaymentWebhookEvent event = handler.parseWebhook(payload);
-
-      switch (event.eventType()) {
-
-        case "charge.success":
-        case "charge.failed":
-          handleChargeEvent(handler, event, signature, payload);
-          break;
-
-        case "transfer.success":
-        case "transfer.failed":
-//          handleTransferEvent(event, payload);
-          break;
-
-        case "refund.pending":
-          refundService.markPending(event);
-          break;
-
-        case "refund.processing":
-          refundService.markProcessing(event);
-          break;
-
-        case "refund.needs-attention":
-          refundService.markNeedsAttention(event);
-          break;
-
-        case "refund.failed":
-          refundService.markFailed(event, "Refund failed");
-          break;
-
-        case "refund.processed":
-          refundService.markSuccessful(event);
-          break;
-
-        default:
-          log.info("Ignoring event {}", event.eventType());
-
-          apiLogService.saveInboundLog(
-              "POST",
-              endpoint,
-              payload,
-              200,
-              "Ignored event: " + event.eventType(),
-              null
-          );
-          return;
-      }
-
-      apiLogService.saveInboundLog(
-          "POST",
-          endpoint,
-          payload,
-          200,
-          "Webhook processed successfully",
-          null
+    if (isDuplicateWebhook(payment, event, payload)) {
+      log.info("Payment webhook already processed: {}",
+          event.reference()
       );
-
-    } catch (Exception e) {
-
-      apiLogService.saveInboundLog(
-          "POST",
-          endpoint,
-          payload,
-          500,
-          null,
-          e
-      );
-
-      throw e;
+      return;
     }
+
+    saveWebhookEvent(
+        payment,
+        event.eventType(),
+        payload,
+        signature
+    );
+
+//    PaymentGateway gateway =
+//        paymentGatewayFactory.get(payment.getPaymentProvider());
+
+    PaymentWebhookHandler handler = paymentWebhookHandlerFactory.get(
+            event.provider());
+
+    VerifyPaymentResponse response = handler.verify(event.reference());
+
+//    VerifyPaymentResponse response =
+//        gateway.verify(event.reference());
+
+    synchronizePayment(
+        payment,
+        response
+    );
+
+    processOrder(payment);
+
+    postPaymentProcessing(payment);
+
+    saveFinalPaymentEvent(
+        payment,
+        event,
+        response
+    );
   }
+//  @Transactional
+//  public void handleWebhook(
+//      PaymentProvider provider,
+//      String signature,
+//      String payload,
+//      String endpoint
+//  ) {
+//
+//    try {
+//      PaymentWebhookHandler handler = paymentWebhookHandlerFactory.get(provider);
+//
+//      handler.verifySignature(signature, payload); // comment 4 manual webhook
+//      WebhookEvent event = handler.parseWebhook(payload);
+////      PaymentWebhookEvent event = handler.parseWebhook(payload);
+//
+//      switch (event.eventType()) {
+//
+//        case "charge.success":
+//        case "charge.failed":
+//          handleChargeEvent(handler, event, signature, payload);
+//          break;
+//
+//        case "transfer.success":
+//        case "transfer.failed":
+////          handleTransferEvent(event, payload);
+//          break;
+//
+//        case "refund.pending":
+//          refundService.markPending(event);
+//          break;
+//
+//        case "refund.processing":
+//          refundService.markProcessing(event);
+//          break;
+//
+//        case "refund.needs-attention":
+//          refundService.markNeedsAttention(event);
+//          break;
+//
+//        case "refund.failed":
+//          refundService.markFailed(event, "Refund failed");
+//          break;
+//
+//        case "refund.processed":
+//          refundService.markSuccessful(event);
+//          break;
+//
+//        default:
+//          log.info("Ignoring event {}", event.eventType());
+//
+//          apiLogService.saveInboundLog(
+//              "POST",
+//              endpoint,
+//              payload,
+//              200,
+//              "Ignored event: " + event.eventType(),
+//              null
+//          );
+//          return;
+//      }
+//
+//      apiLogService.saveInboundLog(
+//          "POST",
+//          endpoint,
+//          payload,
+//          200,
+//          "Webhook processed successfully",
+//          null
+//      );
+//
+//    } catch (Exception e) {
+//
+//      apiLogService.saveInboundLog(
+//          "POST",
+//          endpoint,
+//          payload,
+//          500,
+//          null,
+//          e
+//      );
+//
+//      throw e;
+//    }
+//  }
 
 
   @Override
@@ -352,7 +408,7 @@ public class PaymentService implements IPaymentService {
 
   private void handleChargeEvent(
       PaymentWebhookHandler handler,
-      PaymentWebhookEvent event,
+      WebhookEvent event,
       String signature,
       String payload
   ) {
@@ -423,7 +479,7 @@ public class PaymentService implements IPaymentService {
   }
 
 
-  private boolean shouldIgnore(PaymentWebhookEvent event) {
+  private boolean shouldIgnore(WebhookEvent event) {
     String eventType = event.eventType();
     if (!"charge.success".equals(eventType) && !"charge.failed".equals(eventType)) {
       log.info("Ignoring webhook event {}", eventType);
@@ -439,7 +495,11 @@ public class PaymentService implements IPaymentService {
   }
 
 
-  private boolean isDuplicateWebhook(Payment payment, PaymentWebhookEvent event, String payload) {
+  private boolean isDuplicateWebhook(
+      Payment payment,
+      WebhookEvent event,
+      String payload
+  ) {
     String reference = payment.getReference();
     String transactionId = event.transactionId();
 //    String transactionId = String.valueOf(payment.getTransactionId());
@@ -495,7 +555,10 @@ private void processOrder(Payment payment) {
 //    }
 //  }
 
-  private void saveFinalPaymentEvent(Payment payment, PaymentWebhookEvent event, VerifyPaymentResponse response) {
+  private void saveFinalPaymentEvent(
+      Payment payment,
+      WebhookEvent event,
+      VerifyPaymentResponse response) {
     PaymentEventType type = payment.getPaymentStatus() == PaymentStatus.SUCCESS
             ? PaymentEventType.SUCCESS
             : PaymentEventType.FAILED;

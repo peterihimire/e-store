@@ -5,6 +5,7 @@ import com.benkih.estore.payment.dto.webhook.PaymentWebhookEvent;
 import com.benkih.estore.refund.dto.request.CreateRefundRequest;
 import com.benkih.estore.refund.dto.response.RefundResponse;
 import com.benkih.estore.refund.entity.Refund;
+import com.benkih.estore.webhook.handler.WebhookEvent;
 
 import java.util.List;
 
@@ -20,15 +21,15 @@ public interface IRefundService {
   RefundPaymentResponse verifyRefund(String refundReference);
 
   // Webhook status updates
-  void markPending(PaymentWebhookEvent event);
+  void markPending(WebhookEvent event);
 
-  void markProcessing(PaymentWebhookEvent event);
+  void markProcessing(WebhookEvent event);
 
-  void markNeedsAttention(PaymentWebhookEvent event);
+  void markNeedsAttention(WebhookEvent event);
 
-  void markFailed(PaymentWebhookEvent event, String reason);
+  void markFailed(WebhookEvent event, String reason);
 
-  void markSuccessful(PaymentWebhookEvent event);
+  void markSuccessful(WebhookEvent event);
 
   // Retrieval
   RefundResponse getRefund(String refundSlug);
@@ -44,4 +45,23 @@ public interface IRefundService {
 
   // DTO conversion
   RefundResponse convertToDto(Refund refund);
+
+//  void markPending(WebhookEvent event);
+//
+//  void markProcessing(WebhookEvent event);
+//
+//  void markNeedsAttention(WebhookEvent event);
+//
+//  void markFailed(
+//      WebhookEvent event,
+//      String reason
+//  );
+//
+//  void markSuccessful(WebhookEvent event);
+
+  void handleWebhook(
+      WebhookEvent event,
+      String signature,
+      String payload
+  );
 }

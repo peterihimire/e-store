@@ -1,6 +1,7 @@
 package com.benkih.estore.payment.dto.webhook;
 
 import com.benkih.estore.common.enums.PaymentProvider;
+import com.benkih.estore.webhook.handler.WebhookEvent;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
@@ -10,7 +11,7 @@ import java.time.OffsetDateTime;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class PaystackWebhookEvent implements PaymentWebhookEvent{
+public class PaystackWebhookEvent implements WebhookEvent {
 
   private String event;
 
