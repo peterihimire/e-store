@@ -1,0 +1,5 @@
+ALTER TABLE order_items
+    ADD COLUMN returnable BOOLEAN NOT NULL DEFAULT TRUE;
+
+ALTER TABLE order_items
+    ADD COLUMN return_window_days INTEGER NOT NULL DEFAULT 7;

@@ -1,64 +1,127 @@
 package com.benkih.estore.order.entity;
 
+import com.benkih.estore.allocation.entity.Allocation;
+import com.benkih.estore.business.entity.Business;
+import com.benkih.estore.common.entity.BaseEntity;
+import com.benkih.estore.common.enums.CurrencyCode;
+import com.benkih.estore.common.enums.TaxCategory;
+import com.benkih.estore.product.entity.Brand;
 import com.benkih.estore.product.entity.Product;
-import jakarta.persistence.*;
-import lombok.*;
-
+import com.benkih.estore.product.entity.ProductVariant;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.PositiveOrZero;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.UUID;
-
+import java.util.ArrayList;
+import java.util.List;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @Entity
 @Table(name = "order_items")
-public class OrderItem {
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+public class OrderItem extends BaseEntity {
 
-  @Column(nullable = false, unique = true, updatable = false)
-  private String slug;
+    private int quantity;
 
-  private int quantity;
-  private BigDecimal price;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "variant_id", nullable = false)
+    private ProductVariant variant;
 
-  private String createdBy;
-  private String updatedBy;
+    @Column(nullable = false, precision = 18, scale = 2)
+    private BigDecimal price;
 
-  @Column(nullable = false,updatable = false)
-  private LocalDateTime createdAt;
-  private LocalDateTime updatedAt;
+    @Column(nullable = false)
+    private String name;
 
-  @ManyToOne
-  @JoinColumn(name = "order_id")
-  private Order order;
+    @Column(nullable = false)
+    private String sku;
 
-  @ManyToOne
-  @JoinColumn(name = "product_id")
-  private Product product;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "brand_id")
+    private Brand brand;
 
-  public OrderItem(int quantity, BigDecimal price, Order order, Product product) {
-    this.quantity = quantity;
-    this.price = price;
-    this.order = order;
-    this.product = product;
-  }
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 3)
+    private CurrencyCode currency;
 
-  @PrePersist
-  public void onCreate() {
-    if (this.slug == null) {
-      this.slug = UUID.randomUUID().toString();
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tax_category", nullable = false)
+    private TaxCategory taxCategory;
+
+    @Column(name = "tax_rate", nullable = false, precision = 8, scale = 5)
+    private BigDecimal taxRate;
+
+    @Column(name = "discount_amount", nullable = false, precision = 19, scale = 2)
+    private BigDecimal discountAmount = BigDecimal.ZERO;
+
+    @Column(name = "tax_amount", nullable = false, precision = 19, scale = 2)
+    private BigDecimal taxAmount = BigDecimal.ZERO;
+
+    @Column(nullable = false, precision = 19, scale = 2)
+    private BigDecimal subtotal;
+
+    @ManyToOne
+    @JoinColumn(name = "order_id")
+    private Order order;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
+
+    @Column(name = "returnable", nullable = false)
+    private boolean returnable;
+
+    @PositiveOrZero
+    @Column(name = "return_window_days", nullable = false)
+    private Integer returnWindowDays;
+
+    public OrderItem(
+            int quantity,
+            BigDecimal price,
+            String name,
+            String sku,
+            Brand brand,
+            CurrencyCode currency,
+            TaxCategory taxCategory,
+            Order order,
+            Product product,
+            ProductVariant variant,
+            boolean returnable,
+            Integer returnWindowDays,
+            Business business,
+            BigDecimal subtotal) {
+        this.quantity = quantity;
+        this.price = price;
+        this.name = name;
+        this.sku = sku;
+        this.brand = brand;
+        this.currency = currency;
+        this.taxCategory = taxCategory;
+        this.order = order;
+        this.product = product;
+        this.variant = variant;
+        this.returnable = returnable;
+        this.returnWindowDays = returnWindowDays;
+        this.business = business;
+        this.subtotal = subtotal;
     }
-    if (this.createdAt == null) {
-      this.createdAt = LocalDateTime.now();
-    }
-  }
 
-  @PreUpdate
-  public void onUpdate() {
-    this.updatedAt = LocalDateTime.now();
-  }
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "business_id", nullable = false)
+    private Business business;
+
+    @OneToMany(mappedBy = "orderItem", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Allocation> allocations = new ArrayList<>();
 }

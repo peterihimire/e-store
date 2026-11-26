@@ -1,84 +1,48 @@
 package com.benkih.estore.audit.entity;
 
-import jakarta.persistence.*;
+import com.benkih.estore.common.entity.BaseEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @Entity
 @Table(name = "api_logs")
-public class ApiLog {
+public class ApiLog extends BaseEntity {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+    private String userSlug;
 
-  @Column(nullable = false, unique = true, updatable = false)
-  private String slug;
+    private String userEmail;
 
-  private String userSlug;
+    @Column(nullable = false)
+    private String method;
 
-  private String userEmail;
+    @Column(nullable = false)
+    private String endpoint;
 
-  @Column(nullable = false)
-  private String method;
+    private Integer statusCode;
 
-  @Column(nullable = false)
-  private String endpoint;
+    private Long durationMs;
 
-  private Integer statusCode;
+    private String requestIp;
 
-  /**
-   * Duration in milliseconds
-   */
-  private Long durationMs;
+    @Column(length = 1000)
+    private String userAgent;
 
-  private String requestIp;
+    @Column(length = 100)
+    private String traceId;
 
-  @Column(length = 1000)
-  private String userAgent;
+    @Column(columnDefinition = "TEXT")
+    private String requestBody;
 
-  @Column(length = 100)
-  private String traceId;
+    @Column(columnDefinition = "TEXT")
+    private String responseBody;
 
-  @Column(columnDefinition = "TEXT")
-  private String requestBody;
-
-  @Column(columnDefinition = "TEXT")
-  private String responseBody;
-
-  @Column(columnDefinition = "TEXT")
-  private String exceptionMessage;
-
-  private String createdBy;
-
-  private String updatedBy;
-
-  @Column(nullable = false, updatable = false)
-  private LocalDateTime createdAt;
-
-  private LocalDateTime updatedAt;
-
-  @PrePersist
-  public void onCreate() {
-
-    if (slug == null) {
-      slug = UUID.randomUUID().toString();
-    }
-
-    if (createdAt == null) {
-      createdAt = LocalDateTime.now();
-    }
-  }
-
-  @PreUpdate
-  public void onUpdate() {
-    updatedAt = LocalDateTime.now();
-  }
+    @Column(columnDefinition = "TEXT")
+    private String exceptionMessage;
 }

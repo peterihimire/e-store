@@ -7,34 +7,26 @@ import lombok.Data;
 @Data
 public class CreateAddressRequest {
 
-//  @NotBlank
-//  private String fullName;
+    //  @NotBlank
+    //  private String fullName;
 
-  @NotBlank
-  private String firstName;
+    @NotBlank private String firstName;
 
-  @NotBlank
-  private String lastName;
+    @NotBlank private String lastName;
 
-  @NotBlank
-  private String phoneNumber;
+    @NotBlank private String phoneNumber;
 
-  @NotBlank
-  private String addressLine1;
+    @NotBlank private String addressLine1;
 
-  private String addressLine2;
+    private String addressLine2;
 
-  @NotBlank
-  private String city;
+    @NotBlank private String city;
 
-  @NotBlank
-  private String state;
+    @NotBlank private String state;
 
-  @NotBlank
-  private Country country;
+    @NotBlank private Country country;
 
-  @NotBlank
-  private String postalCode;
+    @NotBlank private String postalCode;
 
-  private boolean defaultAddress;
+    private boolean defaultAddress;
 }

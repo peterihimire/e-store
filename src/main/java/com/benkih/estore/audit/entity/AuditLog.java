@@ -1,156 +1,76 @@
 package com.benkih.estore.audit.entity;
 
-import jakarta.persistence.*;
+import com.benkih.estore.common.entity.BaseEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Lob;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @Entity
 @Table(name = "audit_logs")
-public class AuditLog {
+public class AuditLog extends BaseEntity {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+    /** User that performed the action. Null for anonymous requests. */
+    private String userSlug;
 
-  @Column(nullable = false, unique = true, updatable = false)
-  private String slug;
+    private String userEmail;
 
-  /**
-   * User that performed the action.
-   * Null for anonymous requests.
-   */
-  private String userSlug;
+    /** Shared across the user's journey. Obtained from X-Trace-Id. */
+    @Column(length = 100)
+    private String traceId;
 
-  private String userEmail;
+    /** Login session identifier. Null until the user authenticates. */
+    @Column(length = 100)
+    private String sessionId;
 
-  /**
-   * Shared across the user's journey.
-   * Obtained from X-Trace-Id.
-   */
-  @Column(length = 100)
-  private String traceId;
+    /** CREATE_PRODUCT UPDATE_ORDER LOGIN PAYMENT_SUCCESS */
+    @Column(nullable = false)
+    private String action;
 
-  /**
-   * Login session identifier.
-   * Null until the user authenticates.
-   */
-  @Column(length = 100)
-  private String sessionId;
+    /** PRODUCT ORDER USER PAYMENT ADDRESS */
+    @Column(nullable = false)
+    private String entityType;
 
-  /**
-   * CREATE_PRODUCT
-   * UPDATE_ORDER
-   * LOGIN
-   * PAYMENT_SUCCESS
-   */
-  @Column(nullable = false)
-  private String action;
+    /** Database ID of the affected entity. */
+    private Long entityId;
 
-  /**
-   * PRODUCT
-   * ORDER
-   * USER
-   * PAYMENT
-   * ADDRESS
-   */
-  @Column(nullable = false)
-  private String entityType;
+    /** Slug of the affected entity. */
+    private String entitySlug;
 
-  /**
-   * Database ID of the affected entity.
-   */
-  private Long entityId;
+    /** success / fail */
+    @Column(nullable = false)
+    private String status;
 
-  /**
-   * Slug of the affected entity.
-   */
-  private String entitySlug;
+    /** CREATE_ORDER success LOGIN failed */
+    private String outcome;
 
-  /**
-   * success / fail
-   */
-  @Column(nullable = false)
-  private String status;
+    /** Previous state (JSON) */
+    @Lob private String oldValue;
 
-  /**
-   * CREATE_ORDER success
-   * LOGIN failed
-   */
-  private String outcome;
+    /** New state (JSON) */
+    @Lob private String newValue;
 
-  /**
-   * Previous state (JSON)
-   */
-  @Lob
-  private String oldValue;
+    /** Request payload (JSON) */
+    @Lob private String request;
 
-  /**
-   * New state (JSON)
-   */
-  @Lob
-  private String newValue;
+    /** Response payload (JSON) */
+    @Lob private String response;
 
-  /**
-   * Request payload (JSON)
-   */
-  @Lob
-  private String request;
+    /** Extra information. */
+    @Lob private String description;
 
-  /**
-   * Response payload (JSON)
-   */
-  @Lob
-  private String response;
+    /** Metadata JSON. method, platform, origin, referer, contentType, etc. */
+    @Lob private String metadata;
 
-  /**
-   * Extra information.
-   */
-  @Lob
-  private String description;
+    @Column(length = 45)
+    private String requestIp;
 
-  /**
-   * Metadata JSON.
-   * method, platform, origin,
-   * referer, contentType, etc.
-   */
-  @Lob
-  private String metadata;
-
-  @Column(length = 45)
-  private String requestIp;
-
-  @Column(length = 1000)
-  private String userAgent;
-
-  private String createdBy;
-
-  private String updatedBy;
-
-  @Column(nullable = false, updatable = false)
-  private LocalDateTime createdAt;
-
-  private LocalDateTime updatedAt;
-
-  @PrePersist
-  public void onCreate() {
-    if (slug == null) {
-      slug = UUID.randomUUID().toString();
-    }
-
-    if (createdAt == null) {
-      createdAt = LocalDateTime.now();
-    }
-  }
-
-  @PreUpdate
-  public void onUpdate() {
-    updatedAt = LocalDateTime.now();
-  }
+    @Column(length = 1000)
+    private String userAgent;
 }

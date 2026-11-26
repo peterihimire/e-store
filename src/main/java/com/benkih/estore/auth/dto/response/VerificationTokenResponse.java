@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class VerificationTokenResponse {
-  private String plainToken;
-  private EmailVerification verification;
+    private String plainToken;
+    private EmailVerification verification;
 }

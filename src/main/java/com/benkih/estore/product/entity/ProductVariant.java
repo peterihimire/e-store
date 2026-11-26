@@ -1,0 +1,101 @@
+package com.benkih.estore.product.entity;
+
+import com.benkih.estore.business.entity.Business;
+import com.benkih.estore.common.entity.AuditableEntity;
+import com.benkih.estore.common.enums.CurrencyCode;
+import com.benkih.estore.inventory.entity.Inventory;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotNull;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@Entity
+@Table(
+        name = "product_variants",
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "uk_variant_business_sku",
+                    columnNames = {"business_id", "sku"}),
+            @UniqueConstraint(
+                    name = "uk_variant_product_combination",
+                    columnNames = {"product_id", "combination_key"})
+        })
+public class ProductVariant extends AuditableEntity {
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "business_id", nullable = false)
+    private Business business;
+
+    @OneToMany(mappedBy = "variant", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductVariantAttribute> attributes = new ArrayList<>();
+
+    @Embedded private PackageDimensions packageDimensions;
+
+    @Column(nullable = false, length = 100)
+    private String sku;
+
+    @NotNull
+    @DecimalMin(value = "0.00", inclusive = true)
+    @Column(nullable = false, precision = 19, scale = 2)
+    private BigDecimal price;
+
+    @Column(length = 50)
+    private String barcode;
+
+    @Column(length = 14)
+    private String gtin;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 3)
+    private CurrencyCode currency = CurrencyCode.NGN;
+
+    @Column(nullable = false)
+    private boolean active = true;
+
+    @Column(name = "combination_key", nullable = false, length = 500)
+    private String combinationKey;
+
+    @OneToOne(
+            mappedBy = "variant",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY)
+    private Inventory inventory;
+
+    public ProductVariant(
+            Product product,
+            Business business,
+            String sku,
+            BigDecimal price,
+            CurrencyCode currency) {
+        this.product = product;
+        this.business = business;
+        this.sku = sku;
+        this.price = price;
+        this.currency = currency;
+    }
+}

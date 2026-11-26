@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ImageDto {
-  private String imageSlug;
-  private String imageName;
-  private String downloadUrl;
+    private String imageSlug;
+    private String imageName;
+    private String downloadUrl;
 }

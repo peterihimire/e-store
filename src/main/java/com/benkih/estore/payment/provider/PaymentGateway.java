@@ -1,20 +1,23 @@
 package com.benkih.estore.payment.provider;
 
-import com.benkih.estore.common.enums.PaymentMethod;
 import com.benkih.estore.common.enums.PaymentProvider;
 import com.benkih.estore.payment.dto.request.InitializePaymentRequest;
+import com.benkih.estore.payment.dto.request.RefundPaymentRequest;
 import com.benkih.estore.payment.dto.response.InitializePaymentResponse;
+import com.benkih.estore.payment.dto.response.RefundPaymentResponse;
 import com.benkih.estore.payment.dto.response.VerifyPaymentResponse;
 
 public interface PaymentGateway {
 
-  PaymentProvider supports();
+    PaymentProvider supports();
 
-  InitializePaymentResponse initialize(InitializePaymentRequest request);
+    InitializePaymentResponse initialize(InitializePaymentRequest request);
 
-  VerifyPaymentResponse verify(String reference);
+    VerifyPaymentResponse verify(String reference);
 
-//  void refund(String reference);
-//
-//  String getName();
+    RefundPaymentResponse refund(RefundPaymentRequest request);
+
+    RefundPaymentResponse verifyRefund(String refundReference);
+
+    //  String getName();
 }

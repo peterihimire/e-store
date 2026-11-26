@@ -1,13 +1,28 @@
 name: Deploy
 
+# Fully automatic on push to main: verify -> build & push to DockerHub -> deploy.
+# The public image is what Render (or docker-compose.registry.yml) pulls, unlike
+# accesspo, which builds on the target server from source.
+
 on:
   push:
     branches:
       - main
+  workflow_dispatch:
+
+concurrency:
+  group: estore-deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/estore
 
 jobs:
-  deploy:
+  build-image:
+    name: Verify and publish DockerHub image
     runs-on: ubuntu-latest
+    outputs:
+      digest: ${{ steps.push.outputs.digest }}
 
     steps:
       - uses: actions/checkout@v4
@@ -15,11 +30,14 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 21
+          java-version: 17
           cache: maven
 
-      - name: Run Tests
-        run: ./mvnw clean verify
+      - name: Make Maven Wrapper Executable
+        run: chmod +x mvnw
+
+      - name: Verify
+        run: ./mvnw -B clean verify
 
       - uses: docker/setup-buildx-action@v3
 
@@ -28,15 +46,52 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and Push Docker Image
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,format=long
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push image
+        id: push
         uses: docker/build-push-action@v6
         with:
           context: .
+          platforms: linux/amd64
           push: true
-          tags: |
-            ${{ secrets.DOCKER_USERNAME }}/estore:${{ github.sha }}
-            ${{ secrets.DOCKER_USERNAME }}/estore:latest
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-      - name: Deploy Render
+      - name: Verify published image is pullable
+        run: docker buildx imagetools inspect "${{ env.IMAGE_NAME }}@${{ steps.push.outputs.digest }}"
+
+  deploy:
+    name: Deploy published image
+    needs: build-image
+    runs-on: ubuntu-latest
+    environment:
+      name: development
+      url: ${{ vars.SERVICE_URL }}
+
+    steps:
+      - name: Trigger Render deploy
+        run: curl --fail --silent --show-error "${{ secrets.RENDER_DEPLOY_HOOK }}"
+
+      - name: Wait for health
+        if: vars.SERVICE_URL != ''
         run: |
-          curl "${{ secrets.RENDER_DEPLOY_HOOK }}"
+          for i in $(seq 1 40); do
+            if curl -sf "${{ vars.SERVICE_URL }}/actuator/health/liveness" >/dev/null 2>&1; then
+              echo "Application healthy"
+              exit 0
+            fi
+            echo "Waiting for health ($i/40)..."
+            sleep 5
+          done
+          echo "Application did not become healthy"
+          exit 1

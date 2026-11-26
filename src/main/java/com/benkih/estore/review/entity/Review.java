@@ -1,128 +1,57 @@
 package com.benkih.estore.review.entity;
 
+import com.benkih.estore.business.entity.Business;
+import com.benkih.estore.common.entity.AuditableEntity;
 import com.benkih.estore.product.entity.Product;
 import com.benkih.estore.user.entity.User;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @Entity
 @Table(
-    name = "reviews",
-    uniqueConstraints = { // This unique constraint is to enforce  one review per user per product at the database level
-        @UniqueConstraint(
-            name = "uk_review_user_product",
-            columnNames = {"user_id", "product_id"}
-        )
-    }
-)
-public class Review {
+        name = "reviews",
+        uniqueConstraints = { // This unique constraint is to enforce  one review per user per
+            // product at the database level
+            @UniqueConstraint(
+                    name = "uk_review_user_product",
+                    columnNames = {"user_id", "product_id"})
+        },
+        indexes = {
+            @Index(name = "idx_reviews_business_id", columnList = "business_id"),
+            @Index(name = "idx_reviews_business_product", columnList = "business_id, product_id")
+        })
+public class Review extends AuditableEntity {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-  @Column(nullable = false, unique = true, updatable = false)
-  private String slug;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
 
-  @ManyToOne(fetch = FetchType.LAZY, optional = false)
-  @JoinColumn(name = "user_id", nullable = false)
-  private User user;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "business_id", nullable = false)
+    private Business business;
 
-  @ManyToOne(fetch = FetchType.LAZY, optional = false)
-  @JoinColumn(name = "product_id", nullable = false)
-  private Product product;
+    @Column(nullable = false)
+    private Integer rating;
 
-  @Column(nullable = false)
-  private Integer rating;
+    @Column(length = 1000)
+    private String comment;
 
-  @Column(length = 1000)
-  private String comment;
-
-  @Column(nullable = false)
-  private Boolean verifiedPurchase = false;
-
-  private String createdBy;
-  private String updatedBy;
-
-  @Column(nullable = false, updatable = false)
-  private LocalDateTime createdAt;
-
-  private LocalDateTime updatedAt;
-
-  @PrePersist
-  public void onCreate() {
-    if (slug == null) {
-      slug = UUID.randomUUID().toString();
-    }
-
-    if (createdAt == null) {
-      createdAt = LocalDateTime.now();
-    }
-  }
-
-  @PreUpdate
-  public void onUpdate() {
-    updatedAt = LocalDateTime.now();
-  }
+    @Column(nullable = false)
+    private Boolean verifiedPurchase = false;
 }
-
-//package com.benkih.estore.review.entity;
-//
-//import com.benkih.estore.common.enums.Currency;
-//import com.benkih.estore.common.enums.PaymentMethod;
-//import com.benkih.estore.common.enums.PaymentStatus;
-//import com.benkih.estore.order.entity.Order;
-//import jakarta.persistence.*;
-//import lombok.Getter;
-//import lombok.NoArgsConstructor;
-//import lombok.Setter;
-//
-//import java.math.BigDecimal;
-//import java.time.LocalDateTime;
-//import java.util.UUID;
-//
-//@Getter
-//@Setter
-//@NoArgsConstructor
-//@Entity
-//@Table(name = "reviews")
-//public class Review {
-//  @Id
-//  @GeneratedValue(strategy = GenerationType.IDENTITY)
-//  private Long id;
-//
-//  @Column(nullable = false, unique = true, updatable = false)
-//  private String slug;
-//
-//  private String createdBy;
-//  private String updatedBy;
-//
-//  @Column(nullable = false, updatable = false)
-//  private LocalDateTime createdAt;
-//
-//  private LocalDateTime updatedAt;
-//
-//  @PrePersist
-//  public void onCreate() {
-//    if (slug == null) {
-//      slug = UUID.randomUUID().toString();
-//    }
-//
-//    if (createdAt == null) {
-//      createdAt = LocalDateTime.now();
-//    }
-//  }
-//
-//  @PreUpdate
-//  public void onUpdate() {
-//    updatedAt = LocalDateTime.now();
-//  }
-//}

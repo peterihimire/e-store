@@ -1,6 +1,10 @@
 package com.benkih.estore.user.dto.response;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -9,11 +13,11 @@ import lombok.*;
 @AllArgsConstructor
 public class UserSummaryResponseDto {
 
-  private String slug;
+    private String slug;
 
-  private String firstName;
+    private String firstName;
 
-  private String lastName;
+    private String lastName;
 
-  private String email;
+    private String email;
 }

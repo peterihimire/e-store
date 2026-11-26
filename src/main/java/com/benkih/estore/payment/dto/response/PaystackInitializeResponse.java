@@ -8,22 +8,22 @@ import lombok.Setter;
 @Setter
 public class PaystackInitializeResponse {
 
-  private boolean status;
+    private boolean status;
 
-  private String message;
+    private String message;
 
-  private Data data;
+    private Data data;
 
-  @Getter
-  @Setter
-  public static class Data {
+    @Getter
+    @Setter
+    public static class Data {
 
-    @JsonProperty("authorization_url")
-    private String authorizationUrl;
+        @JsonProperty("authorization_url")
+        private String authorizationUrl;
 
-    @JsonProperty("access_code")
-    private String accessCode;
+        @JsonProperty("access_code")
+        private String accessCode;
 
-    private String reference;
-  }
+        private String reference;
+    }
 }

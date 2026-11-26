@@ -5,11 +5,18 @@ import com.benkih.estore.security.jwt.JwtAuthEntryPoint;
 import com.benkih.estore.security.user.StoreUserDetailsService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
-//import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -24,118 +31,149 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 @RequiredArgsConstructor
 @EnableWebSecurity
 @Configuration
 @EnableMethodSecurity(prePostEnabled = true)
 public class StoreConfig {
-  private final StoreUserDetailsService storeUserDetailsService;
-  private final JwtAuthEntryPoint jwtAuthEntryPoint;
-  private final AuthTokenFilter authTokenFilter;
+    private final StoreUserDetailsService storeUserDetailsService;
+    private final JwtAuthEntryPoint jwtAuthEntryPoint;
+    private final AuthTokenFilter authTokenFilter;
 
+    @Value("${frontend.base-url:http://localhost:3000}")
+    private String frontendBaseUrl;
 
-  @Bean
-  public PasswordEncoder passwordEncoder(){
-    return new BCryptPasswordEncoder();
-  }
+    @Value("${cors.allowed-origins:}")
+    private String additionalAllowedOrigins;
 
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
-  @Bean
-  public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception{
-    return authConfig.getAuthenticationManager();
-  }
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig)
+            throws Exception {
+        return authConfig.getAuthenticationManager();
+    }
 
+    @Bean
+    public DaoAuthenticationProvider daoAuthenticationProvider() {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(storeUserDetailsService);
+        authProvider.setPasswordEncoder(passwordEncoder());
+        return authProvider;
+    }
 
-  @Bean
-  public DaoAuthenticationProvider daoAuthenticationProvider(){
-    DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-    authProvider.setUserDetailsService(storeUserDetailsService);
-    authProvider.setPasswordEncoder(passwordEncoder());
-    return authProvider;
-  }
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http.csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .exceptionHandling(
+                        exceptions ->
+                                exceptions
+                                        .authenticationEntryPoint(jwtAuthEntryPoint)
+                                        .accessDeniedHandler(
+                                                (request, response, accessDeniedException) -> {
+                                                    response.setContentType("application/json");
+                                                    response.setStatus(
+                                                            HttpServletResponse.SC_FORBIDDEN);
+                                                    Map<String, Object> errorResponse =
+                                                            new HashMap<>();
+                                                    errorResponse.put(
+                                                            "timestamp", Instant.now().toString());
+                                                    errorResponse.put(
+                                                            "status",
+                                                            HttpServletResponse.SC_FORBIDDEN);
+                                                    errorResponse.put("error", "Forbidden");
+                                                    errorResponse.put(
+                                                            "message",
+                                                            accessDeniedException.getMessage());
+                                                    errorResponse.put(
+                                                            "path", request.getServletPath());
+                                                    new ObjectMapper()
+                                                            .writeValue(
+                                                                    response.getOutputStream(),
+                                                                    errorResponse);
+                                                }))
+                .sessionManagement(
+                        session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(
+                        authz ->
+                                authz.requestMatchers("/api/v1/auth/**")
+                                        .permitAll()
+                                        .requestMatchers("/api/v1/products/**")
+                                        .permitAll()
+                                        .requestMatchers(HttpMethod.GET, "/api/v1/reviews/**")
+                                        .permitAll()
+                                        .requestMatchers("/api/v1/webhooks/**")
+                                        .permitAll()
+                                        .requestMatchers("/api/v1/payments/callback/**")
+                                        .permitAll()
+                                        .requestMatchers(
+                                                "/swagger-ui.html",
+                                                "/swagger-ui/**",
+                                                "/v3/api-docs/**")
+                                        .permitAll()
+                                        .requestMatchers("/h2-console/**")
+                                        .permitAll()
+                                        .requestMatchers("/actuator/health", "/actuator/health/**")
+                                        .permitAll()
+                                        .requestMatchers("/api/v1/admin/**")
+                                        .authenticated()
+                                        .requestMatchers("/api/v1/manager/**")
+                                        .authenticated()
+                                        .requestMatchers("/api/v1/carts/**")
+                                        .authenticated()
+                                        .requestMatchers("/api/v1/cartItems/**")
+                                        .authenticated()
+                                        .requestMatchers("/api/v1/orders/**")
+                                        .authenticated()
+                                        .anyRequest()
+                                        .authenticated())
+                .authenticationProvider(daoAuthenticationProvider())
+                .addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class)
+                .formLogin(form -> form.disable())
+                .httpBasic(httpBasic -> httpBasic.disable());
 
+        return http.build();
+    }
 
-  @Bean
-  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-    http
-        .csrf(csrf -> csrf.disable())
-        .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-        .exceptionHandling(exceptions -> exceptions
-            .authenticationEntryPoint(jwtAuthEntryPoint)
-            .accessDeniedHandler((request, response, accessDeniedException) -> {
-              response.setContentType("application/json");
-              response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-              Map<String, Object> errorResponse = new HashMap<>();
-              errorResponse.put("timestamp", LocalDateTime.now().toString());
-              errorResponse.put("status", HttpServletResponse.SC_FORBIDDEN);
-              errorResponse.put("error", "Forbidden");
-              errorResponse.put("message", accessDeniedException.getMessage());
-              errorResponse.put("path", request.getServletPath());
-              new ObjectMapper().writeValue(response.getOutputStream(), errorResponse);
-            })
-        )
-        .sessionManagement(session -> session
-            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-        )
-        .authorizeHttpRequests(authz -> authz
-            .requestMatchers("/api/v1/auth/**").permitAll()
-            .requestMatchers("/api/v1/products/**").permitAll()
-            .requestMatchers("/api/v1/users/**").permitAll()
-            .requestMatchers("/api/v1/webhooks/**").permitAll()
-            .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-            .requestMatchers("/h2-console/**").permitAll()
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
 
-            .requestMatchers("/api/v1/admin/**").authenticated()
-            .requestMatchers("/api/v1/manager/**").authenticated()
-            .requestMatchers("/api/v1/carts/**").authenticated()
-            .requestMatchers("/api/v1/cartItems/**").authenticated()
-            .requestMatchers("/api/v1/orders/**").authenticated()
+        List<String> origins =
+                new ArrayList<>(
+                        List.of(
+                                frontendBaseUrl,
+                                "http://localhost:3000", // React dev server
+                                "http://localhost:5173", // Vite dev server
+                                "http://localhost:4200", // Angular dev server
+                                "http://localhost:8080" // Local API client
+                                ));
+        if (additionalAllowedOrigins != null && !additionalAllowedOrigins.isBlank()) {
+            origins.addAll(
+                    Arrays.stream(additionalAllowedOrigins.split(","))
+                            .map(String::trim)
+                            .filter(origin -> !origin.isEmpty())
+                            .toList());
+        }
+        configuration.setAllowedOrigins(origins.stream().distinct().toList());
 
-            .anyRequest().authenticated()
-        )
-        .authenticationProvider(daoAuthenticationProvider())
-        .addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class)
-        .formLogin(form -> form.disable())
-        .httpBasic(httpBasic -> httpBasic.disable());
+        configuration.setAllowedMethods(
+                List.of("GET", "HEAD", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
 
-    return http.build();
-  }
+        configuration.setAllowedHeaders(List.of("*"));
 
+        configuration.setAllowCredentials(true);
 
-  @Bean
-  public CorsConfigurationSource corsConfigurationSource() {
-    CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setExposedHeaders(List.of("Authorization", "Content-Disposition"));
 
-    configuration.setAllowedOrigins(List.of(
-        "http://localhost:3000",      // React dev server
-        "http://localhost:5173",      // Vite dev server
-        "http://localhost:4200",      // Angular dev server
-        "http://localhost:8080",      // Another frontend
-        "https://yourdomain.com"      // Your production domain
-    ));
+        configuration.setMaxAge(3600L);
 
-    configuration.setAllowedMethods(List.of(
-        "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"
-    ));
-
-    configuration.setAllowedHeaders(List.of("*"));
-
-    configuration.setAllowCredentials(true);
-
-    configuration.setExposedHeaders(List.of(
-        "Authorization",
-        "Content-Disposition"
-    ));
-
-    configuration.setMaxAge(3600L);
-
-    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-    source.registerCorsConfiguration("/**", configuration);
-    return source;
-  }
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
 }

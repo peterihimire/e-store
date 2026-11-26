@@ -1,13 +1,10 @@
 package com.benkih.estore.role.dto.request;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.Set;
 
 @Getter
 @Setter
@@ -15,11 +12,11 @@ import java.util.Set;
 @AllArgsConstructor
 public class UpdateRoleRequest {
 
-  private String name;
+    private String name;
 
-  private String description;
+    private String description;
 
-  private Set<String> permissionSlugs;
+    private Set<String> permissionSlugs;
 
-  private Boolean active;
+    private Boolean active;
 }

@@ -1,9 +1,8 @@
 package com.benkih.estore.common.entity;
 
-import jakarta.persistence.Entity;
+import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @MappedSuperclass
@@ -11,6 +10,9 @@ import lombok.Setter;
 @Setter
 public abstract class AuditableEntity extends BaseEntity {
 
-  protected String createdBy;
-  protected String updatedBy;
+    @Column(name = "created_by", updatable = false)
+    protected String createdBy;
+
+    @Column(name = "updated_by")
+    protected String updatedBy;
 }

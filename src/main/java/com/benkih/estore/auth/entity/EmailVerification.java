@@ -1,65 +1,42 @@
 package com.benkih.estore.auth.entity;
 
+import com.benkih.estore.common.entity.BaseEntity;
 import com.benkih.estore.user.entity.User;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import java.time.Instant;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Entity
 @Table(name = "email_verifications")
 @Getter
 @Setter
 @NoArgsConstructor
-public class EmailVerification {
+public class EmailVerification extends BaseEntity {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-  @Column(nullable = false, unique = true, updatable = false)
-  private String slug;
+    @Column(nullable = false)
+    private String token;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "user_id", nullable = false)
-  private User user;
+    @Column(nullable = false)
+    private Instant expiresAt;
 
-  @Column(nullable = false)
-  private String token;
+    private Instant usedAt;
 
-  @Column(nullable = false)
-  private LocalDateTime expiresAt;
-
-  private LocalDateTime usedAt;
-
-  @Column(nullable = false,updatable = false)
-  private LocalDateTime createdAt;
-  private LocalDateTime updatedAt;
-
-  public boolean isExpired() {
-    return expiresAt.isBefore(LocalDateTime.now());
-  }
-
-  public boolean isUsed() {
-    return usedAt != null;
-  }
-
-  @PrePersist
-  public void onCreate() {
-    if (this.slug == null) {
-      this.slug = UUID.randomUUID().toString();
+    public boolean isExpired() {
+        return expiresAt.isBefore(Instant.now());
     }
 
-    if (this.createdAt == null) {
-      this.createdAt = LocalDateTime.now();
+    public boolean isUsed() {
+        return usedAt != null;
     }
-  }
-
-  @PreUpdate
-  public void onUpdate() {
-    this.updatedAt = LocalDateTime.now();
-  }
 }

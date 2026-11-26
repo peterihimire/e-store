@@ -1,13 +1,16 @@
 package com.benkih.estore.common.enums;
 
 public enum OrderStatus {
-  EXPIRED,
-  PENDING,
-  CONFIRMED,
-  PROCESSING,
-  SHIPPED,
-  DELIVERED,
-  CANCELLED,
-  RETURN_REQUESTED,
-  RETURNED
+    EXPIRED,
+    PENDING,
+    CONFIRMED,
+    PROCESSING,
+    SHIPPED,
+    DELIVERED,
+    CANCELLED,
+    RETURN_REQUESTED,
+    RETURNED,
+    //  REFUND_PENDING,
+    //  REFUNDED,
+    //  PARTIALLY_REFUNDED
 }

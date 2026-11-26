@@ -1,9 +1,12 @@
 package com.benkih.estore.payment.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.*;
-
 import java.math.BigDecimal;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -12,15 +15,14 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class PaystackInitializeRequest {
 
-  private String email;
+    private String email;
 
-  private BigDecimal amount;
+    private BigDecimal amount;
 
-  private String reference;
+    private String reference;
 
-  private String currency;
+    private String currency;
 
-  @JsonProperty("callback_url")
-  private String callbackUrl;
-
+    @JsonProperty("callback_url")
+    private String callbackUrl;
 }

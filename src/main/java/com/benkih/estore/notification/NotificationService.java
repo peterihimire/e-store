@@ -1,122 +1,32 @@
 package com.benkih.estore.notification;
 
 import com.benkih.estore.auth.entity.UserInvitation;
-import com.benkih.estore.email.builder.*;
-import com.benkih.estore.email.dto.EmailRequest;
-import com.benkih.estore.email.service.EmailService;
 import com.benkih.estore.order.entity.Order;
 import com.benkih.estore.payment.entity.Payment;
 import com.benkih.estore.user.entity.User;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 
+public interface NotificationService {
+    void sendWelcomeEmail(User user);
 
-@Service
-@RequiredArgsConstructor
-@Slf4j
-public class NotificationService implements INotificationService {
-  private final EmailService emailService;
-  private final WelcomeEmailBuilder welcomeEmailBuilder;
-  private final VerificationEmailBuilder verificationEmailBuilder;
-  private final LoginEmailBuilder loginEmailBuilder;
-  private final PaymentReceiptEmailBuilder paymentReceiptEmailBuilder;
-  private final OrderConfirmationEmailBuilder orderConfirmationEmailBuilder;
-  private final OrderProcessingEmailBuilder orderProcessingEmailBuilder;
-  private final OrderShippedEmailBuilder orderShippedEmailBuilder;
-  private final OrderCancelledEmailBuilder orderCancelledEmailBuilder;
-  private final OrderDeliveredEmailBuilder orderDeliveredEmailBuilder;
-  private final PasswordResetEmailBuilder passwordResetEmailBuilder;
-  private final InvitationEmailBuilder invitationEmailBuilder;
+    void sendVerificationEmail(User user, String token);
 
-//  private final SmsService smsService;
+    void sendLoginEmail(User user);
 
-//  private final PushService pushService;
+    void sendPaymentReceipt(Payment payment);
 
+    void sendOrderConfirmation(Order order);
 
-  @Override
-  public void sendWelcomeEmail(User user) {
-    sendEmail(welcomeEmailBuilder.build(user));
-  }
+    void sendOrderProcessing(Order order);
 
-  @Override
-  public void sendVerificationEmail(User user, String token) {
-    sendEmail(verificationEmailBuilder.build(user, token));
-  }
+    void sendOrderCancelled(Order order);
 
-  @Override
-  public void sendLoginEmail(User user) {
-    sendEmail(loginEmailBuilder.build(user));
-  }
+    void sendOrderShipped(Order order);
 
-  @Override
-  public void sendPaymentReceipt(Payment payment) {
-    sendEmail(paymentReceiptEmailBuilder.build(payment));
-  }
+    void sendOrderDelivered(Order order);
 
-  @Override
-  public void sendOrderConfirmation(Order order) {
-    sendEmail(orderConfirmationEmailBuilder.build(order));
-//    sendSms(orderConfirmationSmsBuilder.build(order));
-//    sendPush(orderConfirmationPushBuilder.build(order));
-  }
+    void sendRefundNotification(Payment payment);
 
-  @Override
-  public void sendOrderProcessing(Order order) {
-    sendEmail(orderProcessingEmailBuilder.build(order));
-  }
+    void sendPasswordReset(User user, String token);
 
-  @Override
-  public void sendOrderCancelled(Order order) {
-    sendEmail(orderCancelledEmailBuilder.build(order));
-  }
-
-  @Override
-  public void sendOrderShipped(Order order) {
-    sendEmail(orderShippedEmailBuilder.build(order));
-  }
-
-  @Override
-  public void sendOrderDelivered(Order order) {
-    sendEmail(orderDeliveredEmailBuilder.build(order));
-  }
-
-  @Override
-  public void sendRefundNotification(Payment payment) {
-    // later
-  }
-
-  @Override
-  public void sendPasswordReset(User user, String token) {
-    sendEmail(passwordResetEmailBuilder.build(user, token));
-  }
-
-  @Override
-  public void sendInvitationEmail(UserInvitation user, String token) {
-    sendEmail(invitationEmailBuilder.build(user, token));
-  }
-
-  private void sendEmail(EmailRequest request) {
-    try {
-      emailService.send(request);
-    } catch (Exception e) {
-      log.error("Unable to send email to {}", request.getTo(), e);
-    }
-  }
-
-//  private void sendSms(SmsRequest request) {
-//    try {
-//      smsService.send(request);
-//    } catch (Exception e) {
-//      log.error("Unable to send SMS to {}", request.getTo(), e);
-//    }
-//  }
-//
-//  private void sendPush(PushRequest request) {
-//    try {
-//      pushService.send(request);
-//    } catch (Exception e) {
-//      log.error("Unable to send push notification", e);
-//    }
-//  }
+    void sendInvitationEmail(UserInvitation invitation, String token);
 }

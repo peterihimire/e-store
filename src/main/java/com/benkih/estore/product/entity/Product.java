@@ -1,107 +1,109 @@
 package com.benkih.estore.product.entity;
 
+import com.benkih.estore.business.entity.Business;
+import com.benkih.estore.common.entity.AuditableEntity;
+import com.benkih.estore.common.enums.ProductCondition;
 import com.benkih.estore.common.enums.ProductStatus;
-import com.benkih.estore.inventory.entity.Inventory;
-import jakarta.persistence.*;
-import lombok.*;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import com.benkih.estore.common.enums.TaxCategory;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @Entity
 @Table(name = "products")
-public class Product {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class Product extends AuditableEntity {
 
-    @Column(nullable = false, unique = true, updatable = false)
-    private String slug;
+    @NotBlank
+    @Column(nullable = false, length = 255)
+    private String name;
 
-    @Column(nullable = false, unique = true)
-    private String sku;
+    //    @Column(length = 100)
+    //    private String brand;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "brand_id")
+    private Brand brand;
+
+    @Column(columnDefinition = "TEXT")
+    private String description;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 30)
     private ProductStatus status = ProductStatus.DRAFT;
 
-    private String brand;
-    private String name;
-    private String description;
-    private BigDecimal price;
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "business_id", nullable = false)
+    private Business business;
 
-    private String createdBy;
-    private String updatedBy;
-
-    @Column(nullable = false,updatable = false)
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     private Category category;
 
-    @OneToMany(
-        mappedBy = "product",
-        cascade = CascadeType.ALL,
-        orphanRemoval = true
-        // fetch = FetchType.EAGER
-    )
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tax_category", nullable = false, length = 30)
+    private TaxCategory taxCategory = TaxCategory.STANDARD;
+
+    @Column(nullable = false)
+    private boolean shippable = true;
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Image> images = new ArrayList<>();
-    //    private List<Image> images;
 
-    @OneToOne(
-        mappedBy = "product", //  Inverse side of the relationship
-        cascade = CascadeType.ALL,
-        orphanRemoval = true,
-        fetch = FetchType.LAZY
-        // JPA default is EAGER for @OneToOne.
-        // However, on the inverse (mappedBy) side,
-        // Hibernate cannot lazily load this association
-        // without bytecode enhancement, so it may still
-        // behave as EAGER.that's why we have the warning
-    )
-    private Inventory inventory;
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductVariant> variants = new ArrayList<>();
 
-    // Below is Product constructor
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    //    @OrderBy("displayOrder ASC")
+    private List<ProductAttribute> attributes = new ArrayList<>();
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private ProductCondition condition = ProductCondition.NEW;
+
+    @Column(length = 100)
+    private String manufacturer;
+
+    @Column(length = 100)
+    private String model;
+
+    @Column(nullable = false)
+    @PositiveOrZero
+    private Integer warrantyMonths = 0;
+
+    @Column(nullable = false)
+    private boolean returnable = true;
+
+    @Column(nullable = false)
+    @PositiveOrZero
+    private Integer returnWindowDays = 7;
+
+    @Column private Instant archivedAt;
+
     public Product(
-        String name,
-        String brand,
-//        String sku,
-//        ProductStatus status,
-        String description,
-        BigDecimal price,
-        Category category
-    ) {
+            String name, Brand brand, String description, Category category, Business business) {
         this.name = name;
         this.brand = brand;
-//        this.sku = sku;
-//        this.status = status;
         this.description = description;
-        this.price = price;
         this.category = category;
-    }
-
-    @PrePersist
-    public void onCreate() {
-        // this.slug = UUID.randomUUID().toString();
-
-        if (this.slug == null) {
-            this.slug = UUID.randomUUID().toString();
-        }
-        if (this.createdAt == null) {
-            this.createdAt = LocalDateTime.now();
-        }
-    }
-
-    @PreUpdate
-    public void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
+        this.business = business;
     }
 }

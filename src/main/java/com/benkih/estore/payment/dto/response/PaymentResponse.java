@@ -1,13 +1,16 @@
 package com.benkih.estore.payment.dto.response;
 
-import com.benkih.estore.common.enums.Currency;
+import com.benkih.estore.common.enums.CurrencyCode;
 import com.benkih.estore.common.enums.PaymentMethod;
 import com.benkih.estore.common.enums.PaymentProvider;
 import com.benkih.estore.common.enums.PaymentStatus;
-import lombok.*;
-
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -15,25 +18,25 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PaymentResponse {
-  private String slug;
+    private String slug;
 
-  private String reference;
+    private String reference;
 
-  private String orderSlug;
+    private String orderSlug;
 
-  private BigDecimal amount;
+    private BigDecimal amount;
 
-  private Currency currency;
+    private CurrencyCode currency;
 
-  private PaymentMethod paymentMethod;
+    private PaymentMethod paymentMethod;
 
-  private PaymentProvider paymentProvider;
+    private PaymentProvider paymentProvider;
 
-  private PaymentStatus paymentStatus;
+    private PaymentStatus paymentStatus;
 
-  private String transactionId;
+    private String transactionId;
 
-  private String gatewayResponse;
+    private String gatewayResponse;
 
-  private LocalDateTime paidAt;
+    private Instant paidAt;
 }

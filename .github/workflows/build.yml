@@ -1,12 +1,19 @@
 name: Build
 
+# GitHub equivalent of the Access PO GitLab java-service CI template:
+#   lint -> test -> diff-coverage (pull requests only).
+
 on:
   pull_request:
     branches:
       - main
+  push:
+    branches:
+      - main
 
 jobs:
-  build:
+  lint:
+    name: Lint (Checkstyle / PMD / SpotBugs)
     runs-on: ubuntu-latest
 
     steps:
@@ -15,11 +22,93 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 21
+          java-version: 17
           cache: maven
 
       - name: Make Maven Wrapper Executable
         run: chmod +x mvnw
 
-      - name: Build
-        run: ./mvnw clean verify
+      - name: Spotless
+        run: ./mvnw -B spotless:check
+
+      - name: Checkstyle
+        run: ./mvnw -B checkstyle:check
+
+      - name: PMD (advisory - does not fail the build)
+        run: ./mvnw -B pmd:check
+
+      - name: SpotBugs
+        run: ./mvnw -B compile spotbugs:check
+
+  test:
+    name: Test and coverage
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: maven
+
+      - name: Make Maven Wrapper Executable
+        run: chmod +x mvnw
+
+      - name: Build and test
+        run: ./mvnw -B clean verify
+
+      - name: Upload JaCoCo report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco
+          path: target/site/jacoco/
+          retention-days: 7
+
+      - name: Upload JUnit results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: target/surefire-reports/TEST-*.xml
+          retention-days: 7
+
+  diff-coverage:
+    name: PR diff coverage (80%)
+    if: github.event_name == 'pull_request'
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Download JaCoCo report
+        uses: actions/download-artifact@v4
+        with:
+          name: jacoco
+          path: target/site/jacoco
+
+      - name: Fetch base branch
+        run: git fetch origin ${{ github.base_ref }}
+
+      - name: Install diff-cover
+        run: pip install diff-cover
+
+      # Staged adoption: estore's baseline is far below the Access PO services',
+      # so the 80% gate stays advisory until the variable is set in repo settings.
+      - name: Check changed-line coverage
+        run: |
+          diff-cover target/site/jacoco/jacoco.xml \
+            --compare-branch=origin/${{ github.base_ref }} \
+            --fail-under=${{ vars.DIFF_COVERAGE_MIN || '0' }}
+      - name: Coverage threshold reminder
+        if: vars.DIFF_COVERAGE_MIN == ''
+        run: echo "::warning::DIFF_COVERAGE_MIN is unset - changed-line coverage is advisory. Set it to 80 to match the Access PO gate."

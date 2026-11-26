@@ -1,18 +1,14 @@
-version: "3.9"
-
+# Local development: build the image from source.
+# For the published DockerHub image use: docker compose -f docker-compose.registry.yml up -d
 services:
   estore:
     build:
       context: .
       dockerfile: Dockerfile
-
-    image: estore:latest
+    image: ${DOCKER_IMAGE:-estore}:${IMAGE_TAG:-latest}
     container_name: estore
-
     env_file:
       - .env
-
     ports:
       - "8080:8080"
-
     restart: unless-stopped

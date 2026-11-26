@@ -10,9 +10,9 @@ import lombok.Setter;
 @Getter
 @Setter
 public class CheckoutRequest {
-  private String orderSlug;
+    private String orderSlug;
 
-  private PaymentMethod paymentMethod;
+    private PaymentMethod paymentMethod;
 
-  private PaymentProvider paymentProvider;
+    private PaymentProvider paymentProvider;
 }

@@ -5,27 +5,27 @@ import lombok.Data;
 
 @Data
 public class UpdateAddressRequest {
-//  private String fullName;
+    //  private String fullName;
 
-//  @NotBlank
-  private String firstName;
+    //  @NotBlank
+    private String firstName;
 
-//  @NotBlank
-  private String lastName;
+    //  @NotBlank
+    private String lastName;
 
-  private String phoneNumber;
+    private String phoneNumber;
 
-  private String addressLine1;
+    private String addressLine1;
 
-  private String addressLine2;
+    private String addressLine2;
 
-  private String city;
+    private String city;
 
-  private String state;
+    private String state;
 
-  private Country country;
+    private Country country;
 
-  private String postalCode;
+    private String postalCode;
 
-  private Boolean defaultAddress; // true, false, null[Boolean]
+    private Boolean defaultAddress; // true, false, null[Boolean]
 }

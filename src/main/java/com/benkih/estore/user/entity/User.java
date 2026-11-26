@@ -1,133 +1,119 @@
 package com.benkih.estore.user.entity;
 
+import com.benkih.estore.auth.entity.RefreshToken;
+import com.benkih.estore.business.entity.BusinessMember;
 import com.benkih.estore.cart.entity.Cart;
+import com.benkih.estore.common.entity.BaseEntity;
+import com.benkih.estore.common.enums.AccountType;
 import com.benkih.estore.common.enums.UserStatus;
 import com.benkih.estore.department.entity.Department;
 import com.benkih.estore.order.entity.Order;
 import com.benkih.estore.payment.entity.Payment;
-import com.benkih.estore.auth.entity.RefreshToken;
 import com.benkih.estore.review.entity.Review;
 import com.benkih.estore.role.entity.Role;
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.OrderBy;
+import jakarta.persistence.Table;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.NaturalId;
-
-import java.time.LocalDateTime;
-import java.util.*;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @Entity
-//@ToString
+// @ToString
 @Table(name = "users")
-public class User {
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+public class User extends BaseEntity {
 
-  @Column(nullable = false, unique = true, updatable = false)
-  private String slug;
+    @Column(nullable = false)
+    private String firstName;
 
-  @Column(nullable = false)
-  private String firstName;
+    @Column(nullable = false)
+    private String lastName;
 
-  @Column(nullable = false)
-  private String lastName;
+    @Column(unique = true, nullable = false)
+    @NaturalId
+    private String email;
 
-  @Column(unique = true, nullable = false)
-  @NaturalId
-  private String email;
+    @Column(length = 20)
+    private String phoneNumber;
 
-  @Column(length = 20)
-  private String phoneNumber;
+    private String password;
 
-  private String password;
+    @Column(nullable = false)
+    private boolean emailVerified = false;
 
-  @Column(nullable = false)
-  private boolean emailVerified = false;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private AccountType accountType = AccountType.PERSONAL;
 
-  @Enumerated(EnumType.STRING)
-  @Column(nullable = false)
-  private UserStatus status = UserStatus.PENDING_VERIFICATION;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private UserStatus status = UserStatus.PENDING_VERIFICATION;
 
-  @OneToMany(
-      mappedBy = "user",
-      cascade = CascadeType.ALL,
-      orphanRemoval = true
-  )
-  private List<Address> addresses = new ArrayList<>();
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Address> addresses = new ArrayList<>();
 
-  @OneToMany(mappedBy = "user")
-  private List<Review> reviews = new ArrayList<>();
+    @OneToMany(mappedBy = "user")
+    private List<Review> reviews = new ArrayList<>();
 
-  @OneToMany(
-      mappedBy = "user",
-      cascade = CascadeType.ALL,
-      orphanRemoval = true
-  )
-  private List<RefreshToken> refreshTokens = new ArrayList<>();
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RefreshToken> refreshTokens = new ArrayList<>();
 
-  @OneToMany(mappedBy = "user")
-  private List<Payment> payments = new ArrayList<>();
+    @OneToMany(mappedBy = "user")
+    private List<Payment> payments = new ArrayList<>();
 
-  private String createdBy;
-  private String updatedBy;
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Cart cart;
 
-  @OneToOne(
-      mappedBy = "user",
-      cascade = CascadeType.ALL,
-      orphanRemoval = true
-  )
-  private Cart cart;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("createdAt DESC")
+    private Set<Order> orders = new HashSet<>();
 
-  @OneToMany(
-      mappedBy = "user",
-      cascade = CascadeType.ALL,
-      orphanRemoval = true
-  )
-  @OrderBy("createdAt DESC")
-  private Set<Order> orders = new HashSet<>();
-//  private List<Order> orders = new ArrayList<>();
+    //  private List<Order> orders = new ArrayList<>();
 
-  @ManyToMany(
-      fetch = FetchType.LAZY,
-      cascade = {CascadeType.MERGE, CascadeType.REFRESH})
-  @JoinTable(
-      name = "user_roles",
-      joinColumns = @JoinColumn(name = "user_id",referencedColumnName = "id"),
-      inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id")
-  )
-  private Set<Role> roles = new HashSet<>();
+    @ManyToMany(
+            fetch = FetchType.LAZY,
+            cascade = {CascadeType.MERGE, CascadeType.REFRESH})
+    @JoinTable(
+            name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"))
+    private Set<Role> roles = new HashSet<>();
 
-  @ManyToMany
-  @JoinTable(
-      name="user_departments",
-      joinColumns=@JoinColumn(name="user_id"),
-      inverseJoinColumns=@JoinColumn(name="department_id")
-  )
-  private Set<Department> departments = new HashSet<>();
+    @ManyToMany
+    @JoinTable(
+            name = "user_departments",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "department_id"))
+    private Set<Department> departments = new HashSet<>();
 
-  @Column(nullable = false,updatable = false)
-  private LocalDateTime createdAt;
-  private LocalDateTime updatedAt;
+    //  @OneToMany(
+    //      mappedBy = "user",
+    //      fetch = FetchType.LAZY
+    //  )
+    //  private Set<BusinessMember> businessMembers = new HashSet<>();
 
-  @PrePersist
-  public void onCreate() {
-    if (this.slug == null) {
-      this.slug = UUID.randomUUID().toString();
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
+    private BusinessMember businessMember;
+
+    public String getFullName() {
+        return firstName + " " + lastName;
     }
-    if (this.createdAt == null) {
-      this.createdAt = LocalDateTime.now();
-    }
-  }
-
-  public String getFullName() {
-    return firstName + " " + lastName;
-  }
-
-  @PreUpdate
-  public void onUpdate() {
-    this.updatedAt = LocalDateTime.now();
-  }
 }
