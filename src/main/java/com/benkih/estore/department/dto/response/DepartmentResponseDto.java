@@ -11,9 +11,9 @@ import lombok.Setter;
 @AllArgsConstructor
 public class DepartmentResponseDto {
 
-  private String slug;
+    private String slug;
 
-  private String name;
+    private String name;
 
-  private String description;
+    private String description;
 }

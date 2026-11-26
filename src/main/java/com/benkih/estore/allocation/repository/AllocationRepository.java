@@ -1,19 +1,19 @@
 package com.benkih.estore.allocation.repository;
 
 import com.benkih.estore.allocation.entity.Allocation;
+import java.time.Instant;
+import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.time.Instant;
-import java.util.List;
-
 public interface AllocationRepository extends JpaRepository<Allocation, Long> {
-  boolean existsByPaymentId(Long paymentId);
+    boolean existsByPaymentId(Long paymentId);
 
-  List<Allocation> findByPaymentId(Long paymentId);
+    List<Allocation> findByPaymentId(Long paymentId);
 
-  @Query("""
+    @Query(
+            """
     SELECT a
     FROM Allocation a
     JOIN a.orderItem oi
@@ -27,11 +27,10 @@ public interface AllocationRepository extends JpaRepository<Allocation, Long> {
           WHERE si.allocation = a
       )
 """)
-  List<Allocation> findEligibleForSettlement(
-      @Param("eligibleBefore") Instant eligibleBefore
-  );
+    List<Allocation> findEligibleForSettlement(@Param("eligibleBefore") Instant eligibleBefore);
 
-  @Query("""
+    @Query(
+            """
     SELECT a
     FROM Allocation a
     JOIN a.orderItem oi
@@ -45,5 +44,5 @@ public interface AllocationRepository extends JpaRepository<Allocation, Long> {
           WHERE si.allocation = a
       )
 """)
-  List<Allocation> findDeliveredAndUnsettled();
+    List<Allocation> findDeliveredAndUnsettled();
 }

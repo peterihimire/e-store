@@ -6,9 +6,9 @@ import lombok.Data;
 @Data
 public class UpdateInventorySettingsRequest {
 
-  @Min(0)
-  private Integer reorderLevel;
-  @Min(1)
-  private Integer reorderQuantity;
+    @Min(0)
+    private Integer reorderLevel;
 
+    @Min(1)
+    private Integer reorderQuantity;
 }

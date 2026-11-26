@@ -1,24 +1,23 @@
 package com.benkih.estore.role.repository;
 
 import com.benkih.estore.role.entity.Role;
-import org.springframework.data.jpa.repository.JpaRepository;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface RoleRepository  extends JpaRepository<Role, Long> {
-  Optional<Role> findByName(String name);
+public interface RoleRepository extends JpaRepository<Role, Long> {
+    Optional<Role> findByName(String name);
 
-  Optional<Role> findByNameAndSystemRole(String name, boolean systemRole);
+    Optional<Role> findByNameAndSystemRole(String name, boolean systemRole);
 
-  Optional<Role> findBySlug(String slug);
+    Optional<Role> findBySlug(String slug);
 
-  Optional<Role> findByNameIgnoreCase(String name);
+    Optional<Role> findByNameIgnoreCase(String name);
 
-  boolean existsByNameIgnoreCaseAndBusinessId(String name, Long businessId);
+    boolean existsByNameIgnoreCaseAndBusinessId(String name, Long businessId);
 
-  List<Role> findAllBySlugInAndBusinessId(Collection<String> slugs, Long id);
+    List<Role> findAllBySlugInAndBusinessId(Collection<String> slugs, Long id);
 
-  List<Role> findAllByBusinessId(Long businessId);
+    List<Role> findAllByBusinessId(Long businessId);
 }

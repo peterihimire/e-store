@@ -9,34 +9,33 @@ import lombok.Setter;
 @Setter
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PaystackRefundResponse {
-  private boolean status;
+    private boolean status;
 
-  private String message;
+    private String message;
 
-  private Data data;
+    private Data data;
 
-  @Getter
-  @Setter
-  @JsonIgnoreProperties(ignoreUnknown = true)
-  public static class Data {
-    private Long id;
+    @Getter
+    @Setter
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class Data {
+        private Long id;
 
-    @JsonProperty("transaction_reference")
-    private String transactionReference;
+        @JsonProperty("transaction_reference")
+        private String transactionReference;
 
-    @JsonProperty("refund_reference")
-    private String refundReference;
+        @JsonProperty("refund_reference")
+        private String refundReference;
 
-    private String status;
+        private String status;
 
-    private Long amount;
+        private Long amount;
 
-    private String currency;
+        private String currency;
 
-    private String reason;
+        private String reason;
 
-    @JsonProperty("created_at")
-    private String createdAt;
-
-  }
+        @JsonProperty("created_at")
+        private String createdAt;
+    }
 }

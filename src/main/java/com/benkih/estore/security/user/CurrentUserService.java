@@ -12,33 +12,29 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class CurrentUserService {
-  private final UserRepository userRepository;
+    private final UserRepository userRepository;
 
+    public StoreUserDetails getPrincipal() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-  public StoreUserDetails getPrincipal() {
-    Authentication authentication =
-        SecurityContextHolder.getContext().getAuthentication();
-
-    if (authentication == null ||
-        !(authentication.getPrincipal() instanceof StoreUserDetails principal)) {
-      throw new UnauthorizedException("User not authenticated");
+        if (authentication == null
+                || !(authentication.getPrincipal() instanceof StoreUserDetails principal)) {
+            throw new UnauthorizedException("User not authenticated");
+        }
+        return principal;
     }
-    return principal;
-  }
 
+    public String getCurrentUserSlug() {
+        return getPrincipal().getSlug();
+    }
 
-  public String getCurrentUserSlug() {
-    return getPrincipal().getSlug();
-  }
+    public String getCurrentUserEmail() {
+        return getPrincipal().getUsername();
+    }
 
-
-  public String getCurrentUserEmail() {
-    return getPrincipal().getUsername();
-  }
-
-
-  public User getCurrentUser() {
-    return userRepository.findBySlug(getCurrentUserSlug())
-        .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-  }
+    public User getCurrentUser() {
+        return userRepository
+                .findBySlug(getCurrentUserSlug())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+    }
 }

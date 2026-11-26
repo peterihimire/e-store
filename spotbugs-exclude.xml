@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+  <!-- Exclude Lombok-generated code -->
+  <Match>
+    <Class name="~.*\$.*"/>
+  </Match>
+
+  <!-- Exclude Spring Boot application class -->
+  <Match>
+    <Class name="~.*Application"/>
+  </Match>
+
+  <!-- Exclude DTOs and entities — they are simple data holders -->
+  <Match>
+    <Class name="~.*\.dto\..*"/>
+  </Match>
+  <Match>
+    <Class name="~.*\.entity\..*"/>
+  </Match>
+
+  <!-- Exclude configuration classes -->
+  <Match>
+    <Class name="~.*\.config\..*"/>
+  </Match>
+
+  <!--
+    Spring-managed beans receive dependencies via constructor injection.
+    SpotBugs flags EI_EXPOSE_REP2 for storing a "mutable" object, but the
+    injected object is a container-managed singleton. Scoped to constructors.
+  -->
+  <Match>
+    <Bug pattern="EI_EXPOSE_REP2"/>
+    <Method name="&lt;init&gt;"/>
+    <Class name="~com\.benkih\.estore\..*"/>
+  </Match>
+</FindBugsFilter>

@@ -11,29 +11,28 @@ import lombok.Setter;
 
 @Entity
 @Table(
-    name = "brands",
-    uniqueConstraints = @UniqueConstraint(
-        name = "uk_brand_normalized_name",
-        columnNames = "normalized_name"
-    )
-)
+        name = "brands",
+        uniqueConstraints =
+                @UniqueConstraint(
+                        name = "uk_brand_normalized_name",
+                        columnNames = "normalized_name"))
 @Getter
 @Setter
 @NoArgsConstructor
 public class Brand extends BaseEntity {
 
-  @Column(nullable = false, length = 150)
-  private String name;
+    @Column(nullable = false, length = 150)
+    private String name;
 
-  @Column(name = "normalized_name", nullable = false, length = 150)
-  private String normalizedName;
+    @Column(name = "normalized_name", nullable = false, length = 150)
+    private String normalizedName;
 
-  @Column(nullable = false)
-  private boolean active = true;
+    @Column(nullable = false)
+    private boolean active = true;
 
-  @Column(nullable = false)
-  private boolean verified = false;
+    @Column(nullable = false)
+    private boolean verified = false;
 
-  private String logoUrl;
-  private String websiteUrl;
+    private String logoUrl;
+    private String websiteUrl;
 }

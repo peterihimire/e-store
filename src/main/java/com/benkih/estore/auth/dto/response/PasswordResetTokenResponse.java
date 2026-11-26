@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PasswordResetTokenResponse {
-  private String plainToken;
-  private PasswordResetToken passwordReset;
+    private String plainToken;
+    private PasswordResetToken passwordReset;
 }

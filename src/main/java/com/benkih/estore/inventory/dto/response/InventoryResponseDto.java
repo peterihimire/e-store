@@ -8,25 +8,25 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class InventoryResponseDto {
-  private String slug;
+    private String slug;
 
-  private Integer totalStock;
+    private Integer totalStock;
 
-  private Integer availableStock;
+    private Integer availableStock;
 
-  private Integer reservedStock;
+    private Integer reservedStock;
 
-  private Integer damagedStock;
+    private Integer damagedStock;
 
-  private Boolean inStock;
+    private Boolean inStock;
 
-  private Boolean needsReorder;
+    private Boolean needsReorder;
 
-  private Integer reorderLevel;
+    private Integer reorderLevel;
 
-  private Integer reorderQuantity;
+    private Integer reorderQuantity;
 
-  private String sku;
+    private String sku;
 
-  private String productName;
+    private String productName;
 }

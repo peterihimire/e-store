@@ -1,32 +1,30 @@
 package com.benkih.estore.payment.dto.response;
 
 import com.benkih.estore.common.enums.PaymentStatus;
+import java.math.BigDecimal;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class VerifyPaymentResponse {
 
-  private String transactionId;
+    private String transactionId;
 
-  private String reference;
+    private String reference;
 
-  private PaymentStatus status;
+    private PaymentStatus status;
 
-  private BigDecimal amount;
+    private BigDecimal amount;
 
-  private String gatewayResponse;
+    private String gatewayResponse;
 
-  private String authorizationCode;
+    private String authorizationCode;
 
-  private Instant paidAt;
+    private Instant paidAt;
 
-  private BigDecimal processorFee;
+    private BigDecimal processorFee;
 }

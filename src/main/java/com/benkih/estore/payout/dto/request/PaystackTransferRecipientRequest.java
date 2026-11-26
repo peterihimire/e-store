@@ -8,15 +8,15 @@ import lombok.Getter;
 @Builder
 public class PaystackTransferRecipientRequest {
 
-  private String type;
+    private String type;
 
-  private String name;
+    private String name;
 
-  @JsonProperty("account_number")
-  private String accountNumber;
+    @JsonProperty("account_number")
+    private String accountNumber;
 
-  @JsonProperty("bank_code")
-  private String bankCode;
+    @JsonProperty("bank_code")
+    private String bankCode;
 
-  private String currency;
+    private String currency;
 }

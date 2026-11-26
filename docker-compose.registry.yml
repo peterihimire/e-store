@@ -1,0 +1,13 @@
+# Deploy the image published by GitHub Actions from DockerHub.
+# Usage:
+#   DOCKER_IMAGE=<dockerhub-user>/estore IMAGE_TAG=latest \
+#     docker compose -f docker-compose.registry.yml up -d
+services:
+  estore:
+    image: ${DOCKER_IMAGE:-estore}:${IMAGE_TAG:-latest}
+    container_name: estore
+    env_file:
+      - .env
+    ports:
+      - "8080:8080"
+    restart: unless-stopped

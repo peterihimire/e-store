@@ -4,6 +4,8 @@ import com.benkih.estore.business.entity.BusinessMember;
 import com.benkih.estore.business.enums.MemberStatus;
 import com.benkih.estore.role.entity.Role;
 import com.benkih.estore.user.entity.User;
+import java.util.Collection;
+import java.util.HashSet;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,105 +15,86 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.stream.Collectors;
-
 @Getter
 @Setter
 @Slf4j
 @AllArgsConstructor
 @NoArgsConstructor
 public class StoreUserDetails implements UserDetails {
-  private Long userId;
-  private String slug;
-  private String email;
-  private String password;
-  private Collection<GrantedAuthority> authorities;
+    private Long userId;
+    private String slug;
+    private String email;
+    private String password;
+    private Collection<GrantedAuthority> authorities;
 
+    public static StoreUserDetails buildUserDetails(User user) {
 
-  public static StoreUserDetails buildUserDetails(User user) {
+        Collection<GrantedAuthority> authorities = new HashSet<>();
 
-    Collection<GrantedAuthority> authorities = new HashSet<>();
+        // System-level authorities
+        user.getRoles().stream()
+                .filter(Role::isActive)
+                .flatMap(role -> role.getPermissions().stream())
+                .map(permission -> new SimpleGrantedAuthority(permission.getName()))
+                .forEach(authorities::add);
 
-    // System-level authorities
-    user.getRoles()
-        .stream()
-        .filter(Role::isActive)
-        .flatMap(role -> role.getPermissions().stream())
-        .map(permission ->
-            new SimpleGrantedAuthority(permission.getName())
-        )
-        .forEach(authorities::add);
+        // Business-level authorities
+        BusinessMember businessMember = user.getBusinessMember();
 
-    // Business-level authorities
-    BusinessMember businessMember = user.getBusinessMember();
+        if (businessMember != null && businessMember.getStatus() == MemberStatus.ACTIVE) {
 
-    if (businessMember != null
-        && businessMember.getStatus() == MemberStatus.ACTIVE) {
+            businessMember.getRoles().stream()
+                    .filter(Role::isActive)
+                    .flatMap(role -> role.getPermissions().stream())
+                    .map(permission -> new SimpleGrantedAuthority(permission.getName()))
+                    .forEach(authorities::add);
+        }
 
-      businessMember.getRoles()
-          .stream()
-          .filter(Role::isActive)
-          .flatMap(role -> role.getPermissions().stream())
-          .map(permission ->
-              new SimpleGrantedAuthority(permission.getName())
-          )
-          .forEach(authorities::add);
+        StoreUserDetails userDetails = new StoreUserDetails();
+
+        userDetails.userId = user.getId();
+        userDetails.slug = user.getSlug();
+        userDetails.email = user.getEmail();
+        userDetails.password = user.getPassword();
+        userDetails.authorities = authorities;
+
+        return userDetails;
     }
 
-    StoreUserDetails userDetails = new StoreUserDetails();
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return authorities;
+    }
 
-    userDetails.userId = user.getId();
-    userDetails.slug = user.getSlug();
-    userDetails.email = user.getEmail();
-    userDetails.password = user.getPassword();
-    userDetails.authorities = authorities;
+    @Override
+    public String getPassword() {
+        return password;
+    }
 
-    return userDetails;
-  }
+    @Override
+    public String getUsername() {
+        return email;
+    }
 
+    @Override
+    public boolean isAccountNonExpired() {
+        return UserDetails.super.isAccountNonExpired();
+    }
 
-  @Override
-  public Collection<? extends GrantedAuthority> getAuthorities() {
-    return authorities;
-  }
+    @Override
+    public boolean isAccountNonLocked() {
+        return UserDetails.super.isAccountNonLocked();
+    }
 
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return UserDetails.super.isCredentialsNonExpired();
+    }
 
-  @Override
-  public String getPassword() {
-    return password;
-  }
-
-
-  @Override
-  public String getUsername() {
-    return email;
-  }
-
-
-  @Override
-  public boolean isAccountNonExpired() {
-    return UserDetails.super.isAccountNonExpired();
-  }
-
-
-  @Override
-  public boolean isAccountNonLocked() {
-    return UserDetails.super.isAccountNonLocked();
-  }
-
-
-  @Override
-  public boolean isCredentialsNonExpired() {
-    return UserDetails.super.isCredentialsNonExpired();
-  }
-
-
-  @Override
-  public boolean isEnabled() {
-    return UserDetails.super.isEnabled();
-  }
+    @Override
+    public boolean isEnabled() {
+        return UserDetails.super.isEnabled();
+    }
 }
 
 //  public static StoreUserDetails buildUserDetails(User user){

@@ -1,7 +1,10 @@
 package com.benkih.estore.permission.dto.response;
 
-import jakarta.persistence.Column;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -9,13 +12,13 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PermissionResponseDto {
-  private String slug;
+    private String slug;
 
-  private String name;
+    private String name;
 
-  private String description;
+    private String description;
 
-  private String resource;
+    private String resource;
 
-  private String action;
+    private String action;
 }

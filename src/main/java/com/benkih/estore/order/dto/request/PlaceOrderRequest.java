@@ -9,11 +9,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PlaceOrderRequest {
-  private String shippingAddressSlug;
+    private String shippingAddressSlug;
 
-  private String billingAddressSlug;
+    private String billingAddressSlug;
 
-  private String couponCode;
+    private String couponCode;
 
-  private DeliveryMethod deliveryMethod;
+    private DeliveryMethod deliveryMethod;
 }

@@ -9,8 +9,8 @@ import lombok.Getter;
 @AllArgsConstructor
 public class PayoutRecipientResult {
 
-  private boolean success;
-  private String message;
-  private String recipientCode;
-  private String recipientName;
+    private boolean success;
+    private String message;
+    private String recipientCode;
+    private String recipientName;
 }

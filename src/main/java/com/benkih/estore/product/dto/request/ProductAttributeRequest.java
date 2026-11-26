@@ -7,13 +7,13 @@ import lombok.Data;
 @Data
 public class ProductAttributeRequest {
 
-  @NotBlank(message = "Attribute is required")
-  private String attributeSlug;
+    @NotBlank(message = "Attribute is required")
+    private String attributeSlug;
 
-  // Used for SELECT-type attributes.
-  private String attributeValueSlug;
+    // Used for SELECT-type attributes.
+    private String attributeValueSlug;
 
-  // Used only for allowed TEXT-type attributes.
-  @Size(max = 255)
-  private String customValue;
+    // Used only for allowed TEXT-type attributes.
+    @Size(max = 255)
+    private String customValue;
 }

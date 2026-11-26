@@ -1,64 +1,63 @@
 package com.benkih.estore.ledger.enums;
 
-
 public enum LedgerAccountType {
 
-  // =========================
-  // ASSETS
-  // =========================
+    // =========================
+    // ASSETS
+    // =========================
 
-  // Benkih's actual cash held in bank/payment accounts.
-  PLATFORM_CASH,
+    // Benkih's actual cash held in bank/payment accounts.
+    PLATFORM_CASH,
 
-  // Money currently held by a payment processor but belonging to Benkih/sellers.
-  PAYMENT_PROCESSOR_BALANCE,
+    // Money currently held by a payment processor but belonging to Benkih/sellers.
+    PAYMENT_PROCESSOR_BALANCE,
 
-  // =========================
-  // LIABILITIES
-  // =========================
+    // =========================
+    // LIABILITIES
+    // =========================
 
-  CUSTOMER_PAYMENT_LIABILITY,
+    CUSTOMER_PAYMENT_LIABILITY,
 
-  // Money owed to sellers but not yet eligible for release.
-  SELLER_PENDING,
+    // Money owed to sellers but not yet eligible for release.
+    SELLER_PENDING,
 
-// Money owed to sellers and available for payout.
-  SELLER_AVAILABLE,
+    // Money owed to sellers and available for payout.
+    SELLER_AVAILABLE,
 
-// Seller funds temporarily reserved, e.g. while a payout is being processed.
-  SELLER_RESERVED,
+    // Seller funds temporarily reserved, e.g. while a payout is being processed.
+    SELLER_RESERVED,
 
-// Money currently being transferred to a seller.
-  PAYOUT_PROCESSING,
+    // Money currently being transferred to a seller.
+    PAYOUT_PROCESSING,
 
- // Taxes collected/owed to government or tax authorities.
-  TAX_PAYABLE,
+    // Taxes collected/owed to government or tax authorities.
+    TAX_PAYABLE,
 
- // Amounts owed to customers because of refunds.
-  REFUND_PAYABLE,
+    // Amounts owed to customers because of refunds.
+    REFUND_PAYABLE,
 
-// Money collected from customers that must be remitted to logistics providers.
-  LOGISTICS_PAYABLE,
+    // Money collected from customers that must be remitted to logistics providers.
+    LOGISTICS_PAYABLE,
 
-  // =========================
-  // REVENUE
-  // =========================
+    // =========================
+    // REVENUE
+    // =========================
 
- // Benkih's marketplace/platform commission.
-  PLATFORM_REVENUE,
+    // Benkih's marketplace/platform commission.
+    PLATFORM_REVENUE,
 
-//  // shipping amount collected from customers when Benkih is entitled to the shipping revenue.
-//  SHIPPING_REVENUE,
+    //  // shipping amount collected from customers when Benkih is entitled to the shipping revenue.
+    //  SHIPPING_REVENUE,
 
-  PROCESSOR_FEE_REIMBURSEMENT,
+    PROCESSOR_FEE_REIMBURSEMENT,
 
-  // =========================
-  // EXPENSES
-  // =========================
+    // =========================
+    // EXPENSES
+    // =========================
 
-  // Fees charged by Paystack/other payment processors.
-  PAYMENT_PROCESSING_EXPENSE,
+    // Fees charged by Paystack/other payment processors.
+    PAYMENT_PROCESSING_EXPENSE,
 
-  // Fees incurred by Benkih when sending payouts.
-  PAYOUT_EXPENSE
+    // Fees incurred by Benkih when sending payouts.
+    PAYOUT_EXPENSE
 }

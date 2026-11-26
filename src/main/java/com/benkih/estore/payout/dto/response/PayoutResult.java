@@ -9,9 +9,9 @@ import lombok.Getter;
 @Builder
 @AllArgsConstructor
 public class PayoutResult {
-  private boolean accepted;
-  private PayoutGatewayStatus status;
-  private String providerReference;
-  private String providerTransferCode;
-  private String failureReason;
+    private boolean accepted;
+    private PayoutGatewayStatus status;
+    private String providerReference;
+    private String providerTransferCode;
+    private String failureReason;
 }

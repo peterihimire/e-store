@@ -1,29 +1,22 @@
 package com.benkih.estore.payment.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.math.BigDecimal;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.math.BigDecimal;
 
 @Getter
 @Setter
 @Builder
 public class RefundPaymentRequest {
 
-  /**
-   * Original payment transaction reference.
-   * e.g. PAYSTACK_REFERENCE
-   */
-  @JsonProperty("transaction")
-  private String transactionReference;
+    /** Original payment transaction reference. e.g. PAYSTACK_REFERENCE */
+    @JsonProperty("transaction")
+    private String transactionReference;
 
-  private BigDecimal amount;
+    private BigDecimal amount;
 
-  /**
-   * Reason shown on the gateway dashboard.
-   */
-  private String reason;
-
+    /** Reason shown on the gateway dashboard. */
+    private String reason;
 }

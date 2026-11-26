@@ -5,6 +5,6 @@ import lombok.Data;
 
 @Data
 public class InventoryAdjustmentRequest {
-  @Min(1)
-  private Integer quantity;
+    @Min(1)
+    private Integer quantity;
 }

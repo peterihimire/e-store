@@ -4,109 +4,103 @@ import com.benkih.estore.common.enums.PaymentProvider;
 import com.benkih.estore.webhook.handler.WebhookEvent;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Data;
-
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import lombok.Data;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PaystackWebhookEvent implements WebhookEvent {
 
-  private String event;
+    private String event;
 
-  private DataPayload data;
+    private DataPayload data;
 
-  @Override
-  public PaymentProvider provider() {
-    return PaymentProvider.PAYSTACK;
-  }
-
-  @Override
-  public String eventType() {
-    return event;
-  }
-
-//  @Override
-//  public String reference() {
-//    return data.getReference();
-//  }
-//
-//  @Override
-//  public String transactionId() {
-//    return String.valueOf(data.getId());
-//  }
-
-  @Override
-  public String reference() {
-    return data != null ? data.getReference() : null;
-  }
-
-  @Override
-  public String transactionReference() {
-    return data != null ? data.getTransactionReference() : null;
-  }
-
-
-  @Override
-  public String refundReference() {
-    return data != null ? data.getRefundReference() : null;
-  }
-
-  @Override
-  public String transactionId() {
-    return data != null && data.getId() != null
-        ? String.valueOf(data.getId())
-        : null;
-  }
-
-  @Override
-  public BigDecimal amount() {
-    if (data == null || data.getAmount() == null) {
-      return null;
+    @Override
+    public PaymentProvider provider() {
+        return PaymentProvider.PAYSTACK;
     }
 
-    return BigDecimal
-        .valueOf(data.getAmount())
-        .movePointLeft(2);
-  }
+    @Override
+    public String eventType() {
+        return event;
+    }
 
-  @Data
-  @JsonIgnoreProperties(ignoreUnknown = true)
-  public static class DataPayload {
+    //  @Override
+    //  public String reference() {
+    //    return data.getReference();
+    //  }
+    //
+    //  @Override
+    //  public String transactionId() {
+    //    return String.valueOf(data.getId());
+    //  }
 
-    private Long id;
+    @Override
+    public String reference() {
+        return data != null ? data.getReference() : null;
+    }
 
-    private String reference;
+    @Override
+    public String transactionReference() {
+        return data != null ? data.getTransactionReference() : null;
+    }
 
-    @JsonProperty("transaction_reference")
-    private String transactionReference;
+    @Override
+    public String refundReference() {
+        return data != null ? data.getRefundReference() : null;
+    }
 
-    @JsonProperty("refund_reference")
-    private String refundReference;
+    @Override
+    public String transactionId() {
+        return data != null && data.getId() != null ? String.valueOf(data.getId()) : null;
+    }
 
-    private String status;
+    @Override
+    public BigDecimal amount() {
+        if (data == null || data.getAmount() == null) {
+            return null;
+        }
 
-    private Long amount;
+        return BigDecimal.valueOf(data.getAmount()).movePointLeft(2);
+    }
 
-    private String currency;
+    @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class DataPayload {
 
-    private String reason;
+        private Long id;
 
-    @JsonProperty("gateway_response")
-    private String gatewayResponse;
+        private String reference;
 
-    @JsonProperty("paid_at")
-    private OffsetDateTime paidAt;
+        @JsonProperty("transaction_reference")
+        private String transactionReference;
 
-    private Authorization authorization;
-  }
+        @JsonProperty("refund_reference")
+        private String refundReference;
 
-  @Data
-  @JsonIgnoreProperties(ignoreUnknown = true)
-  public static class Authorization {
+        private String status;
 
-    @JsonProperty("authorization_code")
-    private String authorizationCode;
-  }
+        private Long amount;
+
+        private String currency;
+
+        private String reason;
+
+        @JsonProperty("gateway_response")
+        private String gatewayResponse;
+
+        @JsonProperty("paid_at")
+        private OffsetDateTime paidAt;
+
+        private Authorization authorization;
+    }
+
+    @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class Authorization {
+
+        @JsonProperty("authorization_code")
+        private String authorizationCode;
+    }
 }

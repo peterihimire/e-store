@@ -1,6 +1,5 @@
 package com.benkih.estore.business.dto.response;
 
-
 import lombok.Builder;
 import lombok.Getter;
 
@@ -8,11 +7,11 @@ import lombok.Getter;
 @Builder
 public class BankAccountResponseDto {
 
-  private String slug;
-  private String bankCode;
-  private String bankName;
-  private String accountName;
-  private String accountNumber;
-  private boolean verified;
-  private boolean defaultAccount;
+    private String slug;
+    private String bankCode;
+    private String bankName;
+    private String accountName;
+    private String accountNumber;
+    private boolean verified;
+    private boolean defaultAccount;
 }

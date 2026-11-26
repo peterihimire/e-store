@@ -2,13 +2,18 @@ package com.benkih.estore.cart.entity;
 
 import com.benkih.estore.common.entity.BaseEntity;
 import com.benkih.estore.user.entity.User;
-import jakarta.persistence.*;
-import lombok.*;
-
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.*;
-
+import java.util.ArrayList;
+import java.util.List;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -17,40 +22,41 @@ import java.util.*;
 @Table(name = "carts")
 public class Cart extends BaseEntity {
 
-  private BigDecimal totalAmount = BigDecimal.ZERO;
+    private BigDecimal totalAmount = BigDecimal.ZERO;
 
-  @OneToMany(
-      mappedBy = "cart",
-      cascade = CascadeType.ALL,
-      orphanRemoval = true
-  )
-  private List<CartItem> items = new ArrayList<>();
-  //  private Set<CartItem> items = new HashSet<>();
+    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CartItem> items = new ArrayList<>();
 
-  @OneToOne
-  @JoinColumn(name = "user_id")
-  private User user;
+    //  private Set<CartItem> items = new HashSet<>();
 
-  public void addItem(CartItem item){
-    this.items.add(item);
-    item.setCart(this);
-    updateTotalAmount();
-  }
+    @OneToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
-  public void removeItem(CartItem item){
-    this.items.remove(item);
-    item.setCart(null);
-    updateTotalAmount();
-  }
+    public void addItem(CartItem item) {
+        this.items.add(item);
+        item.setCart(this);
+        updateTotalAmount();
+    }
 
-  public void updateTotalAmount(){
-    this.totalAmount = items.stream().map(item -> {
-      BigDecimal unitPrice = item.getUnitPrice();
-      if(unitPrice == null){
-        return BigDecimal.ZERO;
-      }
-      return unitPrice.multiply(BigDecimal.valueOf(item.getQuantity()));
-    }).reduce(BigDecimal.ZERO, BigDecimal::add);
-  }
+    public void removeItem(CartItem item) {
+        this.items.remove(item);
+        item.setCart(null);
+        updateTotalAmount();
+    }
 
+    public void updateTotalAmount() {
+        this.totalAmount =
+                items.stream()
+                        .map(
+                                item -> {
+                                    BigDecimal unitPrice = item.getUnitPrice();
+                                    if (unitPrice == null) {
+                                        return BigDecimal.ZERO;
+                                    }
+                                    return unitPrice.multiply(
+                                            BigDecimal.valueOf(item.getQuantity()));
+                                })
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
 }

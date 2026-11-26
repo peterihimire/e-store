@@ -1,42 +1,38 @@
 package com.benkih.estore.product.entity;
 
-import com.benkih.estore.business.entity.Business;
 import com.benkih.estore.common.entity.AuditableEntity;
-import com.benkih.estore.product.entity.Product;
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotBlank;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @Entity
 @Table(
-    name = "categories",
-    uniqueConstraints = {
-        @UniqueConstraint(
-            name = "uk_category_parent_name",
-            columnNames = {
-                "parent_id",
-                "name"
-            }
-        )
-    }
-)
+        name = "categories",
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "uk_category_parent_name",
+                    columnNames = {"parent_id", "name"})
+        })
 public class Category extends AuditableEntity {
 
     @NotBlank
-    @Column(
-        nullable = false,
-        length = 150
-    )
+    @Column(nullable = false, length = 150)
     private String name;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -60,16 +56,11 @@ public class Category extends AuditableEntity {
 
     private String imageUrl;
 
-    @OneToMany(
-        mappedBy = "category",
-        cascade = CascadeType.ALL,
-        orphanRemoval = true
-    )
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("displayOrder ASC")
     private List<CategoryAttribute> attributes = new ArrayList<>();
 
     public Category(String name) {
         this.name = name;
     }
-
 }

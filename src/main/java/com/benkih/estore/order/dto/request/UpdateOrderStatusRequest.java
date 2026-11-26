@@ -9,5 +9,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UpdateOrderStatusRequest {
-  private OrderStatus status;
+    private OrderStatus status;
 }

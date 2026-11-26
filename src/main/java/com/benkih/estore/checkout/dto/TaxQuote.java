@@ -1,21 +1,12 @@
 package com.benkih.estore.checkout.dto;
 
-
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
 import java.math.BigDecimal;
 
 public record TaxQuote(
-    BigDecimal amount,
-    BigDecimal rate,
-    String jurisdiction,
-    String taxType,
-    String ruleCode
-) {}
-//@Getter
-//@AllArgsConstructor
-//public class TaxQuote {
+        BigDecimal amount, BigDecimal rate, String jurisdiction, String taxType, String ruleCode) {}
+// @Getter
+// @AllArgsConstructor
+// public class TaxQuote {
 //  private BigDecimal amount;
 //
 //  private BigDecimal rate;
@@ -25,4 +16,4 @@ public record TaxQuote(
 //  private String taxType;
 //
 //  private String ruleCode;
-//}
+// }

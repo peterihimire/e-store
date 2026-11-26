@@ -1,6 +1,5 @@
 package com.benkih.estore.payout.provider;
 
-
 import com.benkih.estore.payout.enums.PayoutProvider;
 import com.benkih.estore.payout.gateway.PaystackPayoutGateway;
 import lombok.RequiredArgsConstructor;
@@ -10,20 +9,19 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class PayoutGatewayFactory {
 
-  private final PaystackPayoutGateway paystackPayoutGateway;
-//  private final FlutterwavePayoutGateway flutterwavePayoutGateway;
+    private final PaystackPayoutGateway paystackPayoutGateway;
 
-  public PayoutGateway get(PayoutProvider provider) {
+    //  private final FlutterwavePayoutGateway flutterwavePayoutGateway;
 
-    return switch (provider) {
+    public PayoutGateway get(PayoutProvider provider) {
 
-      case PAYSTACK -> paystackPayoutGateway;
+        return switch (provider) {
+            case PAYSTACK -> paystackPayoutGateway;
 
-//      case FLUTTERWAVE -> flutterwavePayoutGateway;
+                //      case FLUTTERWAVE -> flutterwavePayoutGateway;
 
-      default -> throw new IllegalArgumentException(
-          "Unsupported payout provider: " + provider
-      );
-    };
-  }
+            default ->
+                    throw new IllegalArgumentException("Unsupported payout provider: " + provider);
+        };
+    }
 }

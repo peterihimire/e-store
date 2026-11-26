@@ -1,171 +1,161 @@
 package com.benkih.estore.auth.controller;
 
-import com.benkih.estore.auth.dto.request.*;
+import static org.springframework.http.HttpStatus.CONFLICT;
+
+import com.benkih.estore.auth.dto.request.AcceptInvitationRequest;
+import com.benkih.estore.auth.dto.request.ChangePasswordRequest;
+import com.benkih.estore.auth.dto.request.ForgotPasswordRequest;
+import com.benkih.estore.auth.dto.request.LoginRequest;
+import com.benkih.estore.auth.dto.request.ResetPasswordRequest;
+import com.benkih.estore.auth.dto.request.UserInvitationRequest;
+import com.benkih.estore.auth.dto.request.VerifyEmailRequest;
 import com.benkih.estore.auth.dto.response.LoginResponse;
 import com.benkih.estore.auth.service.AuthService;
-import com.benkih.estore.auth.service.IUserInvitationService;
+import com.benkih.estore.auth.service.UserInvitationService;
 import com.benkih.estore.common.exceptions.AlreadyExistsException;
 import com.benkih.estore.common.response.ApiResponse;
-
 import com.benkih.estore.security.tenant.TenantContext;
-import com.benkih.estore.security.user.StoreUserDetails;
 import com.benkih.estore.user.dto.request.CreateUserRequest;
 import com.benkih.estore.user.dto.response.UserResponseDto;
 import com.benkih.estore.user.entity.User;
-import com.benkih.estore.user.service.IUserService;
+import com.benkih.estore.user.service.UserService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
-
-import static org.springframework.http.HttpStatus.CONFLICT;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
+@Tag(name = "Auth", description = "Login, registration, verification and password reset")
 @RestController
 @RequestMapping("${api.prefix}/auth")
 @RequiredArgsConstructor
 public class AuthController {
-  private final AuthService authService;
-  private final IUserService userService;
-  private final IUserInvitationService userInvitationService;
-  private final TenantContext tenantContext;
-//  private final AuthenticationManager authenticationManager;
-//  private final JwtUtils jwtUtils;
+    private final AuthService authService;
+    private final UserService userService;
+    private final UserInvitationService userInvitationService;
+    private final TenantContext tenantContext;
 
-  @PostMapping("/login")
-  public ResponseEntity<ApiResponse> login(@Valid @RequestBody LoginRequest request, HttpServletRequest httpRequest){
-    LoginResponse response = authService.login(request, httpRequest);
+    //  private final AuthenticationManager authenticationManager;
+    //  private final JwtUtils jwtUtils;
 
-    return ResponseEntity.ok(new ApiResponse("success", "User login success", response));
-  }
+    @SecurityRequirements(value = {})
+    @PostMapping("/login")
+    public ResponseEntity<ApiResponse<LoginResponse>> login(
+            @Valid @RequestBody LoginRequest request, HttpServletRequest httpRequest) {
+        LoginResponse response = authService.login(request, httpRequest);
 
-  @PostMapping("/register")
-  public ResponseEntity<ApiResponse> createUser(@Valid @RequestBody CreateUserRequest request){
-    try {
-      User user = authService.register(request);
-      UserResponseDto userDto = userService.convertToDto(user);
-      return ResponseEntity.ok(new ApiResponse("success", "A code has been sent to your e-mail to verify your account", userDto ));
-    } catch (AlreadyExistsException e) {
-      return ResponseEntity.status(CONFLICT).body(new ApiResponse("fail", e.getMessage(), null));
+        return ResponseEntity.ok(new ApiResponse<>("success", "User login success", response));
     }
-  }
 
-  @PostMapping("/verify-email")
-  public ResponseEntity<ApiResponse> verifyEmail( @RequestBody VerifyEmailRequest request, HttpServletRequest httpRequest){
-    LoginResponse response = authService.verifyEmail(request, httpRequest);
-    //   UserResponseDto userDto = userService.convertToDto(user);
-      return ResponseEntity.ok(new ApiResponse("success", "User verified",
-          response));
-  }
+    @SecurityRequirements(value = {})
+    @PostMapping("/register")
+    public ResponseEntity<ApiResponse<UserResponseDto>> createUser(
+            @Valid @RequestBody CreateUserRequest request) {
+        try {
+            User user = authService.register(request);
+            UserResponseDto userDto = userService.convertToDto(user);
+            return ResponseEntity.ok(
+                    new ApiResponse<>(
+                            "success",
+                            "A code has been sent to your e-mail to verify your account",
+                            userDto));
+        } catch (AlreadyExistsException e) {
+            return ResponseEntity.status(CONFLICT)
+                    .body(new ApiResponse<>("fail", e.getMessage(), null));
+        }
+    }
 
-  @PostMapping("/refresh")
-  public ResponseEntity<ApiResponse> refreshToken(
-      @RequestHeader("Refresh-Token") String refreshToken,
-      HttpServletRequest request) {
+    @SecurityRequirements(value = {})
+    @PostMapping("/verify-email")
+    public ResponseEntity<ApiResponse<LoginResponse>> verifyEmail(
+            @RequestBody VerifyEmailRequest request, HttpServletRequest httpRequest) {
+        LoginResponse response = authService.verifyEmail(request, httpRequest);
+        //   UserResponseDto userDto = userService.convertToDto(user);
+        return ResponseEntity.ok(new ApiResponse<>("success", "User verified", response));
+    }
 
-    LoginResponse response = authService.refreshToken(refreshToken, request);
+    @SecurityRequirements(value = {})
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiResponse<LoginResponse>> refreshToken(
+            @RequestHeader("Refresh-Token") String refreshToken, HttpServletRequest request) {
 
-    return ResponseEntity.ok(
-        new ApiResponse(
-            "success",
-            "Token refreshed successfully",
-            response
-        )
-    );
-  }
+        LoginResponse response = authService.refreshToken(refreshToken, request);
 
-  @PostMapping("/logout")
-  public ResponseEntity<ApiResponse> logout(@RequestHeader("Refresh-Token") String refreshToken) {
+        return ResponseEntity.ok(
+                new ApiResponse<>("success", "Token refreshed successfully", response));
+    }
 
-    authService.logout(refreshToken);
-    return ResponseEntity.ok(
-        new ApiResponse(
-            "success",
-            "Logout success",
-            null
-        )
-    );
-  }
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout(
+            @RequestHeader("Refresh-Token") String refreshToken) {
 
-  @PostMapping("/forgot-password")
-  public ResponseEntity<ApiResponse> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        authService.logout(refreshToken);
+        return ResponseEntity.ok(new ApiResponse<>("success", "Logout success", null));
+    }
 
-    authService.forgotPassword(request);
+    @SecurityRequirements(value = {})
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ApiResponse<Void>> forgotPassword(
+            @Valid @RequestBody ForgotPasswordRequest request) {
 
-    return ResponseEntity.ok(
-        new ApiResponse(
-            "success",
-            "If an account with that email exists, a password reset code has been sent.",
-            null
-        )
-    );
-  }
+        authService.forgotPassword(request);
 
-  @PostMapping("/reset-password")
-  public ResponseEntity<ApiResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        return ResponseEntity.ok(
+                new ApiResponse<>(
+                        "success",
+                        "If an account with that email exists, a password reset code has been sent.",
+                        null));
+    }
 
-    authService.resetPassword(request);
+    @SecurityRequirements(value = {})
+    @PostMapping("/reset-password")
+    public ResponseEntity<ApiResponse<Void>> resetPassword(
+            @Valid @RequestBody ResetPasswordRequest request) {
 
-    return ResponseEntity.ok(
-        new ApiResponse(
-            "success",
-            "Password reset successful.",
-            null
-        )
-    );
-  }
+        authService.resetPassword(request);
 
-  @PostMapping("/change-password")
-  public ResponseEntity<ApiResponse> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
+        return ResponseEntity.ok(new ApiResponse<>("success", "Password reset successful.", null));
+    }
 
-    authService.changePassword(request);
+    @PostMapping("/change-password")
+    public ResponseEntity<ApiResponse<Void>> changePassword(
+            @Valid @RequestBody ChangePasswordRequest request) {
 
-    return ResponseEntity.ok(
-        new ApiResponse(
-            "success",
-            "Change password successful.",
-            null
-        )
-    );
-  }
+        authService.changePassword(request);
 
-  @PreAuthorize("hasAuthority('USER_CREATE')")
-  @PostMapping("/user-invitation")
-  public ResponseEntity<ApiResponse> userInvitation(@Valid @RequestBody UserInvitationRequest request) {
-    Long businessId = tenantContext.getBusinessId();
+        return ResponseEntity.ok(new ApiResponse<>("success", "Change password successful.", null));
+    }
 
-    userInvitationService.inviteUser(request, businessId);
+    @PreAuthorize("hasAuthority('USER_CREATE')")
+    @PostMapping("/user-invitation")
+    public ResponseEntity<ApiResponse<Void>> userInvitation(
+            @Valid @RequestBody UserInvitationRequest request) {
+        Long businessId = tenantContext.getBusinessId();
 
-    return ResponseEntity.ok(
-        new ApiResponse(
-            "success",
-            "User invitation sent successful.",
-            null
-        )
-    );
-  }
+        userInvitationService.inviteUser(request, businessId);
 
-  @PostMapping("/accept-invitation/{token}")
-  public ResponseEntity<ApiResponse> acceptInvitation(
-      @PathVariable String token,
-      @Valid @RequestBody AcceptInvitationRequest request) {
+        return ResponseEntity.ok(
+                new ApiResponse<>("success", "User invitation sent successful.", null));
+    }
 
-    userInvitationService.acceptInvitation(token, request);
+    @SecurityRequirements(value = {})
+    @PostMapping("/accept-invitation/{token}")
+    public ResponseEntity<ApiResponse<Void>> acceptInvitation(
+            @PathVariable String token, @Valid @RequestBody AcceptInvitationRequest request) {
 
-    return ResponseEntity.ok(
-        new ApiResponse(
-            "success",
-            "User invitation accept successful.",
-            null
-        )
-    );
-  }
+        userInvitationService.acceptInvitation(token, request);
 
+        return ResponseEntity.ok(
+                new ApiResponse<>("success", "User invitation accept successful.", null));
+    }
 }

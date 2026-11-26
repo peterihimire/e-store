@@ -1,0 +1,170 @@
+package com.benkih.estore.cart.service;
+
+import com.benkih.estore.cart.dto.response.CartItemResponseDto;
+import com.benkih.estore.cart.dto.response.CartProductResponseDto;
+import com.benkih.estore.cart.dto.response.CartResponseDto;
+import com.benkih.estore.cart.entity.Cart;
+import com.benkih.estore.cart.repository.CartItemRepository;
+import com.benkih.estore.cart.repository.CartRepository;
+import com.benkih.estore.common.exceptions.ResourceNotFoundException;
+import com.benkih.estore.inventory.service.InventoryService;
+import com.benkih.estore.product.dto.response.VariantAttributeResponseDto;
+import com.benkih.estore.product.entity.Product;
+import com.benkih.estore.product.entity.ProductVariant;
+import com.benkih.estore.product.service.ProductService;
+import com.benkih.estore.security.user.StoreUserDetails;
+import com.benkih.estore.user.entity.User;
+import com.benkih.estore.user.repository.UserRepository;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class CartServiceImpl implements CartService {
+    private final CartRepository cartRepository;
+    private final CartItemRepository cartItemRepository;
+    private final ProductService productService;
+    private final UserRepository userRepository;
+    private final InventoryService inventoryService;
+
+    @Transactional
+    @Override
+    public CartResponseDto getCartForCurrentUser(String slug) {
+        User user =
+                userRepository
+                        .findBySlug(slug)
+                        .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        Cart cart = cartRepository.findByUser(user);
+        if (cart == null) {
+            cart = new Cart();
+            cart.setUser(user);
+            cart = cartRepository.save(cart);
+        }
+        return getConvertedCart(cart);
+    }
+
+    @Override
+    public Cart getCart(String slug) {
+        return cartRepository
+                .findBySlug(slug)
+                .orElseThrow(() -> new ResourceNotFoundException("Cart not found"));
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public CartResponseDto getConvertedCart(Cart cart) {
+
+        List<CartItemResponseDto> items =
+                cart.getItems().stream()
+                        .map(
+                                item -> {
+                                    ProductVariant variant = item.getVariant();
+                                    Product product = variant.getProduct();
+
+                                    CartProductResponseDto productDto =
+                                            new CartProductResponseDto(
+                                                    product.getSlug(),
+                                                    product.getName(),
+                                                    product.getImages() != null
+                                                                    && !product.getImages()
+                                                                            .isEmpty()
+                                                            ? product.getImages()
+                                                                    .get(0)
+                                                                    .getDownloadUrl()
+                                                            : null);
+
+                                    List<VariantAttributeResponseDto> selectedAttributes =
+                                            variant.getAttributes().stream()
+                                                    .map(
+                                                            attribute -> {
+                                                                String value =
+                                                                        attribute
+                                                                                                .getAttributeValue()
+                                                                                        != null
+                                                                                ? attribute
+                                                                                        .getAttributeValue()
+                                                                                        .getDisplayName()
+                                                                                : attribute
+                                                                                        .getCustomValue();
+
+                                                                return new VariantAttributeResponseDto(
+                                                                        attribute
+                                                                                .getAttribute()
+                                                                                .getName(),
+                                                                        value);
+                                                            })
+                                                    .toList();
+
+                                    return new CartItemResponseDto(
+                                            item.getSlug(),
+                                            item.getQuantity(),
+                                            item.getUnitPrice(),
+                                            item.getTotalPrice(),
+                                            variant.getSlug(),
+                                            variant.getSku(),
+                                            productDto,
+                                            selectedAttributes);
+                                })
+                        .toList();
+
+        return new CartResponseDto(cart.getSlug(), cart.getTotalAmount(), items);
+    }
+
+    @Transactional
+    @Override
+    public void clearCart(String slug) {
+        Cart cart = getCart(slug);
+        User user = cart.getUser();
+        if (user != null) {
+            user.setCart(null);
+        }
+        cart.setUser(null);
+        cartRepository.delete(cart);
+    }
+
+    @Override
+    public BigDecimal getTotalPrice(String slug) {
+        Cart cart = getCart(slug);
+        return cart.getTotalAmount();
+    }
+
+    @Override
+    public Cart initializeNewCart(User user) {
+        log.info("User data here in the user={}", user);
+        return Optional.ofNullable(getCartByUserSlug(user.getSlug()))
+                .orElseGet(
+                        () -> {
+                            Cart cart = new Cart();
+                            cart.setUser(user);
+                            return cartRepository.save(cart);
+                        });
+    }
+
+    @Override
+    public Cart getCartByUserSlug(String slug) {
+        User user =
+                userRepository
+                        .findBySlug(slug)
+                        .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        return cartRepository.findByUser(user);
+    }
+
+    private User getCurrentUser() {
+        StoreUserDetails principal =
+                (StoreUserDetails)
+                        SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        return userRepository
+                .findBySlug(principal.getSlug())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    }
+}

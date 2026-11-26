@@ -9,12 +9,12 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 @Slf4j
 public class SettlementScheduler {
-  private final SettlementEligibilityService eligibilityService;
+    private final SettlementEligibilityService eligibilityService;
 
-  @Scheduled(cron = "${settlement.schedule}")
-  public void processEligibleSettlements() {
-    log.info("Starting settlement eligibility check");
-    eligibilityService.processEligibleSettlements();
-    log.info("Settlement eligibility check completed");
-  }
+    @Scheduled(cron = "${settlement.schedule}")
+    public void processEligibleSettlements() {
+        log.info("Starting settlement eligibility check");
+        eligibilityService.processEligibleSettlements();
+        log.info("Settlement eligibility check completed");
+    }
 }

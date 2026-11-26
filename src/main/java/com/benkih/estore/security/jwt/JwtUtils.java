@@ -2,208 +2,198 @@ package com.benkih.estore.security.jwt;
 
 import com.benkih.estore.security.user.StoreUserDetails;
 import com.benkih.estore.user.entity.User;
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.stereotype.Component;
-
 import java.security.Key;
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Component;
 
 @Component
 public class JwtUtils {
 
-  @Value("${auth.token.access-secret}")
-  private String accessSecret;
+    @Value("${auth.token.access-secret}")
+    private String accessSecret;
 
-  @Value("${auth.token.refresh-secret}")
-  private String refreshSecret;
+    @Value("${auth.token.refresh-secret}")
+    private String refreshSecret;
 
-  @Value("${auth.token.access-expiration-ms}")
-  private long accessExpiration;
+    @Value("${auth.token.access-expiration-ms}")
+    private long accessExpiration;
 
-  @Value("${auth.token.refresh-expiration-ms}")
-  private long refreshExpiration;
+    @Value("${auth.token.refresh-expiration-ms}")
+    private long refreshExpiration;
 
-  /*
-   * =========================
-   * ACCESS TOKEN
-   * =========================
-   */
+    /*
+     * =========================
+     * ACCESS TOKEN
+     * =========================
+     */
 
-  public String generateAccessToken(Authentication authentication) {
+    public String generateAccessToken(Authentication authentication) {
 
-    StoreUserDetails principal = (StoreUserDetails) authentication.getPrincipal();
+        StoreUserDetails principal = (StoreUserDetails) authentication.getPrincipal();
 
-    Date now = new Date();
+        Date now = new Date();
 
-    return Jwts.builder()
-        .setSubject(principal.getEmail())
-        .claim("slug", principal.getSlug())
-//        .claim("roles", roles)
-        .setIssuedAt(now)
-        .setExpiration(new Date(now.getTime() + accessExpiration))
-        .signWith(accessKey(), SignatureAlgorithm.HS256)
-        .compact();
-  }
-
-  /*
-   * =========================
-   * REFRESH TOKEN
-   * =========================
-   */
-
-  public String generateRefreshToken(User user) {
-
-    Date now = new Date();
-
-    return Jwts.builder()
-        .setId(UUID.randomUUID().toString())     // JWT ID
-        .setSubject(user.getEmail())
-        .claim("slug", user.getSlug())
-        .setIssuedAt(now)
-        .setExpiration(new Date(now.getTime() + refreshExpiration))
-        .signWith(refreshKey(), SignatureAlgorithm.HS256)
-        .compact();
-  }
-
-  /*
-   * =========================
-   * VALIDATION
-   * =========================
-   */
-
-  public boolean validateAccessToken(String token) {
-
-    try {
-
-      Jwts.parserBuilder()
-          .setSigningKey(accessKey())
-          .build()
-          .parseClaimsJws(token);
-
-      return true;
-
-    } catch (
-        ExpiredJwtException |
-        UnsupportedJwtException |
-        MalformedJwtException |
-        SignatureException |
-        IllegalArgumentException ex) {
-
-      throw new JwtException(ex.getMessage());
+        return Jwts.builder()
+                .setSubject(principal.getEmail())
+                .claim("slug", principal.getSlug())
+                //        .claim("roles", roles)
+                .setIssuedAt(now)
+                .setExpiration(new Date(now.getTime() + accessExpiration))
+                .signWith(accessKey(), SignatureAlgorithm.HS256)
+                .compact();
     }
-  }
 
-  public boolean validateRefreshToken(String token) {
+    /*
+     * =========================
+     * REFRESH TOKEN
+     * =========================
+     */
 
-    try {
+    public String generateRefreshToken(User user) {
 
-      Jwts.parserBuilder()
-          .setSigningKey(refreshKey())
-          .build()
-          .parseClaimsJws(token);
+        Date now = new Date();
 
-      return true;
-
-    } catch (
-        ExpiredJwtException |
-        UnsupportedJwtException |
-        MalformedJwtException |
-        SignatureException |
-        IllegalArgumentException ex) {
-
-      throw new JwtException(ex.getMessage());
+        return Jwts.builder()
+                .setId(UUID.randomUUID().toString()) // JWT ID
+                .setSubject(user.getEmail())
+                .claim("slug", user.getSlug())
+                .setIssuedAt(now)
+                .setExpiration(new Date(now.getTime() + refreshExpiration))
+                .signWith(refreshKey(), SignatureAlgorithm.HS256)
+                .compact();
     }
-  }
 
-  /*
-   * =========================
-   * CLAIM EXTRACTION
-   * =========================
-   */
+    /*
+     * =========================
+     * VALIDATION
+     * =========================
+     */
 
-  public String getUsernameFromAccessToken(String token) {
+    public boolean validateAccessToken(String token) {
 
-    return Jwts.parserBuilder()
-        .setSigningKey(accessKey())
-        .build()
-        .parseClaimsJws(token)
-        .getBody()
-        .getSubject();
-  }
+        try {
 
-  public String getUsernameFromRefreshToken(String token) {
+            Jwts.parserBuilder().setSigningKey(accessKey()).build().parseClaimsJws(token);
 
-    return Jwts.parserBuilder()
-        .setSigningKey(refreshKey())
-        .build()
-        .parseClaimsJws(token)
-        .getBody()
-        .getSubject();
-  }
+            return true;
 
-  public String getSlugFromRefreshToken(String token) {
+        } catch (ExpiredJwtException
+                | UnsupportedJwtException
+                | MalformedJwtException
+                | SignatureException
+                | IllegalArgumentException ex) {
 
-    return Jwts.parserBuilder()
-        .setSigningKey(refreshKey())
-        .build()
-        .parseClaimsJws(token)
-        .getBody()
-        .get("slug", String.class);
-  }
+            throw new JwtException(ex.getMessage());
+        }
+    }
 
-  public String getJtiFromRefreshToken(String token) {
+    public boolean validateRefreshToken(String token) {
 
-    return Jwts.parserBuilder()
-        .setSigningKey(refreshKey())
-        .build()
-        .parseClaimsJws(token)
-        .getBody()
-        .getId();
-  }
+        try {
 
-  public Date getExpirationFromRefreshToken(String token) {
+            Jwts.parserBuilder().setSigningKey(refreshKey()).build().parseClaimsJws(token);
 
-    return Jwts.parserBuilder()
-        .setSigningKey(refreshKey())
-        .build()
-        .parseClaimsJws(token)
-        .getBody()
-        .getExpiration();
-  }
+            return true;
 
-  public String getRefreshTokenId(String token) {
+        } catch (ExpiredJwtException
+                | UnsupportedJwtException
+                | MalformedJwtException
+                | SignatureException
+                | IllegalArgumentException ex) {
 
-    return Jwts.parserBuilder()
-        .setSigningKey(refreshKey())
-        .build()
-        .parseClaimsJws(token)
-        .getBody()
-        .getId();
-  }
+            throw new JwtException(ex.getMessage());
+        }
+    }
 
-  /*
-   * =========================
-   * KEYS
-   * =========================
-   */
+    /*
+     * =========================
+     * CLAIM EXTRACTION
+     * =========================
+     */
 
-  private Key accessKey() {
-    return Keys.hmacShaKeyFor(
-        Decoders.BASE64.decode(accessSecret)
-    );
-  }
+    public String getUsernameFromAccessToken(String token) {
 
-  private Key refreshKey() {
-    return Keys.hmacShaKeyFor(
-        Decoders.BASE64.decode(refreshSecret)
-    );
-  }
+        return Jwts.parserBuilder()
+                .setSigningKey(accessKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getSubject();
+    }
+
+    public String getUsernameFromRefreshToken(String token) {
+
+        return Jwts.parserBuilder()
+                .setSigningKey(refreshKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getSubject();
+    }
+
+    public String getSlugFromRefreshToken(String token) {
+
+        return Jwts.parserBuilder()
+                .setSigningKey(refreshKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .get("slug", String.class);
+    }
+
+    public String getJtiFromRefreshToken(String token) {
+
+        return Jwts.parserBuilder()
+                .setSigningKey(refreshKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getId();
+    }
+
+    public Date getExpirationFromRefreshToken(String token) {
+
+        return Jwts.parserBuilder()
+                .setSigningKey(refreshKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getExpiration();
+    }
+
+    public String getRefreshTokenId(String token) {
+
+        return Jwts.parserBuilder()
+                .setSigningKey(refreshKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getId();
+    }
+
+    /*
+     * =========================
+     * KEYS
+     * =========================
+     */
+
+    private Key accessKey() {
+        return Keys.hmacShaKeyFor(Decoders.BASE64.decode(accessSecret));
+    }
+
+    private Key refreshKey() {
+        return Keys.hmacShaKeyFor(Decoders.BASE64.decode(refreshSecret));
+    }
 }

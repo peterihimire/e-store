@@ -11,32 +11,32 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class PaystackPaymentWebhookHandler implements PaymentWebhookHandler {
-  private final PaystackClient paystackClient;
+    private final PaystackClient paystackClient;
 
-  @Override
-  public PaymentProvider supports() {
-    return PaymentProvider.PAYSTACK;
-  }
-
-  @Override
-  public void verifySignature(String signature, String payload) {
-    if (!paystackClient.verifyWebhookSignature(signature, payload)) {
-      throw new IllegalArgumentException("Invalid webhook signature");
+    @Override
+    public PaymentProvider supports() {
+        return PaymentProvider.PAYSTACK;
     }
-  }
 
-//  @Override
-//  public PaymentWebhookEvent parseWebhook(String payload) {
-//    return paystackClient.parseWebhook(payload);
-//  }
+    @Override
+    public void verifySignature(String signature, String payload) {
+        if (!paystackClient.verifyWebhookSignature(signature, payload)) {
+            throw new IllegalArgumentException("Invalid webhook signature");
+        }
+    }
 
-  @Override
-  public WebhookEvent parseWebhook(String payload) {
-    return paystackClient.parseWebhook(payload);
-  }
+    //  @Override
+    //  public PaymentWebhookEvent parseWebhook(String payload) {
+    //    return paystackClient.parseWebhook(payload);
+    //  }
 
-  @Override
-  public VerifyPaymentResponse verify(String reference) {
-    return paystackClient.verify(reference);
-  }
+    @Override
+    public WebhookEvent parseWebhook(String payload) {
+        return paystackClient.parseWebhook(payload);
+    }
+
+    @Override
+    public VerifyPaymentResponse verify(String reference) {
+        return paystackClient.verify(reference);
+    }
 }

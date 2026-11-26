@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class BrandResponseDto {
 
-  private String slug;
-  private String name;
-  private String logoUrl;
-  private String websiteUrl;
+    private String slug;
+    private String name;
+    private String logoUrl;
+    private String websiteUrl;
 }

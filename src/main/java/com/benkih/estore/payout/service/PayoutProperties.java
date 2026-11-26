@@ -11,5 +11,5 @@ import org.springframework.context.annotation.Configuration;
 @Getter
 @Setter
 public class PayoutProperties {
-  private PayoutProvider provider;
+    private PayoutProvider provider;
 }

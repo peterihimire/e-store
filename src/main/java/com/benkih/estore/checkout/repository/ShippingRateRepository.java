@@ -1,22 +1,20 @@
 package com.benkih.estore.checkout.repository;
 
-//package com.benkih.estore.shipping.repository;
-
+// package com.benkih.estore.shipping.repository;
 
 import com.benkih.estore.checkout.entity.ShippingRate;
 import com.benkih.estore.common.enums.DeliveryMethod;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.util.Optional;
+public interface ShippingRateRepository extends JpaRepository<ShippingRate, Long> {
 
-public interface ShippingRateRepository
-    extends JpaRepository<ShippingRate, Long> {
-
-  @Query("""
+    @Query(
+            """
         SELECT r
         FROM ShippingRate r
         WHERE r.zone = :zone
@@ -34,16 +32,16 @@ public interface ShippingRateRepository
           )
         ORDER BY r.minWeightKg DESC
         """)
-  Optional<ShippingRate> findApplicableRate(
-      @Param("zone") String zone,
-      @Param("deliveryMethod") DeliveryMethod deliveryMethod,
-      @Param("weight") BigDecimal weight,
-      @Param("at") Instant at
-  );
+    Optional<ShippingRate> findApplicableRate(
+            @Param("zone") String zone,
+            @Param("deliveryMethod") DeliveryMethod deliveryMethod,
+            @Param("weight") BigDecimal weight,
+            @Param("at") Instant at);
 
-  boolean existsByCode(String code);
+    boolean existsByCode(String code);
 
-  @Query("""
+    @Query(
+            """
         SELECT r
         FROM ShippingRate r
         WHERE r.zone = :zone
@@ -57,9 +55,8 @@ public interface ShippingRateRepository
           )
         ORDER BY r.effectiveFrom DESC
         """)
-  Optional<ShippingRate> findFallbackRate(
-      @Param("zone") String zone,
-      @Param("deliveryMethod") DeliveryMethod deliveryMethod,
-      @Param("at") Instant at
-  );
+    Optional<ShippingRate> findFallbackRate(
+            @Param("zone") String zone,
+            @Param("deliveryMethod") DeliveryMethod deliveryMethod,
+            @Param("at") Instant at);
 }

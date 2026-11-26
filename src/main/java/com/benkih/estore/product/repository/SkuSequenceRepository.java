@@ -1,6 +1,5 @@
 package com.benkih.estore.product.repository;
 
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -9,13 +8,10 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class SkuSequenceRepository {
 
-  private final JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbcTemplate;
 
-  public long nextSkuNumber() {
+    public long nextSkuNumber() {
 
-    return jdbcTemplate.queryForObject(
-        "SELECT nextval('sku_sequence')",
-        Long.class
-    );
-  }
+        return jdbcTemplate.queryForObject("SELECT nextval('sku_sequence')", Long.class);
+    }
 }

@@ -7,22 +7,14 @@ import com.benkih.estore.payout.dto.response.PayoutVerificationResult;
 import com.benkih.estore.payout.entity.Payout;
 import com.benkih.estore.payout.entity.PayoutRecipient;
 import com.benkih.estore.payout.enums.PayoutProvider;
-import com.benkih.estore.payout.enums.PayoutTransferStatus;
 
 public interface PayoutGateway {
 
-  PayoutProvider supports();
+    PayoutProvider supports();
 
-  PayoutRecipientResult createRecipient(
-      BankAccount bankAccount
-  );
+    PayoutRecipientResult createRecipient(BankAccount bankAccount);
 
-  PayoutResult initiate(
-      Payout payout,
-      PayoutRecipient recipient
-  );
+    PayoutResult initiate(Payout payout, PayoutRecipient recipient);
 
-  PayoutVerificationResult verify(
-      String providerReference
-  );
+    PayoutVerificationResult verify(String providerReference);
 }

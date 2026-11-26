@@ -8,9 +8,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CartProductResponseDto {
-  private String slug;
+    private String slug;
 
-  private String name;
+    private String name;
 
-  private String imageUrl;
+    private String imageUrl;
 }

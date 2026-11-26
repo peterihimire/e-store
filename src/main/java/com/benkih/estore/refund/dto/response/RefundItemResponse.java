@@ -1,8 +1,11 @@
 package com.benkih.estore.refund.dto.response;
 
-import lombok.*;
-
 import java.math.BigDecimal;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -11,12 +14,11 @@ import java.math.BigDecimal;
 @Builder
 public class RefundItemResponse {
 
-  private String slug;
+    private String slug;
 
-  private String orderItemSlug;
+    private String orderItemSlug;
 
-  private Integer quantity;
+    private Integer quantity;
 
-  private BigDecimal amount;
-
+    private BigDecimal amount;
 }

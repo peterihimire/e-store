@@ -7,18 +7,17 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class WebhookHandlerFactory {
-  private final PaystackWebhookHandler paystackWebhookHandler;
+    private final PaystackWebhookHandler paystackWebhookHandler;
 
-  public IWebhookHandler get(PaymentProvider provider) {
+    public WebhookHandler get(PaymentProvider provider) {
 
-    return switch (provider) {
-      case PAYSTACK -> paystackWebhookHandler;
+        return switch (provider) {
+            case PAYSTACK -> paystackWebhookHandler;
 
-      // case FLUTTERWAVE -> flutterwaveWebhookHandler;
+                // case FLUTTERWAVE -> flutterwaveWebhookHandler;
 
-      default -> throw new IllegalArgumentException(
-          "Unsupported webhook provider: " + provider
-      );
-    };
-  }
+            default ->
+                    throw new IllegalArgumentException("Unsupported webhook provider: " + provider);
+        };
+    }
 }

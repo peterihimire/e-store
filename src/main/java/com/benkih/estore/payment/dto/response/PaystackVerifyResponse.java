@@ -1,57 +1,55 @@
 package com.benkih.estore.payment.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.time.Instant;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.time.Instant;
-import java.time.LocalDateTime;
 
 @Getter
 @Setter
 public class PaystackVerifyResponse {
 
-  private boolean status;
+    private boolean status;
 
-  private String message;
+    private String message;
 
-  private Data data;
+    private Data data;
 
-  @Getter
-  @Setter
-  public static class Data {
+    @Getter
+    @Setter
+    public static class Data {
 
-    private Long id;
+        private Long id;
 
-    private String status;
+        private String status;
 
-    private String reference;
+        private String reference;
 
-    private Long amount;
+        private Long amount;
 
-    @JsonProperty("fees")
-    private Long fees;
+        @JsonProperty("fees")
+        private Long fees;
 
-    @JsonProperty("gateway_response")
-    private String gatewayResponse;
+        @JsonProperty("gateway_response")
+        private String gatewayResponse;
 
-    @JsonProperty("paid_at")
-    private Instant paidAt;
+        @JsonProperty("paid_at")
+        private Instant paidAt;
 
-    private Authorization authorization;
-  }
+        private Authorization authorization;
+    }
 
-  @Getter
-  @Setter
-  public static class Authorization {
+    @Getter
+    @Setter
+    public static class Authorization {
 
-    @JsonProperty("authorization_code")
-    private String authorizationCode;
+        @JsonProperty("authorization_code")
+        private String authorizationCode;
 
-    private String channel;
+        private String channel;
 
-    private String bank;
+        private String bank;
 
-    private String brand;
-  }
+        private String brand;
+    }
 }

@@ -1,19 +1,30 @@
 package com.benkih.estore.order.entity;
 
 import com.benkih.estore.common.entity.AuditableEntity;
-import com.benkih.estore.user.entity.Address;
 import com.benkih.estore.common.enums.CurrencyCode;
 import com.benkih.estore.common.enums.OrderStatus;
 import com.benkih.estore.common.enums.PaymentStatus;
 import com.benkih.estore.payment.entity.Payment;
+import com.benkih.estore.user.entity.Address;
 import com.benkih.estore.user.entity.User;
-import jakarta.persistence.*;
-import lombok.*;
-
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -22,87 +33,81 @@ import java.util.*;
 @Table(name = "orders")
 public class Order extends AuditableEntity {
 
-  @Column(nullable = false, unique = true)
-  private String orderNumber;
+    @Column(nullable = false, unique = true)
+    private String orderNumber;
 
-  @Column(nullable = false)
-  private Instant orderDate;
+    @Column(nullable = false)
+    private Instant orderDate;
 
-  @Column(nullable = false, precision = 18, scale = 2)
-  private BigDecimal subTotal = BigDecimal.ZERO;
+    @Column(nullable = false, precision = 18, scale = 2)
+    private BigDecimal subTotal = BigDecimal.ZERO;
 
-  @Column(nullable = false, precision = 18, scale = 2)
-  private BigDecimal totalAmount = BigDecimal.ZERO;
+    @Column(nullable = false, precision = 18, scale = 2)
+    private BigDecimal totalAmount = BigDecimal.ZERO;
 
-  @Column(nullable = false, precision = 18, scale = 2)
-  private BigDecimal shippingFee = BigDecimal.ZERO;
+    @Column(nullable = false, precision = 18, scale = 2)
+    private BigDecimal shippingFee = BigDecimal.ZERO;
 
-  @Column(nullable = false, precision = 18, scale = 2)
-  private BigDecimal discountAmount = BigDecimal.ZERO;
+    @Column(nullable = false, precision = 18, scale = 2)
+    private BigDecimal discountAmount = BigDecimal.ZERO;
 
-  @Column(nullable = false, precision = 18, scale = 2)
-  private BigDecimal taxAmount = BigDecimal.ZERO;
+    @Column(nullable = false, precision = 18, scale = 2)
+    private BigDecimal taxAmount = BigDecimal.ZERO;
 
-  @Enumerated(EnumType.STRING)
-  @Column(nullable = false)
-  private CurrencyCode currency = CurrencyCode.NGN;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private CurrencyCode currency = CurrencyCode.NGN;
 
-  @Enumerated(EnumType.STRING)
-  @Column(nullable = false)
-  private OrderStatus orderStatus = OrderStatus.PENDING;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private OrderStatus orderStatus = OrderStatus.PENDING;
 
-  @Enumerated(EnumType.STRING)
-  @Column(nullable = false)
-  private PaymentStatus paymentStatus = PaymentStatus.PENDING;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PaymentStatus paymentStatus = PaymentStatus.PENDING;
 
-  private String trackingNumber;
-  private String notes;
+    private String trackingNumber;
+    private String notes;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "user_id", nullable = false)
-  private User user;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "shipping_address_id")
-  private Address shippingAddress;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shipping_address_id")
+    private Address shippingAddress;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "billing_address_id")
-  private Address billingAddress;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "billing_address_id")
+    private Address billingAddress;
 
-  @OneToMany(
-      mappedBy = "order",
-      cascade = CascadeType.ALL,
-      orphanRemoval = true
-  )
-  private List<OrderItem> orderItems = new ArrayList<>();
-  //  private Set<OrderItem> items = new HashSet<>();
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderItem> orderItems = new ArrayList<>();
 
-  @OneToMany(
-      mappedBy = "order",
-      cascade = CascadeType.ALL
-  )
-  private List<Payment> payments = new ArrayList<>();
+    //  private Set<OrderItem> items = new HashSet<>();
 
-  private Instant shippedAt;
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    private List<Payment> payments = new ArrayList<>();
 
-  private Instant deliveredAt;
+    private Instant shippedAt;
 
-  private Instant paidAt;
+    private Instant deliveredAt;
 
-  private Instant cancelledAt;
+    private Instant paidAt;
 
-  private Instant completedAt;
+    private Instant cancelledAt;
 
-  @PrePersist
-  protected void initializeOrder() {
+    private Instant completedAt;
 
-    if (orderNumber == null) {
-      orderNumber = "ORD-" + System.currentTimeMillis();
+    @PrePersist
+    protected void initializeOrder() {
+
+        if (orderNumber == null) {
+            orderNumber = "ORD-" + System.currentTimeMillis();
+        }
+
+        if (orderDate == null) {
+            orderDate = Instant.now();
+        }
     }
-
-    if (orderDate == null) {
-      orderDate = Instant.now();
-    }
-  }
 }

@@ -8,15 +8,13 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class TenantResolver {
-  private final BusinessMemberRepository businessMemberRepository;
+    private final BusinessMemberRepository businessMemberRepository;
 
-  public Long resolve(Long userId) {
+    public Long resolve(Long userId) {
 
-    return businessMemberRepository.findFirstByUserIdAndStatus(
-            userId,
-            MemberStatus.ACTIVE
-        )
-        .map(member -> member.getBusiness().getId())
-        .orElse(null);
-  }
+        return businessMemberRepository
+                .findFirstByUserIdAndStatus(userId, MemberStatus.ACTIVE)
+                .map(member -> member.getBusiness().getId())
+                .orElse(null);
+    }
 }

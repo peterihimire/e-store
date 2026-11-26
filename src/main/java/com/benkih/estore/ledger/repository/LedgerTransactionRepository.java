@@ -1,14 +1,12 @@
 package com.benkih.estore.ledger.repository;
 
 import com.benkih.estore.ledger.entity.LedgerTransaction;
-import org.springframework.data.jpa.repository.JpaRepository;
-
 import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface LedgerTransactionRepository extends JpaRepository<LedgerTransaction, Long> {
 
-  boolean existsByReference(String reference);
+    boolean existsByReference(String reference);
 
-  Optional<LedgerTransaction>
-  findByReference(String reference);
+    Optional<LedgerTransaction> findByReference(String reference);
 }
